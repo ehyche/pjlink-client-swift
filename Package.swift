@@ -17,6 +17,16 @@ let package = Package(
                 .target(name: "pjlink-client-lib"),
             ]
         ),
-        .target(name: "pjlink-client-lib"),
+        .target(
+            name: "pjlink-client-lib",
+            dependencies: [
+            ]
+        ),
+        .testTarget(
+            name: "pjlink-client-lib-tests",
+            dependencies: [
+                .target(name: "pjlink-client-lib"),
+            ]
+        ),
     ]
 )
