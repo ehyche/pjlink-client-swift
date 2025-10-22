@@ -7,7 +7,7 @@
 import ArgumentParser
 import Foundation
 import Network
-import pjlink_client_lib
+import PJLinkClient
 
 @main
 struct pjlink_client: ParsableCommand {

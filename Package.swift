@@ -14,18 +14,18 @@ let package = Package(
             name: "pjlink-client-cli",
             dependencies: [
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
-                .target(name: "pjlink-client-lib"),
+                .target(name: "PJLinkClient"),
             ]
         ),
         .target(
-            name: "pjlink-client-lib",
+            name: "PJLinkClient",
             dependencies: [
             ]
         ),
         .testTarget(
-            name: "pjlink-client-lib-tests",
+            name: "PJLinkClientTests",
             dependencies: [
-                .target(name: "pjlink-client-lib"),
+                .target(name: "PJLinkClient"),
             ]
         ),
     ]
