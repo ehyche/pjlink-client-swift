@@ -10,7 +10,7 @@ import Network
 import PJLinkClient
 
 @main
-struct pjlink_client: ParsableCommand {
+struct PJLinkClientCLI: ParsableCommand {
     mutating func run() async throws {
         let connection = NetworkConnection(to: .hostPort(host: "192.168.64.2", port: 4352)) {
             TCP {
