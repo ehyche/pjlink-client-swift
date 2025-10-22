@@ -7,7 +7,7 @@
 
 extension PJLink {
 
-    public struct ErrorStatus {
+    public struct ErrorStatus: Equatable {
         var fan: ComponentError
         var lamp: ComponentError
         var temperature: ComponentError

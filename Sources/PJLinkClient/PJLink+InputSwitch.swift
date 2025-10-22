@@ -6,12 +6,12 @@
 //
 
 extension PJLink {
-    public struct InputSwitch {
+    public struct InputSwitch: Equatable {
         var input: Input
         var channel: InputChannel
     }
 
-    public struct InputSwitches {
+    public struct InputSwitches: Equatable {
         var switches: [InputSwitch]
     }
 }

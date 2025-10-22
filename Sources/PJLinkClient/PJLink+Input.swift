@@ -7,7 +7,7 @@
 
 extension PJLink {
 
-    public enum Input: String {
+    public enum Input: String, Equatable {
         case rgb = "1"
         case video = "2"
         case digital = "3"

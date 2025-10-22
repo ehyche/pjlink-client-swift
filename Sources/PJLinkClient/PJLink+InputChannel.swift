@@ -6,7 +6,7 @@
 //
 
 extension PJLink {
-    public enum InputChannel: String {
+    public enum InputChannel: String, Equatable {
         case one = "1"
         case two = "2"
         case three = "3"

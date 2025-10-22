@@ -7,7 +7,7 @@
 
 extension PJLink {
 
-    public enum SetRequest {
+    public enum SetRequest: Equatable {
         case power(PJLink.OnOff)
         case inputSwitch(PJLink.InputSwitch)
         case avMute(PJLink.MuteState)

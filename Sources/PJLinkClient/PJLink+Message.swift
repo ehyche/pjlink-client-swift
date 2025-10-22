@@ -6,22 +6,22 @@
 //
 
 extension PJLink {
-    public struct Message {
+    public struct Message: Equatable {
         public var `class`: Class
         public var command: Command
         public var body: MessageBody
     }
 
-    public enum MessageBody {
+    public enum MessageBody: Equatable {
         case request(Request)
         case response(Response)
 
-        public enum Request {
+        public enum Request: Equatable {
             case get(GetRequest)
             case set(SetRequest)
         }
 
-        public enum Response {
+        public enum Response: Equatable {
             case ok               // OK
             case undefinedCommand // ERR1
             case outOfParameter   // ERR2
@@ -29,7 +29,7 @@ extension PJLink {
             case projectorFailure // ERR4
             case body(Body)
 
-            public enum Body {
+            public enum Body: Equatable {
                 case power(PowerStatus)
                 case inputSwitch(InputSwitch)
                 case avMute(MuteState)

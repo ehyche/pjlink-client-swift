@@ -7,7 +7,7 @@
 
 extension PJLink {
 
-    public enum GetRequest {
+    public enum GetRequest: Equatable {
         case power
         case inputSwitch
         case avMute
