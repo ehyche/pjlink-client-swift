@@ -90,6 +90,29 @@ struct StringParsingTests {
         try run(testCases)
     }
 
+    @Test
+    func setResponsesHappyPath() throws {
+        var testCases = [TestCase]()
+        // Add cases for OK, ERR1, ERR2, ERR3, and ERR4 for every set request
+        PJLink.Command.allSetCommands.forEach { command in
+            command.classes.forEach { commandClass in
+                PJLink.ErrorResponse.allCases.forEach { errorResponse in
+                    testCases.append(
+                        .init(
+                            "%\(commandClass.rawValue)\(command.rawValue)=\(errorResponse.rawValue)",
+                            .init(
+                                class: commandClass,
+                                command: command,
+                                body: .response(.code(errorResponse))
+                            )
+                        )
+                    )
+                }
+            }
+        }
+        try run(testCases)
+    }
+
     private func run(_ testCases: [TestCase]) throws {
         for testCase in testCases {
             let actual = try PJLink.Message(testCase.input)

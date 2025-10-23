@@ -6,7 +6,7 @@
 //
 
 extension PJLink {
-    public enum Command: String, Sendable {
+    public enum Command: String, Sendable, CaseIterable {
         case power = "POWR"
         case inputSwitch = "INPT"
         case avMute = "AVMT"
@@ -60,4 +60,45 @@ extension PJLink.Command {
         case .freeze: .freeze
         }
     }
+
+    public var classes: [PJLink.Class] {
+        switch self {
+        case .power: [.one]
+        case .inputSwitch: [.one, .two]
+        case .avMute: [.one]
+        case .errorStatus: [.one]
+        case .lamp: [.one]
+        case .inputList: [.one, .two]
+        case .projectorName:  [.one]
+        case .manufacturerName: [.one]
+        case .productName: [.one]
+        case .otherInformation: [.one]
+        case .projectorClass: [.one]
+        case .serialNumber: [.two]
+        case .softwareVersion: [.two]
+        case .inputTerminalName: [.two]
+        case .inputResolution: [.two]
+        case .recommendedResolution: [.two]
+        case .filterUsageTime: [.two]
+        case .lampReplacementModelNumber: [.two]
+        case .filterReplacementModelNumber: [.two]
+        case .speakerVolume: [.two]
+        case .microphoneVolume: [.two]
+        case .freeze: [.two]
+        }
+    }
+
+    public static let allSetCommands: [Self] = [
+        .power, .inputSwitch, .avMute, .speakerVolume, .microphoneVolume, .freeze,
+    ]
+
+    public static let allGetCommands: [Self] = [
+        .power, .inputSwitch, .avMute, .errorStatus, .lamp, .inputList, .projectorName, .manufacturerName,
+        .productName, .otherInformation, .projectorClass, .serialNumber, .softwareVersion, .inputTerminalName,
+        .inputResolution, .recommendedResolution, .filterUsageTime, .lampReplacementModelNumber,
+        .filterReplacementModelNumber, .freeze,
+    ]
+
+    public static let allClass1Commands: [Self] = allCases.filter { $0.classes.contains(.one) }
+    public static let allClass2Commands: [Self] = allCases.filter { $0.classes.contains(.two) }
 }

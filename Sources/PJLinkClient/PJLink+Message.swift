@@ -22,11 +22,7 @@ extension PJLink {
         }
 
         public enum Response: Equatable {
-            case ok               // OK
-            case undefinedCommand // ERR1
-            case outOfParameter   // ERR2
-            case unavailableTime  // ERR3
-            case projectorFailure // ERR4
+            case code(ErrorResponse)
             case body(Body)
 
             public enum Body: Equatable {
@@ -150,38 +146,19 @@ extension PJLink.MessageBody.Request: CustomStringConvertible {
 extension PJLink.MessageBody.Response {
 
     public init(pjlinkClass: PJLink.Class, command: PJLink.Command, parameters: String) throws {
-        switch parameters {
-        case Self.okRawValue:
-            self = .ok
-        case Self.undefinedCommandRawValue:
-            self = .undefinedCommand
-        case Self.outOfParameterRawValue:
-            self = .outOfParameter
-        case Self.unavailableTimeRawValue:
-            self = .unavailableTime
-        case Self.projectorFailureRawValue:
-            self = .projectorFailure
-        default:
+        if let errorResponse = PJLink.ErrorResponse(rawValue: parameters) {
+            self = .code(errorResponse)
+        } else {
             self = .body(try .init(pjlinkClass: pjlinkClass, command: command, parameters: parameters))
         }
     }
 
     public var description: String {
         switch self {
-        case .ok: Self.okRawValue
-        case .undefinedCommand: Self.undefinedCommandRawValue
-        case .outOfParameter: Self.outOfParameterRawValue
-        case .unavailableTime: Self.unavailableTimeRawValue
-        case .projectorFailure: Self.projectorFailureRawValue
+        case .code(let errorResponse): errorResponse.rawValue
         case .body(let body): body.description
         }
     }
-
-    private static let okRawValue = "OK"
-    private static let undefinedCommandRawValue = "ERR1"
-    private static let outOfParameterRawValue = "ERR2"
-    private static let unavailableTimeRawValue = "ERR3"
-    private static let projectorFailureRawValue = "ERR4"
 }
 
 extension PJLink.MessageBody.Response.Body {
