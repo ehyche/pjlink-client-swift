@@ -9,7 +9,8 @@ extension PJLink {
 
     public enum SetRequest: Equatable {
         case power(PJLink.OnOff)
-        case inputSwitch(PJLink.InputSwitch)
+        case inputSwitchClass1(PJLink.InputSwitchClass1)
+        case inputSwitchClass2(PJLink.InputSwitchClass2)
         case avMute(PJLink.MuteState)
         case speakerVolume(PJLink.VolumeAdjustment)
         case microphoneVolume(PJLink.VolumeAdjustment)
@@ -19,7 +20,7 @@ extension PJLink {
 
 extension PJLink.SetRequest {
 
-    public init(command: PJLink.Command, parameters: String) throws {
+    public init(pjlinkClass: PJLink.Class, command: PJLink.Command, parameters: String) throws {
         switch command {
         case .power:
             guard let onOff = PJLink.OnOff(rawValue: parameters) else {
@@ -27,7 +28,12 @@ extension PJLink.SetRequest {
             }
             self = .power(onOff)
         case .inputSwitch:
-            self = .inputSwitch(try .init(parameters))
+            switch pjlinkClass {
+            case .one:
+                self = .inputSwitchClass1(try .init(parameters))
+            case .two:
+                self = .inputSwitchClass2(try .init(parameters))
+            }
         case .avMute:
             self = .avMute(try .init(parameters))
         case .speakerVolume:
@@ -56,7 +62,8 @@ extension PJLink.SetRequest: CustomStringConvertible {
     public var description: String {
         switch self {
         case .power(let onOff): onOff.rawValue
-        case .inputSwitch(let inputSwitch): inputSwitch.description
+        case .inputSwitchClass1(let inputSwitch): inputSwitch.description
+        case .inputSwitchClass2(let inputSwitch): inputSwitch.description
         case .avMute(let muteState): muteState.description
         case .speakerVolume(let volumeAdjustment): volumeAdjustment.rawValue
         case .microphoneVolume(let volumeAdjustment): volumeAdjustment.rawValue

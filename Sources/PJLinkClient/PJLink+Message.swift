@@ -31,11 +31,13 @@ extension PJLink {
 
             public enum Body: Equatable {
                 case power(PowerStatus)
-                case inputSwitch(InputSwitch)
+                case inputSwitchClass1(InputSwitchClass1)
+                case inputSwitchClass2(InputSwitchClass2)
                 case avMute(MuteState)
                 case errorStatus(ErrorStatus)
                 case lamp(LampsStatus)
-                case inputList(InputSwitches)
+                case inputListClass1(InputSwitchesClass1)
+                case inputListClass2(InputSwitchesClass2)
                 case projectorName(String)
                 case manufacturerName(String)
                 case productName(String)
@@ -93,7 +95,7 @@ extension PJLink.Message: LosslessStringConvertibleThrowing {
                 if pjlinkCommand == .inputTerminalName {
                     // INNM is the only get command that has parameters.
                     // Parse the InputSwitch parameter.
-                    let inputSwitch = try PJLink.InputSwitch(mutableDesc)
+                    let inputSwitch = try PJLink.InputSwitchClass2(mutableDesc)
                     self.body = .request(.get(.inputTerminalName(inputSwitch)))
                 } else {
                     // The rest of the get commands have no parameters, so
@@ -102,11 +104,11 @@ extension PJLink.Message: LosslessStringConvertibleThrowing {
                 }
             } else {
                 // Set Request
-                self.body = .request(.set(try .init(command: pjlinkCommand, parameters: mutableDesc)))
+                self.body = .request(.set(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc)))
             }
         } else {
             // Response
-            self.body = .response(try .init(command: pjlinkCommand, parameters: mutableDesc))
+            self.body = .response(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc))
         }
     }
 
@@ -147,7 +149,7 @@ extension PJLink.MessageBody.Request: CustomStringConvertible {
 
 extension PJLink.MessageBody.Response {
 
-    public init(command: PJLink.Command, parameters: String) throws {
+    public init(pjlinkClass: PJLink.Class, command: PJLink.Command, parameters: String) throws {
         switch parameters {
         case Self.okRawValue:
             self = .ok
@@ -160,7 +162,7 @@ extension PJLink.MessageBody.Response {
         case Self.projectorFailureRawValue:
             self = .projectorFailure
         default:
-            self = .body(try .init(command: command, parameters: parameters))
+            self = .body(try .init(pjlinkClass: pjlinkClass, command: command, parameters: parameters))
         }
     }
 
@@ -184,7 +186,7 @@ extension PJLink.MessageBody.Response {
 
 extension PJLink.MessageBody.Response.Body {
 
-    init(command: PJLink.Command, parameters: String) throws {
+    init(pjlinkClass: PJLink.Class, command: PJLink.Command, parameters: String) throws {
         switch command {
         case .power:
             guard let powerStatus = PJLink.PowerStatus(rawValue: parameters) else {
@@ -192,7 +194,12 @@ extension PJLink.MessageBody.Response.Body {
             }
             self = .power(powerStatus)
         case .inputSwitch:
-            self = .inputSwitch(try .init(parameters))
+            switch pjlinkClass {
+            case .one:
+                self = .inputSwitchClass1(try .init(parameters))
+            case .two:
+                self = .inputSwitchClass2(try .init(parameters))
+            }
         case .avMute:
             self = .avMute(try .init(parameters))
         case .errorStatus:
@@ -200,7 +207,12 @@ extension PJLink.MessageBody.Response.Body {
         case .lamp:
             self = .lamp(try .init(parameters))
         case .inputList:
-            self = .inputList(try .init(parameters))
+            switch pjlinkClass {
+            case .one:
+                self = .inputListClass1(try .init(parameters))
+            case .two:
+                self = .inputListClass2(try .init(parameters))
+            }
         case .projectorName:
             self = .projectorName(parameters)
         case .manufacturerName:
@@ -246,11 +258,13 @@ extension PJLink.MessageBody.Response.Body {
     public var description: String {
         switch self {
         case .power(let powerStatus): powerStatus.rawValue
-        case .inputSwitch(let inputSwitch): inputSwitch.description
+        case .inputSwitchClass1(let inputSwitch): inputSwitch.description
+        case .inputSwitchClass2(let inputSwitch): inputSwitch.description
         case .avMute(let muteState): muteState.description
         case .errorStatus(let errorStatus): errorStatus.description
         case .lamp(let lampsStatus): lampsStatus.description
-        case .inputList(let inputSwitches): inputSwitches.description
+        case .inputListClass1(let inputSwitches): inputSwitches.description
+        case .inputListClass2(let inputSwitches): inputSwitches.description
         case .projectorName(let projectorName): projectorName
         case .manufacturerName(let manufacturerName): manufacturerName
         case .productName(let productName): productName

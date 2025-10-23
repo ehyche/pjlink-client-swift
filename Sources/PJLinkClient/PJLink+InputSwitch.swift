@@ -6,30 +6,39 @@
 //
 
 extension PJLink {
-    public struct InputSwitch: Equatable {
-        var input: Input
-        var channel: InputChannel
+    public struct InputSwitchClass1: Equatable {
+        var input: InputClass1
+        var channel: InputChannelClass1
     }
 
-    public struct InputSwitches: Equatable {
-        var switches: [InputSwitch]
+    public struct InputSwitchesClass1: Equatable {
+        var switches: [InputSwitchClass1]
+    }
+
+    public struct InputSwitchClass2: Equatable {
+        var input: InputClass2
+        var channel: InputChannelClass2
+    }
+
+    public struct InputSwitchesClass2: Equatable {
+        var switches: [InputSwitchClass2]
     }
 }
 
-extension PJLink.InputSwitch: LosslessStringConvertibleThrowing {
+extension PJLink.InputSwitchClass1: LosslessStringConvertibleThrowing {
 
     public init(_ description: String) throws {
         var mutableDesc = description
         let inputRawValue = String(mutableDesc.prefix(1))
-        guard let input = PJLink.Input(rawValue: inputRawValue) else {
-            throw PJLink.Error.invalidInput(inputRawValue)
+        guard let input = PJLink.InputClass1(rawValue: inputRawValue) else {
+            throw PJLink.Error.invalidClass1Input(inputRawValue)
         }
         self.input = input
         mutableDesc.removeFirst(1)
 
         let channelRawValue = String(mutableDesc.prefix(1))
-        guard let channel = PJLink.InputChannel(rawValue: channelRawValue) else {
-            throw PJLink.Error.invalidInputChannel(channelRawValue)
+        guard let channel = PJLink.InputChannelClass1(rawValue: channelRawValue) else {
+            throw PJLink.Error.invalidClass1InputChannel(channelRawValue)
         }
         self.channel = channel
         mutableDesc.removeFirst(1)
@@ -38,13 +47,51 @@ extension PJLink.InputSwitch: LosslessStringConvertibleThrowing {
     public var description: String { input.rawValue + channel.rawValue }
 }
 
-extension PJLink.InputSwitches: LosslessStringConvertibleThrowing {
+extension PJLink.InputSwitchesClass1: LosslessStringConvertibleThrowing {
 
     public init(_ description: String) throws {
         switches = try description
             .split(separator: " ")
             .map(String.init)
-            .map { try PJLink.InputSwitch($0) }
+            .map { try PJLink.InputSwitchClass1($0) }
+    }
+
+    public var description: String {
+        switches
+            .map(\.description)
+            .joined(separator: " ")
+    }
+}
+
+extension PJLink.InputSwitchClass2: LosslessStringConvertibleThrowing {
+
+    public init(_ description: String) throws {
+        var mutableDesc = description
+        let inputRawValue = String(mutableDesc.prefix(1))
+        guard let input = PJLink.InputClass2(rawValue: inputRawValue) else {
+            throw PJLink.Error.invalidClass2Input(inputRawValue)
+        }
+        self.input = input
+        mutableDesc.removeFirst(1)
+
+        let channelRawValue = String(mutableDesc.prefix(1))
+        guard let channel = PJLink.InputChannelClass2(rawValue: channelRawValue) else {
+            throw PJLink.Error.invalidClass2InputChannel(channelRawValue)
+        }
+        self.channel = channel
+        mutableDesc.removeFirst(1)
+    }
+
+    public var description: String { input.rawValue + channel.rawValue }
+}
+
+extension PJLink.InputSwitchesClass2: LosslessStringConvertibleThrowing {
+
+    public init(_ description: String) throws {
+        switches = try description
+            .split(separator: " ")
+            .map(String.init)
+            .map { try PJLink.InputSwitchClass2($0) }
     }
 
     public var description: String {

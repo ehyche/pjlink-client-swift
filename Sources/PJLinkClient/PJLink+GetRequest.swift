@@ -21,7 +21,7 @@ extension PJLink {
         case projectorClass
         case serialNumber
         case softwareVersion
-        case inputTerminalName(InputSwitch)
+        case inputTerminalName(InputSwitchClass2)
         case inputResolution
         case recommendedResolution
         case filterUsageTime
