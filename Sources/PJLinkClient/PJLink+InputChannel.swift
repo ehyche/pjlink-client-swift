@@ -6,7 +6,7 @@
 //
 
 extension PJLink {
-    public enum InputChannelClass1: String {
+    public enum InputChannelClass1: String, CaseIterable {
         case one = "1"
         case two = "2"
         case three = "3"
@@ -18,7 +18,7 @@ extension PJLink {
         case nine = "9"
     }
 
-    public enum InputChannelClass2: String {
+    public enum InputChannelClass2: String, CaseIterable {
         case one = "1"
         case two = "2"
         case three = "3"

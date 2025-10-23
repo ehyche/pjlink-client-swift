@@ -100,3 +100,25 @@ extension PJLink.InputSwitchesClass2: LosslessStringConvertibleThrowing {
             .joined(separator: " ")
     }
 }
+
+extension PJLink.InputSwitchClass1: CaseIterable {
+
+    public static var allCases: [PJLink.InputSwitchClass1] {
+        PJLink.InputClass1.allCases.flatMap { input in
+            PJLink.InputChannelClass1.allCases.map { channel in
+                PJLink.InputSwitchClass1(input: input, channel: channel)
+            }
+        }
+    }
+}
+
+extension PJLink.InputSwitchClass2: CaseIterable {
+
+    public static var allCases: [PJLink.InputSwitchClass2] {
+        PJLink.InputClass2.allCases.flatMap { input in
+            PJLink.InputChannelClass2.allCases.map { channel in
+                PJLink.InputSwitchClass2(input: input, channel: channel)
+            }
+        }
+    }
+}
