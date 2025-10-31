@@ -214,6 +214,155 @@ struct StringParsingTests {
                 )
             )
         )
+        // Add cases for NAME?
+        testCases.append(
+            .init(
+                "%1NAME=\(PJLink.ProjectorName.mock.value)",
+                .init(
+                    class: .one,
+                    command: .projectorName,
+                    body: .response(.body(.projectorName(.mock)))
+                )
+            )
+        )
+        // Add cases for INF2?
+        testCases.append(
+            .init(
+                "%1INF2=\(PJLink.ProductName.mock.value)",
+                .init(
+                    class: .one,
+                    command: .productName,
+                    body: .response(.body(.productName(.mock)))
+                )
+            )
+        )
+        // Add cases for INFO?
+        testCases.append(
+            .init(
+                "%1INFO=\(PJLink.OtherInformation.mock.value)",
+                .init(
+                    class: .one,
+                    command: .otherInformation,
+                    body: .response(.body(.otherInformation(.mock)))
+                )
+            )
+        )
+        // Add cases for CLSS?
+        PJLink.Class.allCases.forEach { projectorClass in
+            testCases.append(
+                .init(
+                    "%1CLSS=\(projectorClass.rawValue)",
+                    .init(
+                        class: .one,
+                        command: .projectorClass,
+                        body: .response(.body(.projectorClass(projectorClass)))
+                    )
+                )
+            )
+        }
+        // Add cases for SNUM?
+        testCases.append(
+            .init(
+                "%2SNUM=\(PJLink.SerialNumber.mock.value)",
+                .init(
+                    class: .two,
+                    command: .serialNumber,
+                    body: .response(.body(.serialNumber(.mock)))
+                )
+            )
+        )
+        // Add cases for SVER?
+        testCases.append(
+            .init(
+                "%2SVER=\(PJLink.SoftwareVersion.mock.value)",
+                .init(
+                    class: .two,
+                    command: .softwareVersion,
+                    body: .response(.body(.softwareVersion(.mock)))
+                )
+            )
+        )
+        // Add cases for INNM?
+        testCases.append(
+            .init(
+                "%2INNM=\(PJLink.InputTerminalName.mock.value)",
+                .init(
+                    class: .two,
+                    command: .inputTerminalName,
+                    body: .response(.body(.inputTerminalName(.mock)))
+                )
+            )
+        )
+        // Add cases for IRES?
+        PJLink.InputResolution.allCases.forEach { inputResolution in
+            testCases.append(
+                .init(
+                    "%2IRES=\(inputResolution.description)",
+                    .init(
+                        class: .two,
+                        command: .inputResolution,
+                        body: .response(.body(.inputResolution(inputResolution)))
+                    )
+                )
+            )
+        }
+        // Add cases for RRES?
+        testCases.append(
+            .init(
+                "%2RRES=\(PJLink.Resolution.mock.description)",
+                .init(
+                    class: .two,
+                    command: .recommendedResolution,
+                    body: .response(.body(.recommendedResolution(.mock)))
+                )
+            )
+        )
+        // Add cases for FILT?
+        testCases.append(
+            .init(
+                "%2FILT=\(PJLink.FilterUsageTime.mock.description)",
+                .init(
+                    class: .two,
+                    command: .filterUsageTime,
+                    body: .response(.body(.filterUsageTime(.mock)))
+                )
+            )
+        )
+        // Add cases for RLMP?
+        testCases.append(
+            .init(
+                "%2RLMP=\(PJLink.ModelNumber.mock.value)",
+                .init(
+                    class: .two,
+                    command: .lampReplacementModelNumber,
+                    body: .response(.body(.lampReplacementModelNumber(.mock)))
+                )
+            )
+        )
+        // Add cases for RFIL?
+        testCases.append(
+            .init(
+                "%2RFIL=\(PJLink.ModelNumber.mock.value)",
+                .init(
+                    class: .two,
+                    command: .filterReplacementModelNumber,
+                    body: .response(.body(.filterReplacementModelNumber(.mock)))
+                )
+            )
+        )
+        // Add cases for FREZ?
+        PJLink.Freeze.allCases.forEach { freeze in
+            testCases.append(
+                .init(
+                    "%2FREZ=\(freeze.rawValue)",
+                    .init(
+                        class: .two,
+                        command: .freeze,
+                        body: .response(.body(.freeze(freeze)))
+                    )
+                )
+            )
+        }
         try run(testCases)
     }
 

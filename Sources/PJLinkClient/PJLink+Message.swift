@@ -44,7 +44,7 @@ extension PJLink {
                 case inputTerminalName(InputTerminalName)
                 case inputResolution(InputResolution)
                 case recommendedResolution(Resolution)
-                case filterUsageTime(Int)
+                case filterUsageTime(FilterUsageTime)
                 case lampReplacementModelNumber(ModelNumber)
                 case filterReplacementModelNumber(ModelNumber)
                 case freeze(Freeze)
@@ -214,10 +214,7 @@ extension PJLink.MessageBody.Response.Body {
         case .recommendedResolution:
             self = .recommendedResolution(try .init(parameters))
         case .filterUsageTime:
-            guard let usageTime = Int(parameters) else {
-                throw PJLink.Error.invalidFilterUsageTime(parameters)
-            }
-            self = .filterUsageTime(usageTime)
+            self = .filterUsageTime(try .init(parameters))
         case .lampReplacementModelNumber:
             self = .lampReplacementModelNumber(.init(value: parameters))
         case .filterReplacementModelNumber:
@@ -252,7 +249,7 @@ extension PJLink.MessageBody.Response.Body {
         case .inputTerminalName(let inputName): inputName.value
         case .inputResolution(let inputResolution): inputResolution.description
         case .recommendedResolution(let resolution): resolution.description
-        case .filterUsageTime(let usageTime): "\(usageTime)"
+        case .filterUsageTime(let usageTime): usageTime.description
         case .lampReplacementModelNumber(let modelNumber): modelNumber.value
         case .filterReplacementModelNumber(let modelNumber): modelNumber.value
         case .freeze(let freeze): freeze.rawValue

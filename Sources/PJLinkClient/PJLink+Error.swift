@@ -31,6 +31,7 @@ extension PJLink {
         case invalidLampUsageTime(String)
         case invalidLampOnOff(String)
         case invalidFilterUsageTime(String)
+        case filterUsageTimeOutOfRange(Int)
         case unexpectedResponseForCommand(Command)
     }
 }

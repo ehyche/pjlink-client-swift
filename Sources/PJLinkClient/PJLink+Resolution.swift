@@ -7,13 +7,13 @@
 
 extension PJLink {
 
-    public enum InputResolution: Equatable {
+    public enum InputResolution: Equatable, Sendable {
         case ok(Resolution)
         case noSignal
         case unknownSignal
     }
 
-    public struct Resolution: Equatable {
+    public struct Resolution: Equatable, Sendable {
         var horizontal: Int
         var vertical: Int
     }
@@ -60,4 +60,18 @@ extension PJLink.Resolution: LosslessStringConvertibleThrowing {
     public var description: String {
         "\(horizontal)x\(vertical)"
     }
+}
+
+extension PJLink.Resolution {
+
+    public static let mock = Self(horizontal: 1920, vertical: 1080)
+}
+
+extension PJLink.InputResolution: CaseIterable {
+
+    public static let allCases: [PJLink.InputResolution] = [
+        .ok(.mock),
+        .noSignal,
+        .unknownSignal,
+    ]
 }
