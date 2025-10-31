@@ -113,6 +113,110 @@ struct StringParsingTests {
         try run(testCases)
     }
 
+    @Test
+    func getResponsesHappyPath() throws {
+        var testCases = [TestCase]()
+        // Add cases for POWR?
+        PJLink.PowerStatus.allCases.forEach { powerStatus in
+            testCases.append(
+                .init(
+                    "%1POWR=\(powerStatus.rawValue)",
+                    .init(
+                        class: .one,
+                        command: .power,
+                        body: .response(.body(.power(powerStatus)))
+                    )
+                )
+            )
+        }
+        // Add cases for INPT? (class 1)
+        PJLink.InputSwitchClass1.allCases.forEach { inputSwitch in
+            testCases.append(
+                .init(
+                    "%1INPT=\(inputSwitch.description)",
+                    .init(
+                        class: .one,
+                        command: .inputSwitch,
+                        body: .response(.body(.inputSwitchClass1(inputSwitch)))
+                    )
+                )
+            )
+        }
+        // Add cases for INPT? (class 2)
+        PJLink.InputSwitchClass2.allCases.forEach { inputSwitch in
+            testCases.append(
+                .init(
+                    "%2INPT=\(inputSwitch.description)",
+                    .init(
+                        class: .two,
+                        command: .inputSwitch,
+                        body: .response(.body(.inputSwitchClass2(inputSwitch)))
+                    )
+                )
+            )
+        }
+        // Add cases for AVMT?
+        PJLink.MuteState.allCases.forEach { muteState in
+            testCases.append(
+                .init(
+                    "%1AVMT=\(muteState.description)",
+                    .init(
+                        class: .one,
+                        command: .avMute,
+                        body: .response(.body(.avMute(muteState)))
+                    )
+                )
+            )
+        }
+        // Add cases for ERST?
+        PJLink.ErrorStatus.allCases.forEach { errorStatus in
+            testCases.append(
+                .init(
+                    "%1ERST=\(errorStatus.description)",
+                    .init(
+                        class: .one,
+                        command: .errorStatus,
+                        body: .response(.body(.errorStatus(errorStatus)))
+                    )
+                )
+            )
+        }
+        // Add cases for LAMP?
+        testCases.append(
+            .init(
+                "%1LAMP=\(PJLink.LampsStatus.mock.description)",
+                .init(
+                    class: .one,
+                    command: .lamp,
+                    body: .response(.body(.lamp(PJLink.LampsStatus.mock)))
+                )
+            )
+        )
+        // Add cases for INST? (Class 1)
+        testCases.append(
+            .init(
+                "%1INST=\(PJLink.InputSwitchesClass1.mock.description)",
+                .init(
+                    class: .one,
+                    command: .inputList,
+                    body: .response(.body(.inputListClass1(.mock)))
+                )
+            )
+        )
+        // Add cases for INST? (Class 2)
+        testCases.append(
+            .init(
+                "%2INST=\(PJLink.InputSwitchesClass2.mock.description)",
+                .init(
+                    class: .two,
+                    command: .inputList,
+                    body: .response(.body(.inputListClass2(.mock)))
+                )
+            )
+        )
+        try run(testCases)
+    }
+
     private func run(_ testCases: [TestCase]) throws {
         for testCase in testCases {
             let actual = try PJLink.Message(testCase.input)

@@ -7,7 +7,7 @@
 
 extension PJLink {
 
-    public enum InputClass1: String, CaseIterable {
+    public enum InputClass1: String, CaseIterable, Sendable {
         case rgb = "1"
         case video = "2"
         case digital = "3"
@@ -15,7 +15,7 @@ extension PJLink {
         case network = "5"
     }
 
-    public enum InputClass2: String, CaseIterable {
+    public enum InputClass2: String, CaseIterable, Sendable {
         case rgb = "1"
         case video = "2"
         case digital = "3"

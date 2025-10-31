@@ -7,7 +7,7 @@
 
 extension PJLink {
 
-    public enum OnOff: String {
+    public enum OnOff: String, CaseIterable, Sendable {
         case off = "0"
         case on = "1"
     }

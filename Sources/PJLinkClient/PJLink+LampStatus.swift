@@ -7,12 +7,12 @@
 
 extension PJLink {
 
-    public struct LampStatus: Equatable {
+    public struct LampStatus: Equatable, Sendable {
         var usageTime: Int
         var state: OnOff
     }
 
-    public struct LampsStatus: Equatable {
+    public struct LampsStatus: Equatable, Sendable {
         var lampStatus: [LampStatus]
     }
 }
@@ -49,4 +49,16 @@ extension PJLink.LampStatus: CustomStringConvertible {
     public var description: String {
         "\(usageTime) \(state.rawValue)"
     }
+}
+
+extension PJLink.LampStatus {
+
+    public static let mock1: Self = .init(usageTime: 12345, state: .off)
+    public static let mock2: Self = .init(usageTime: 6789, state: .on)
+    public static let mock3: Self = .init(usageTime: 42, state: .off)
+}
+
+extension PJLink.LampsStatus {
+
+    public static let mock: Self = .init(lampStatus: [.mock1, .mock2, .mock3])
 }

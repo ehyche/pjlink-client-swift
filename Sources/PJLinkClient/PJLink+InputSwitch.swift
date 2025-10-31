@@ -6,21 +6,21 @@
 //
 
 extension PJLink {
-    public struct InputSwitchClass1: Equatable {
+    public struct InputSwitchClass1: Equatable, Sendable {
         var input: InputClass1
         var channel: InputChannelClass1
     }
 
-    public struct InputSwitchesClass1: Equatable {
+    public struct InputSwitchesClass1: Equatable, Sendable {
         var switches: [InputSwitchClass1]
     }
 
-    public struct InputSwitchClass2: Equatable {
+    public struct InputSwitchClass2: Equatable, Sendable {
         var input: InputClass2
         var channel: InputChannelClass2
     }
 
-    public struct InputSwitchesClass2: Equatable {
+    public struct InputSwitchesClass2: Equatable, Sendable {
         var switches: [InputSwitchClass2]
     }
 }
@@ -121,4 +121,14 @@ extension PJLink.InputSwitchClass2: CaseIterable {
             }
         }
     }
+}
+
+extension PJLink.InputSwitchesClass1 {
+
+    public static let mock = Self(switches: PJLink.InputSwitchClass1.allCases)
+}
+
+extension PJLink.InputSwitchesClass2 {
+
+    public static let mock = Self(switches: PJLink.InputSwitchClass2.allCases)
 }

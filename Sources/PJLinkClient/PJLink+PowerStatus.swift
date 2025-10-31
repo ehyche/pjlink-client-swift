@@ -7,7 +7,7 @@
 
 extension PJLink {
 
-    public enum PowerStatus: String {
+    public enum PowerStatus: String, CaseIterable {
         case standby = "0"
         case lampOn = "1"
         case cooling = "2"

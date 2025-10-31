@@ -16,7 +16,7 @@ extension PJLink {
         var other: ComponentError
     }
 
-    public enum ComponentError: String {
+    public enum ComponentError: String, CaseIterable {
         case none = "0"
         case warning = "1"
         case error = "2"
@@ -46,5 +46,35 @@ extension PJLink.ErrorStatus: LosslessStringConvertibleThrowing {
 
     public var description: String {
         fan.rawValue + lamp.rawValue + temperature.rawValue + coverOpen.rawValue + filter.rawValue + other.rawValue
+    }
+}
+
+extension PJLink.ErrorStatus: CaseIterable {
+
+    public static var allCases: [PJLink.ErrorStatus] {
+        var statuses = [PJLink.ErrorStatus]()
+        PJLink.ComponentError.allCases.forEach { fan in
+            PJLink.ComponentError.allCases.forEach { lamp in
+                PJLink.ComponentError.allCases.forEach { temperature in
+                    PJLink.ComponentError.allCases.forEach { coverOpen in
+                        PJLink.ComponentError.allCases.forEach { filter in
+                            PJLink.ComponentError.allCases.forEach { other in
+                                statuses.append(
+                                    .init(
+                                        fan: fan,
+                                        lamp: lamp,
+                                        temperature: temperature,
+                                        coverOpen: coverOpen,
+                                        filter: filter,
+                                        other: other
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return statuses
     }
 }

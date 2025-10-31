@@ -36,3 +36,13 @@ extension PJLink.MuteState: LosslessStringConvertibleThrowing {
         mute.rawValue + state.rawValue
     }
 }
+
+extension PJLink.MuteState: CaseIterable {
+    public static var allCases: [PJLink.MuteState] {
+        PJLink.Mute.allCases.flatMap { mute in
+            PJLink.OnOff.allCases.map { onOff in
+                PJLink.MuteState(mute: mute, state: onOff)
+            }
+        }
+    }
+}

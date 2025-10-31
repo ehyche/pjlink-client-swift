@@ -34,19 +34,19 @@ extension PJLink {
                 case lamp(LampsStatus)
                 case inputListClass1(InputSwitchesClass1)
                 case inputListClass2(InputSwitchesClass2)
-                case projectorName(String)
-                case manufacturerName(String)
-                case productName(String)
-                case otherInformation(String)
+                case projectorName(ProjectorName)
+                case manufacturerName(ManufacturerName)
+                case productName(ProductName)
+                case otherInformation(OtherInformation)
                 case projectorClass(PJLink.Class)
-                case serialNumber(String)
-                case softwareVersion(String)
-                case inputTerminalName(String)
+                case serialNumber(SerialNumber)
+                case softwareVersion(SoftwareVersion)
+                case inputTerminalName(InputTerminalName)
                 case inputResolution(InputResolution)
                 case recommendedResolution(Resolution)
                 case filterUsageTime(Int)
-                case lampReplacementModelNumber(String)
-                case filterReplacementModelNumber(String)
+                case lampReplacementModelNumber(ModelNumber)
+                case filterReplacementModelNumber(ModelNumber)
                 case freeze(Freeze)
             }
         }
@@ -191,24 +191,24 @@ extension PJLink.MessageBody.Response.Body {
                 self = .inputListClass2(try .init(parameters))
             }
         case .projectorName:
-            self = .projectorName(parameters)
+            self = .projectorName(.init(value: parameters))
         case .manufacturerName:
-            self = .manufacturerName(parameters)
+            self = .manufacturerName(.init(value: parameters))
         case .productName:
-            self = .productName(parameters)
+            self = .productName(.init(value: parameters))
         case .otherInformation:
-            self = .otherInformation(parameters)
+            self = .otherInformation(.init(value: parameters))
         case .projectorClass:
             guard let pjlinkClass = PJLink.Class(rawValue: parameters) else {
                 throw PJLink.Error.invalidClass(parameters)
             }
             self = .projectorClass(pjlinkClass)
         case .serialNumber:
-            self = .serialNumber(parameters)
+            self = .serialNumber(.init(value: parameters))
         case .softwareVersion:
-            self = .softwareVersion(parameters)
+            self = .softwareVersion(.init(value: parameters))
         case .inputTerminalName:
-            self = .inputTerminalName(parameters)
+            self = .inputTerminalName(.init(value: parameters))
         case .inputResolution:
             self = .inputResolution(try .init(parameters))
         case .recommendedResolution:
@@ -219,9 +219,9 @@ extension PJLink.MessageBody.Response.Body {
             }
             self = .filterUsageTime(usageTime)
         case .lampReplacementModelNumber:
-            self = .lampReplacementModelNumber(parameters)
+            self = .lampReplacementModelNumber(.init(value: parameters))
         case .filterReplacementModelNumber:
-            self = .filterReplacementModelNumber(parameters)
+            self = .filterReplacementModelNumber(.init(value: parameters))
         case .freeze:
             guard let freeze = PJLink.Freeze(rawValue: parameters) else {
                 throw PJLink.Error.invalidFreeze(parameters)
@@ -242,19 +242,19 @@ extension PJLink.MessageBody.Response.Body {
         case .lamp(let lampsStatus): lampsStatus.description
         case .inputListClass1(let inputSwitches): inputSwitches.description
         case .inputListClass2(let inputSwitches): inputSwitches.description
-        case .projectorName(let projectorName): projectorName
-        case .manufacturerName(let manufacturerName): manufacturerName
-        case .productName(let productName): productName
-        case .otherInformation(let otherInformation): otherInformation
+        case .projectorName(let projectorName): projectorName.value
+        case .manufacturerName(let manufacturerName): manufacturerName.value
+        case .productName(let productName): productName.value
+        case .otherInformation(let otherInformation): otherInformation.value
         case .projectorClass(let projectorClass): projectorClass.rawValue
-        case .serialNumber(let serialNumber): serialNumber
-        case .softwareVersion(let softwareVersion): softwareVersion
-        case .inputTerminalName(let inputName): inputName
+        case .serialNumber(let serialNumber): serialNumber.value
+        case .softwareVersion(let softwareVersion): softwareVersion.value
+        case .inputTerminalName(let inputName): inputName.value
         case .inputResolution(let inputResolution): inputResolution.description
         case .recommendedResolution(let resolution): resolution.description
         case .filterUsageTime(let usageTime): "\(usageTime)"
-        case .lampReplacementModelNumber(let modelNumber): modelNumber
-        case .filterReplacementModelNumber(let modelNumber): modelNumber
+        case .lampReplacementModelNumber(let modelNumber): modelNumber.value
+        case .filterReplacementModelNumber(let modelNumber): modelNumber.value
         case .freeze(let freeze): freeze.rawValue
         }
     }
