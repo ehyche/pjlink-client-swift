@@ -7,7 +7,12 @@
 
 extension PJLink {
 
-    public struct SoftwareVersion: Equatable {
+    public struct SoftwareVersion: Equatable, Sendable {
         public var value: String
     }
+}
+
+extension PJLink.SoftwareVersion {
+
+    public static let mock = Self(value: "Mock Software Version")
 }

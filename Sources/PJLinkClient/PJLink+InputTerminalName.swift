@@ -7,7 +7,12 @@
 
 extension PJLink {
 
-    public struct InputTerminalName: Equatable {
+    public struct InputTerminalName: Equatable, Sendable {
         public var value: String
     }
+}
+
+extension PJLink.InputTerminalName {
+
+    public static let mock = Self(value: "Mock Input Terminal Name")
 }

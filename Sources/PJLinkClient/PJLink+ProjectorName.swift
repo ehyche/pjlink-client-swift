@@ -7,7 +7,12 @@
 
 extension PJLink {
 
-    public struct ProjectorName: Equatable {
+    public struct ProjectorName: Equatable, Sendable {
         public var value: String
     }
+}
+
+extension PJLink.ProjectorName {
+
+    public static let mock = Self(value: "Mock Projector Name")
 }

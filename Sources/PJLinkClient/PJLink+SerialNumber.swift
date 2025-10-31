@@ -7,7 +7,12 @@
 
 extension PJLink {
 
-    public struct SerialNumber: Equatable {
+    public struct SerialNumber: Equatable, Sendable {
         public var value: String
     }
+}
+
+extension PJLink.SerialNumber {
+
+    public static let mock = Self(value: "Mock Serial Number")
 }

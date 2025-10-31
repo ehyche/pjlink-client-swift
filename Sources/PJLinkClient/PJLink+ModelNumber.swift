@@ -7,7 +7,12 @@
 
 extension PJLink {
 
-    public struct ModelNumber: Equatable {
+    public struct ModelNumber: Equatable, Sendable {
         public var value: String
     }
+}
+
+extension PJLink.ModelNumber {
+
+    public static let mock = Self(value: "Mock Model Number")
 }
