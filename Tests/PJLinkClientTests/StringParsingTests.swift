@@ -24,13 +24,13 @@ struct StringParsingTests {
     func getRequestsHappyPath() throws {
         var testCases: [TestCase] = [
             .init("%1POWR ?", .init(class: .one, command: .power, body: .request(.get(.power)))),
-            .init("%1INPT ?", .init(class: .one, command: .inputSwitch, body: .request(.get(.inputSwitch)))),
-            .init("%2INPT ?", .init(class: .two, command: .inputSwitch, body: .request(.get(.inputSwitch)))),
+            .init("%1INPT ?", .init(class: .one, command: .inputSwitch, body: .request(.get(.inputSwitchClass1)))),
+            .init("%2INPT ?", .init(class: .two, command: .inputSwitch, body: .request(.get(.inputSwitchClass2)))),
             .init("%1AVMT ?", .init(class: .one, command: .avMute, body: .request(.get(.avMute)))),
             .init("%1ERST ?", .init(class: .one, command: .errorStatus, body: .request(.get(.errorStatus)))),
             .init("%1LAMP ?", .init(class: .one, command: .lamp, body: .request(.get(.lamp)))),
-            .init("%1INST ?", .init(class: .one, command: .inputList, body: .request(.get(.inputList)))),
-            .init("%2INST ?", .init(class: .two, command: .inputList, body: .request(.get(.inputList)))),
+            .init("%1INST ?", .init(class: .one, command: .inputList, body: .request(.get(.inputListClass1)))),
+            .init("%2INST ?", .init(class: .two, command: .inputList, body: .request(.get(.inputListClass2)))),
             .init("%1NAME ?", .init(class: .one, command: .projectorName, body: .request(.get(.projectorName)))),
             .init("%1INF1 ?", .init(class: .one, command: .manufacturerName, body: .request(.get(.manufacturerName)))),
             .init("%1INF2 ?", .init(class: .one, command: .productName, body: .request(.get(.productName)))),

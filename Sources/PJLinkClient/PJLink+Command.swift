@@ -34,33 +34,6 @@ extension PJLink {
 
 extension PJLink.Command {
 
-    public var getRequest: PJLink.GetRequest {
-        switch self {
-        case .power: .power
-        case .inputSwitch: .inputSwitch
-        case .avMute: .avMute
-        case .errorStatus: .errorStatus
-        case .lamp: .lamp
-        case .inputList: .inputList
-        case .projectorName: .projectorName
-        case .manufacturerName: .manufacturerName
-        case .productName: .productName
-        case .otherInformation: .otherInformation
-        case .projectorClass: .projectorClass
-        case .serialNumber: .serialNumber
-        case .softwareVersion: .softwareVersion
-        case .inputTerminalName: .inputTerminalName(.init(input: .rgb, channel: .one)) // Dummy value - not used
-        case .inputResolution: .inputResolution
-        case .recommendedResolution: .recommendedResolution
-        case .filterUsageTime: .filterUsageTime
-        case .lampReplacementModelNumber: .lampReplacementModelNumber
-        case .filterReplacementModelNumber: .filterReplacementModelNumber
-        case .speakerVolume: .speakerVolume
-        case .microphoneVolume: .microphoneVolume
-        case .freeze: .freeze
-        }
-    }
-
     public var classes: [PJLink.Class] {
         switch self {
         case .power: [.one]

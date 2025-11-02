@@ -23,7 +23,6 @@ extension PJLink {
         case invalidMute(String)
         case invalidVolume(String)
         case invalidFreeze(String)
-        case invalidSetCommand(Command)
         case invalidResolution(String)
         case invalidPowerStatus(String)
         case invalidErrorStatus(String)
@@ -32,6 +31,8 @@ extension PJLink {
         case invalidLampOnOff(String)
         case invalidFilterUsageTime(String)
         case filterUsageTimeOutOfRange(Int)
+        case unexpectedGetRequest(PJLink.Class, PJLink.Command)
+        case unexpectedSetRequest(PJLink.Class, PJLink.Command)
         case unexpectedResponseForCommand(Command)
     }
 }

@@ -88,16 +88,7 @@ extension PJLink.Message: LosslessStringConvertibleThrowing {
             if mutableDesc.prefix(1) == PJLink.prefixGet {
                 // Get Request
                 mutableDesc.removeFirst(1)
-                if pjlinkCommand == .inputTerminalName {
-                    // INNM is the only get command that has parameters.
-                    // Parse the InputSwitch parameter.
-                    let inputSwitch = try PJLink.InputSwitchClass2(mutableDesc)
-                    self.body = .request(.get(.inputTerminalName(inputSwitch)))
-                } else {
-                    // The rest of the get commands have no parameters, so
-                    // we can just map directly from the command.
-                    self.body = .request(.get(pjlinkCommand.getRequest))
-                }
+                self.body = .request(.get(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc)))
             } else {
                 // Set Request
                 self.body = .request(.set(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc)))

@@ -6,7 +6,7 @@
 //
 
 extension PJLink {
-    public enum Class: String, CaseIterable {
+    public enum Class: String, CaseIterable, Sendable {
         case one = "1"
         case two = "2"
     }
