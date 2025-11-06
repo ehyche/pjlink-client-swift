@@ -14,3 +14,15 @@ extension PJLink {
         case warmUp = "3"
     }
 }
+
+extension PJLink.PowerStatus: LosslessStringConvertibleThrowing {
+
+    public init(_ description: String) throws {
+        guard let powerStatus = PJLink.PowerStatus(rawValue: description) else {
+            throw PJLink.Error.invalidPowerStatus(description)
+        }
+        self = powerStatus
+    }
+
+    public var description: String { rawValue }
+}

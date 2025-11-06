@@ -12,3 +12,15 @@ extension PJLink {
         case increase = "1"
     }
 }
+
+extension PJLink.VolumeAdjustment: LosslessStringConvertibleThrowing {
+
+    public init(_ description: String) throws {
+        guard let volumeAdjustment = PJLink.VolumeAdjustment(rawValue: description) else {
+            throw PJLink.Error.invalidVolume(description)
+        }
+        self = volumeAdjustment
+    }
+
+    public var description: String { rawValue }
+}

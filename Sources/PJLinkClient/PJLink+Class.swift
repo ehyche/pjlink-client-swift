@@ -11,3 +11,15 @@ extension PJLink {
         case two = "2"
     }
 }
+
+extension PJLink.Class: LosslessStringConvertibleThrowing {
+
+    public init(_ description: String) throws {
+        guard let pjlinkClass = PJLink.Class(rawValue: description) else {
+            throw PJLink.Error.invalidClass(description)
+        }
+        self = pjlinkClass
+    }
+
+    public var description: String { rawValue }
+}

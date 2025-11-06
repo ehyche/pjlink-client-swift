@@ -31,8 +31,9 @@ extension PJLink {
         case invalidLampOnOff(String)
         case invalidFilterUsageTime(String)
         case filterUsageTimeOutOfRange(Int)
+        case invalidSetResponseCode(String)
         case unexpectedGetRequest(PJLink.Class, PJLink.Command)
         case unexpectedSetRequest(PJLink.Class, PJLink.Command)
-        case unexpectedResponseForCommand(Command)
+        case unexpectedGetResponse(PJLink.Class, PJLink.Command)
     }
 }

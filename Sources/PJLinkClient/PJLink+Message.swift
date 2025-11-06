@@ -6,13 +6,7 @@
 //
 
 extension PJLink {
-    public struct Message: Equatable {
-        public var `class`: Class
-        public var command: Command
-        public var body: MessageBody
-    }
-
-    public enum MessageBody: Equatable {
+    public enum Message: Equatable {
         case request(Request)
         case response(Response)
 
@@ -22,40 +16,23 @@ extension PJLink {
         }
 
         public enum Response: Equatable {
-            case code(ErrorResponse)
-            case body(Body)
-
-            public enum Body: Equatable {
-                case power(PowerStatus)
-                case inputSwitchClass1(InputSwitchClass1)
-                case inputSwitchClass2(InputSwitchClass2)
-                case avMute(MuteState)
-                case errorStatus(ErrorStatus)
-                case lamp(LampsStatus)
-                case inputListClass1(InputSwitchesClass1)
-                case inputListClass2(InputSwitchesClass2)
-                case projectorName(ProjectorName)
-                case manufacturerName(ManufacturerName)
-                case productName(ProductName)
-                case otherInformation(OtherInformation)
-                case projectorClass(PJLink.Class)
-                case serialNumber(SerialNumber)
-                case softwareVersion(SoftwareVersion)
-                case inputTerminalName(InputTerminalName)
-                case inputResolution(InputResolution)
-                case recommendedResolution(Resolution)
-                case filterUsageTime(FilterUsageTime)
-                case lampReplacementModelNumber(ModelNumber)
-                case filterReplacementModelNumber(ModelNumber)
-                case freeze(Freeze)
-            }
+            case get(GetResponse)
+            case set(SetResponse)
         }
     }
 }
 
-extension PJLink.Message: LosslessStringConvertibleThrowing {
-
-    public init(_ description: String) throws {
+extension PJLink.Message {
+    
+    /// Initializer
+    /// - Parameters:
+    ///   - description: The string to parse
+    ///   - isSetResponseHint: This optional boolean is a hint which indicates this is a response to a Set command.
+    ///   Why is this needed? If the response is an error code, like "ERR3" or "ERR4", then there is no
+    ///   way to distinguish just from the parsed text if this is a response to a set command or a get command.
+    ///   But in practice, we will know what we are expecting. So if we know we should be parsing the
+    ///   response to a Set command, then we can provide this hint.
+    public init(_ description: String, isSetResponseHint: Bool? = nil) throws {
         var mutableDesc = description
         let pjlinkId = String(mutableDesc.prefix(1))
         guard pjlinkId == PJLink.identifier else {
@@ -67,14 +44,12 @@ extension PJLink.Message: LosslessStringConvertibleThrowing {
         guard let pjlinkClass = PJLink.Class(rawValue: classRawValue) else {
             throw PJLink.Error.invalidClass(classRawValue)
         }
-        self.class = pjlinkClass
         mutableDesc.removeFirst(1)
 
         let commandRawValue = mutableDesc.prefix(4).uppercased()
         guard let pjlinkCommand = PJLink.Command(rawValue: commandRawValue) else {
             throw PJLink.Error.invalidCommand(commandRawValue)
         }
-        self.command = pjlinkCommand
         mutableDesc.removeFirst(4)
 
         let separator = String(mutableDesc.prefix(1))
@@ -88,162 +63,109 @@ extension PJLink.Message: LosslessStringConvertibleThrowing {
             if mutableDesc.prefix(1) == PJLink.prefixGet {
                 // Get Request
                 mutableDesc.removeFirst(1)
-                self.body = .request(.get(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc)))
+                self = .request(.get(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc)))
             } else {
                 // Set Request
-                self.body = .request(.set(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc)))
+                self = .request(.set(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc)))
             }
         } else {
-            // Response
-            self.body = .response(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc))
+            // This is a response. Is a hint provided?
+            if let isSetResponseHint {
+                if isSetResponseHint {
+                    self = .response(.set(.init(class: pjlinkClass, command: pjlinkCommand, code: try .init(mutableDesc))))
+                } else {
+                    self = .response(.get(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc)))
+                }
+            } else {
+                // We don't have a hint, so we have to try and infer
+                // GetResponse vs SetResponse from the parameters.
+                // In this case, we assume that a standard response code
+                // (OK, ERR1, ERR2, ERR3, or ERR4) is a Set Response.
+                self = .response(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc))
+            }
         }
     }
 
     public var description: String {
-        PJLink.identifier + self.class.rawValue + command.rawValue + body.separator + body.description
+        PJLink.identifier + self.class.rawValue + command.rawValue + separator + parameterDescription
     }
-}
 
-extension PJLink.MessageBody {
+    public var `class`: PJLink.Class {
+        switch self {
+        case .request(let request): request.class
+        case .response(let response): response.class
+        }
+    }
 
-    var separator: String {
+    public var command: PJLink.Command {
+        switch self {
+        case .request(let request): request.command
+        case .response(let response): response.command
+        }
+    }
+
+    public var separator: String {
         switch self {
         case .request: PJLink.separatorRequest
         case .response: PJLink.separatorResponse
         }
     }
-}
 
-extension PJLink.MessageBody: CustomStringConvertible {
-
-    public var description: String {
+    public var parameterDescription: String {
         switch self {
-        case .request(let request): request.description
-        case .response(let response): response.description
+        case .request(let request):
+            switch request {
+            case .get(let getRequest): getRequest.description
+            case .set(let setRequest): setRequest.description
+            }
+        case .response(let response):
+            switch response {
+            case .get(let getResponse): getResponse.description
+            case .set(let setResponse): setResponse.code.description
+            }
         }
     }
 }
 
-extension PJLink.MessageBody.Request: CustomStringConvertible {
+extension PJLink.Message.Request {
 
-    public var description: String {
+    public var `class`: PJLink.Class {
         switch self {
-        case .get(let getRequest): getRequest.description
-        case .set(let setRequest): setRequest.description
+        case .get(let getRequest): getRequest.class
+        case .set(let setRequest): setRequest.class
+        }
+    }
+
+    public var command: PJLink.Command {
+        switch self {
+        case .get(let getRequest): getRequest.command
+        case .set(let setRequest): setRequest.command
         }
     }
 }
 
-extension PJLink.MessageBody.Response {
+extension PJLink.Message.Response {
 
     public init(pjlinkClass: PJLink.Class, command: PJLink.Command, parameters: String) throws {
-        if let errorResponse = PJLink.ErrorResponse(rawValue: parameters) {
-            self = .code(errorResponse)
+        if let setResponseCode = PJLink.SetResponseCode(rawValue: parameters) {
+            self = .set(.init(class: pjlinkClass, command: command, code: setResponseCode))
         } else {
-            self = .body(try .init(pjlinkClass: pjlinkClass, command: command, parameters: parameters))
+            self = .get(try .init(pjlinkClass: pjlinkClass, command: command, parameters: parameters))
         }
     }
 
-    public var description: String {
+    public var `class`: PJLink.Class {
         switch self {
-        case .code(let errorResponse): errorResponse.rawValue
-        case .body(let body): body.description
+        case .get(let getResponse): getResponse.class
+        case .set(let setResponse): setResponse.class
+        }
+    }
+
+    public var command: PJLink.Command {
+        switch self {
+        case .get(let getResponse): getResponse.command
+        case .set(let setResponse): setResponse.command
         }
     }
 }
 
-extension PJLink.MessageBody.Response.Body {
-
-    init(pjlinkClass: PJLink.Class, command: PJLink.Command, parameters: String) throws {
-        switch command {
-        case .power:
-            guard let powerStatus = PJLink.PowerStatus(rawValue: parameters) else {
-                throw PJLink.Error.invalidPowerStatus(parameters)
-            }
-            self = .power(powerStatus)
-        case .inputSwitch:
-            switch pjlinkClass {
-            case .one:
-                self = .inputSwitchClass1(try .init(parameters))
-            case .two:
-                self = .inputSwitchClass2(try .init(parameters))
-            }
-        case .avMute:
-            self = .avMute(try .init(parameters))
-        case .errorStatus:
-            self = .errorStatus(try .init(parameters))
-        case .lamp:
-            self = .lamp(try .init(parameters))
-        case .inputList:
-            switch pjlinkClass {
-            case .one:
-                self = .inputListClass1(try .init(parameters))
-            case .two:
-                self = .inputListClass2(try .init(parameters))
-            }
-        case .projectorName:
-            self = .projectorName(.init(value: parameters))
-        case .manufacturerName:
-            self = .manufacturerName(.init(value: parameters))
-        case .productName:
-            self = .productName(.init(value: parameters))
-        case .otherInformation:
-            self = .otherInformation(.init(value: parameters))
-        case .projectorClass:
-            guard let pjlinkClass = PJLink.Class(rawValue: parameters) else {
-                throw PJLink.Error.invalidClass(parameters)
-            }
-            self = .projectorClass(pjlinkClass)
-        case .serialNumber:
-            self = .serialNumber(.init(value: parameters))
-        case .softwareVersion:
-            self = .softwareVersion(.init(value: parameters))
-        case .inputTerminalName:
-            self = .inputTerminalName(.init(value: parameters))
-        case .inputResolution:
-            self = .inputResolution(try .init(parameters))
-        case .recommendedResolution:
-            self = .recommendedResolution(try .init(parameters))
-        case .filterUsageTime:
-            self = .filterUsageTime(try .init(parameters))
-        case .lampReplacementModelNumber:
-            self = .lampReplacementModelNumber(.init(value: parameters))
-        case .filterReplacementModelNumber:
-            self = .filterReplacementModelNumber(.init(value: parameters))
-        case .freeze:
-            guard let freeze = PJLink.Freeze(rawValue: parameters) else {
-                throw PJLink.Error.invalidFreeze(parameters)
-            }
-            self = .freeze(freeze)
-        default:
-            throw PJLink.Error.unexpectedResponseForCommand(command)
-        }
-    }
-
-    public var description: String {
-        switch self {
-        case .power(let powerStatus): powerStatus.rawValue
-        case .inputSwitchClass1(let inputSwitch): inputSwitch.description
-        case .inputSwitchClass2(let inputSwitch): inputSwitch.description
-        case .avMute(let muteState): muteState.description
-        case .errorStatus(let errorStatus): errorStatus.description
-        case .lamp(let lampsStatus): lampsStatus.description
-        case .inputListClass1(let inputSwitches): inputSwitches.description
-        case .inputListClass2(let inputSwitches): inputSwitches.description
-        case .projectorName(let projectorName): projectorName.value
-        case .manufacturerName(let manufacturerName): manufacturerName.value
-        case .productName(let productName): productName.value
-        case .otherInformation(let otherInformation): otherInformation.value
-        case .projectorClass(let projectorClass): projectorClass.rawValue
-        case .serialNumber(let serialNumber): serialNumber.value
-        case .softwareVersion(let softwareVersion): softwareVersion.value
-        case .inputTerminalName(let inputName): inputName.value
-        case .inputResolution(let inputResolution): inputResolution.description
-        case .recommendedResolution(let resolution): resolution.description
-        case .filterUsageTime(let usageTime): usageTime.description
-        case .lampReplacementModelNumber(let modelNumber): modelNumber.value
-        case .filterReplacementModelNumber(let modelNumber): modelNumber.value
-        case .freeze(let freeze): freeze.rawValue
-        }
-    }
-}

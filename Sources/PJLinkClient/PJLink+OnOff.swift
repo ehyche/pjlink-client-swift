@@ -12,3 +12,15 @@ extension PJLink {
         case on = "1"
     }
 }
+
+extension PJLink.OnOff: LosslessStringConvertibleThrowing {
+
+    public init(_ description: String) throws {
+        guard let onOff = PJLink.OnOff(rawValue: description) else {
+            throw PJLink.Error.invalidOnOff(description)
+        }
+        self = onOff
+    }
+
+    public var description: String { rawValue }
+}

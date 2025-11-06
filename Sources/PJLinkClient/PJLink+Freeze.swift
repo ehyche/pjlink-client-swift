@@ -12,3 +12,15 @@ extension PJLink {
         case start = "1"
     }
 }
+
+extension PJLink.Freeze: LosslessStringConvertibleThrowing {
+
+    public init(_ description: String) throws {
+        guard let freeze = PJLink.Freeze(rawValue: description) else {
+            throw PJLink.Error.invalidFreeze(description)
+        }
+        self = freeze
+    }
+
+    public var description: String { rawValue }
+}

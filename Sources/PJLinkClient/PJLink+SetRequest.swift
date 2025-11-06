@@ -20,6 +20,27 @@ extension PJLink {
 
 extension PJLink.SetRequest {
 
+    public init(pjlinkClass: PJLink.Class, command: PJLink.Command, parameters: String) throws {
+        switch (pjlinkClass, command) {
+        case (.one, .power):
+            self = .power(try .init(parameters))
+        case (.one, .inputSwitch):
+            self = .inputSwitchClass1(try .init(parameters))
+        case (.two, .inputSwitch):
+            self = .inputSwitchClass2(try .init(parameters))
+        case (.one, .avMute):
+            self = .avMute(try .init(parameters))
+        case (.two, .speakerVolume):
+            self = .speakerVolume(try .init(parameters))
+        case (.two, .microphoneVolume):
+            self = .microphoneVolume(try .init(parameters))
+        case (.two, .freeze):
+            self = .freeze(try .init(parameters))
+        default:
+            throw PJLink.Error.unexpectedSetRequest(pjlinkClass, command)
+        }
+    }
+
     public var `class`: PJLink.Class {
         switch self {
         case .power: .one
@@ -40,39 +61,6 @@ extension PJLink.SetRequest {
         case .speakerVolume: .speakerVolume
         case .microphoneVolume: .microphoneVolume
         case .freeze: .freeze
-        }
-    }
-
-    public init(pjlinkClass: PJLink.Class, command: PJLink.Command, parameters: String) throws {
-        switch (pjlinkClass, command) {
-        case (.one, .power):
-            guard let onOff = PJLink.OnOff(rawValue: parameters) else {
-                throw PJLink.Error.invalidOnOff(parameters)
-            }
-            self = .power(onOff)
-        case (.one, .inputSwitch):
-            self = .inputSwitchClass1(try .init(parameters))
-        case (.two, .inputSwitch):
-            self = .inputSwitchClass2(try .init(parameters))
-        case (.one, .avMute):
-            self = .avMute(try .init(parameters))
-        case (.two, .speakerVolume):
-            guard let volumeAdjustment = PJLink.VolumeAdjustment(rawValue: parameters) else {
-                throw PJLink.Error.invalidVolume(parameters)
-            }
-            self = .speakerVolume(volumeAdjustment)
-        case (.two, .microphoneVolume):
-            guard let volumeAdjustment = PJLink.VolumeAdjustment(rawValue: parameters) else {
-                throw PJLink.Error.invalidVolume(parameters)
-            }
-            self = .microphoneVolume(volumeAdjustment)
-        case (.two, .freeze):
-            guard let freeze = PJLink.Freeze(rawValue: parameters) else {
-                throw PJLink.Error.invalidFreeze(parameters)
-            }
-            self = .freeze(freeze)
-        default:
-            throw PJLink.Error.unexpectedSetRequest(pjlinkClass, command)
         }
     }
 }
