@@ -8,7 +8,7 @@
 import Foundation
 
 extension PJLink {
-    public enum Error: Swift.Error {
+    public enum Error: Swift.Error, Equatable {
         case couldNotCreateUTF8StringFromData(Data)
         case couldNotCreateDataFromUTF8String(String)
         case invalidID(String)
@@ -32,7 +32,7 @@ extension PJLink {
         case invalidFilterUsageTime(String)
         case filterUsageTimeOutOfRange(Int)
         case invalidSetResponseCode(String)
-        case unexpectedGetRequest(PJLink.Class, PJLink.Command)
+        case unexpectedGetRequest(PJLink.Class, PJLink.Command, String)
         case unexpectedSetRequest(PJLink.Class, PJLink.Command)
         case unexpectedGetResponse(PJLink.Class, PJLink.Command)
     }

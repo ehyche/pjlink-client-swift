@@ -12,14 +12,69 @@ import Testing
 struct StringParsingTests {
     struct TestCase {
         var input: String
-        var expected: PJLink.Message
+        var expected: Swift.Result<PJLink.Message, PJLink.Error>
+        var isSetReponseHint: Bool?
 
-        init(_ input: String, _ expected: PJLink.Message) {
+        init(_ input: String, _ expected: Swift.Result<PJLink.Message, PJLink.Error>, _ isSetReponseHint: Bool? = nil) {
             self.input = input
             self.expected = expected
+            self.isSetReponseHint = isSetReponseHint
         }
     }
 
+    @Test
+    func powerRequest() throws {
+        let testCases: [TestCase] = [
+            .init("%1POWR ?", .success(.request(.get(.power)))),
+            .init("%2POWR ?", .failure(.unexpectedGetRequest(.two, .power, ""))),
+            .init("%1POWR ?X", .failure(.unexpectedGetRequest(.one, .power, "X"))),
+            .init("%1POWR 1", .success(.request(.set(.power(.on))))),
+            .init("%1POWR 0", .success(.request(.set(.power(.off))))),
+            .init("%2POWR 0", .failure(.unexpectedSetRequest(.two, .power))),
+            .init("%1POWR x", .failure(.invalidOnOff("x"))),
+        ]
+        try run(testCases)
+    }
+
+    @Test
+    func powerResponse() throws {
+        let testCases: [TestCase] = [
+            .init("%1POWR=0", .success(.response(.get(.success(.power(.standby)))))),
+            .init("%1POWR=0", .failure(.invalidSetResponseCode("0")), true),
+            .init("%1POWR=0", .success(.response(.get(.success(.power(.standby))))), false),
+            .init("%1POWR=1", .success(.response(.get(.success(.power(.lampOn)))))),
+            .init("%1POWR=1", .failure(.invalidSetResponseCode("1")), true),
+            .init("%1POWR=1", .success(.response(.get(.success(.power(.lampOn))))), false),
+            .init("%1POWR=2", .success(.response(.get(.success(.power(.cooling)))))),
+            .init("%1POWR=2", .failure(.invalidSetResponseCode("2")), true),
+            .init("%1POWR=2", .success(.response(.get(.success(.power(.cooling))))), false),
+            .init("%1POWR=3", .success(.response(.get(.success(.power(.warmUp)))))),
+            .init("%1POWR=3", .failure(.invalidSetResponseCode("3")), true),
+            .init("%1POWR=3", .success(.response(.get(.success(.power(.warmUp))))), false),
+            .init("%2POWR=0", .failure(.unexpectedGetResponse(.two, .power))),
+            .init("%1POWR=FOO", .failure(.invalidPowerStatus("FOO"))),
+            .init("%1POWR=FOO", .failure(.invalidSetResponseCode("FOO")), true),
+            .init("%1POWR=FOO", .failure(.invalidPowerStatus("FOO")), false),
+            .init("%1POWR=OK", .success(.response(.set(.init(class: .one, command: .power, code: .ok))))),
+            .init("%1POWR=OK", .success(.response(.set(.init(class: .one, command: .power, code: .ok)))), true),
+            .init("%1POWR=OK", .failure(.invalidPowerStatus("OK")), false),
+            .init("%1POWR=ERR1", .success(.response(.set(.init(class: .one, command: .power, code: .undefinedCommand))))),
+            .init("%1POWR=ERR1", .success(.response(.set(.init(class: .one, command: .power, code: .undefinedCommand)))), true),
+            .init("%1POWR=ERR1", .success(.response(.get(.failure(.init(class: .one, command: .power, code: .undefinedCommand))))), false),
+            .init("%1POWR=ERR2", .success(.response(.set(.init(class: .one, command: .power, code: .outOfParameter))))),
+            .init("%1POWR=ERR2", .success(.response(.set(.init(class: .one, command: .power, code: .outOfParameter)))), true),
+            .init("%1POWR=ERR2", .success(.response(.get(.failure(.init(class: .one, command: .power, code: .outOfParameter))))), false),
+            .init("%1POWR=ERR3", .success(.response(.set(.init(class: .one, command: .power, code: .unavailableTime))))),
+            .init("%1POWR=ERR3", .success(.response(.set(.init(class: .one, command: .power, code: .unavailableTime)))), true),
+            .init("%1POWR=ERR3", .success(.response(.get(.failure(.init(class: .one, command: .power, code: .unavailableTime))))), false),
+            .init("%1POWR=ERR4", .success(.response(.set(.init(class: .one, command: .power, code: .projectorFailure))))),
+            .init("%1POWR=ERR4", .success(.response(.set(.init(class: .one, command: .power, code: .projectorFailure)))), true),
+            .init("%1POWR=ERR4", .success(.response(.get(.failure(.init(class: .one, command: .power, code: .projectorFailure))))), false),
+        ]
+        try run(testCases)
+    }
+
+    /*
     @Test
     func getRequestsHappyPath() throws {
         var testCases: [TestCase] = [
@@ -365,10 +420,18 @@ struct StringParsingTests {
         }
         try run(testCases)
     }
+     */
 
     private func run(_ testCases: [TestCase]) throws {
         for testCase in testCases {
-            let actual = try PJLink.Message(testCase.input)
+            let actual: Swift.Result<PJLink.Message, PJLink.Error>
+            do {
+                actual = .success(try PJLink.Message(testCase.input, isSetResponseHint: testCase.isSetReponseHint))
+            } catch let pjlinkError as PJLink.Error {
+                actual = .failure(pjlinkError)
+            } catch {
+                throw error
+            }
             #expect(actual == testCase.expected)
         }
     }

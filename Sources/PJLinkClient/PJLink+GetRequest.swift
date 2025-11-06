@@ -36,53 +36,53 @@ extension PJLink {
 extension PJLink.GetRequest {
 
     public init(pjlinkClass: PJLink.Class, command: PJLink.Command, parameters: String) throws {
-        switch (pjlinkClass, command) {
-        case (.one, .power):
+        switch (pjlinkClass, command, parameters.isEmpty) {
+        case (.one, .power, true):
             self = .power
-        case (.one, .inputSwitch):
+        case (.one, .inputSwitch, true):
             self = .inputSwitchClass1
-        case (.two, .inputSwitch):
+        case (.two, .inputSwitch, true):
             self = .inputSwitchClass2
-        case (.one, .avMute):
+        case (.one, .avMute, true):
             self = .avMute
-        case (.one, .errorStatus):
+        case (.one, .errorStatus, true):
             self = .errorStatus
-        case (.one, .lamp):
+        case (.one, .lamp, true):
             self = .lamp
-        case (.one, .inputList):
+        case (.one, .inputList, true):
             self = .inputListClass1
-        case (.two, .inputList):
+        case (.two, .inputList, true):
             self = .inputListClass2
-        case (.one, .projectorName):
+        case (.one, .projectorName, true):
             self = .projectorName
-        case (.one, .manufacturerName):
+        case (.one, .manufacturerName, true):
             self = .manufacturerName
-        case (.one, .productName):
+        case (.one, .productName, true):
             self = .productName
-        case (.one, .otherInformation):
+        case (.one, .otherInformation, true):
             self = .otherInformation
-        case (.one, .projectorClass):
+        case (.one, .projectorClass, true):
             self = .projectorClass
-        case (.two, .serialNumber):
+        case (.two, .serialNumber, true):
             self = .serialNumber
-        case (.two, .softwareVersion):
+        case (.two, .softwareVersion, true):
             self = .softwareVersion
-        case (.two, .inputTerminalName):
+        case (.two, .inputTerminalName, false):
             self = .inputTerminalName(try .init(parameters))
-        case (.two, .inputResolution):
+        case (.two, .inputResolution, true):
             self = .inputResolution
-        case (.two, .recommendedResolution):
+        case (.two, .recommendedResolution, true):
             self = .recommendedResolution
-        case (.two, .filterUsageTime):
+        case (.two, .filterUsageTime, true):
             self = .filterUsageTime
-        case (.two, .lampReplacementModelNumber):
+        case (.two, .lampReplacementModelNumber, true):
             self = .lampReplacementModelNumber
-        case (.two, .filterReplacementModelNumber):
+        case (.two, .filterReplacementModelNumber, true):
             self = .filterReplacementModelNumber
-        case (.two, .freeze):
+        case (.two, .freeze, true):
             self = .freeze
         default:
-            throw PJLink.Error.unexpectedGetRequest(pjlinkClass, command)
+            throw PJLink.Error.unexpectedGetRequest(pjlinkClass, command, parameters)
         }
     }
 
