@@ -7,7 +7,7 @@
 
 extension PJLink {
 
-    public struct ErrorStatus: Equatable {
+    public struct ErrorStatus: Equatable, Sendable {
         var fan: ComponentError
         var lamp: ComponentError
         var temperature: ComponentError
@@ -16,7 +16,7 @@ extension PJLink {
         var other: ComponentError
     }
 
-    public enum ComponentError: String, CaseIterable {
+    public enum ComponentError: String, CaseIterable, Equatable, Sendable {
         case none = "0"
         case warning = "1"
         case error = "2"

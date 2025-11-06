@@ -28,7 +28,7 @@ extension PJLink.Message {
     /// - Parameters:
     ///   - description: The string to parse
     ///   - isSetResponseHint: This optional boolean is a hint which indicates this is a response to a Set command.
-    ///   Why is this needed? If the response is an error code, like "ERR3" or "ERR4", then there is no
+    ///   Why is this needed? If the response is either "ERR1",  "ERR3" or "ERR4", then there is no
     ///   way to distinguish just from the parsed text if this is a response to a set command or a get command.
     ///   But in practice, we will know what we are expecting. So if we know we should be parsing the
     ///   response to a Set command, then we can provide this hint.
@@ -101,6 +101,13 @@ extension PJLink.Message {
         switch self {
         case .request(let request): request.command
         case .response(let response): response.command
+        }
+    }
+
+    public var isRequest: Bool {
+        switch self {
+        case .request: true
+        case .response: false
         }
     }
 

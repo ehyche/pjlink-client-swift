@@ -7,7 +7,12 @@
 
 extension PJLink {
 
-    public enum GetResponse: Equatable {
+    public enum GetResponse: Equatable, Sendable {
+        case success(GetResponseSuccess)
+        case failure(GetResponseFailure)
+    }
+
+    public enum GetResponseSuccess: Equatable, Sendable {
         case power(PowerStatus)
         case inputSwitchClass1(InputSwitchClass1)
         case inputSwitchClass2(InputSwitchClass2)
@@ -31,9 +36,57 @@ extension PJLink {
         case filterReplacementModelNumber(ModelNumber)
         case freeze(Freeze)
     }
+
+    public struct GetResponseFailure: Equatable, Sendable {
+        public var `class`: PJLink.Class
+        public var command: PJLink.Command
+        public var code: GetResponseCode
+    }
+
+    public enum GetResponseCode: String, CaseIterable, Equatable, Sendable {
+        case undefinedCommand = "ERR1"
+        case outOfParameter = "ERR2"
+        case unavailableTime = "ERR3"
+        case projectorFailure = "ERR4"
+    }
 }
 
 extension PJLink.GetResponse {
+
+    public init(pjlinkClass: PJLink.Class, command: PJLink.Command, parameters: String) throws {
+        if let getResponseCode = PJLink.GetResponseCode(rawValue: parameters) {
+            self = .failure(.init(class: pjlinkClass, command: command, code: getResponseCode))
+        } else {
+            self = .success(try .init(pjlinkClass: pjlinkClass, command: command, parameters: parameters))
+        }
+    }
+
+    public var `class`: PJLink.Class {
+        switch self {
+        case .success(let getResponseSuccess): getResponseSuccess.class
+        case .failure(let getResponseFailure): getResponseFailure.class
+        }
+    }
+
+    public var command: PJLink.Command {
+        switch self {
+        case .success(let getResponseSuccess): getResponseSuccess.command
+        case .failure(let getResponseFailure): getResponseFailure.command
+        }
+    }
+}
+
+extension PJLink.GetResponse: CustomStringConvertible {
+
+    public var description: String {
+        switch self {
+        case .success(let getResponseSuccess): getResponseSuccess.description
+        case .failure(let getResponseFailure): getResponseFailure.description
+        }
+    }
+}
+
+extension PJLink.GetResponseSuccess {
 
     init(pjlinkClass: PJLink.Class, command: PJLink.Command, parameters: String) throws {
         switch (pjlinkClass, command) {
@@ -164,4 +217,9 @@ extension PJLink.GetResponse {
         case .freeze: .freeze
         }
     }
+}
+
+extension PJLink.GetResponseFailure: CustomStringConvertible {
+
+    public var description: String { code.rawValue }
 }

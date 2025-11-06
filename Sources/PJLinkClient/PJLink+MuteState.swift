@@ -7,7 +7,7 @@
 
 extension PJLink {
 
-    public struct MuteState: Equatable {
+    public struct MuteState: Equatable, Sendable {
         var mute: Mute
         var state: OnOff
     }
