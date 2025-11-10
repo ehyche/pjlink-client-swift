@@ -74,6 +74,250 @@ struct StringParsingTests {
         try run(testCases)
     }
 
+    @Test
+    func inputSwitchRequest() throws {
+        var testCases: [TestCase] = [
+            .init("%1INPT ?", .success(.request(.get(.inputSwitchClass1)))),
+            .init("%2INPT ?", .success(.request(.get(.inputSwitchClass2)))),
+            .init("%3INPT ?", .failure(.invalidClass("3"))),
+            .init("%1INPT ?EXTRA", .failure(.unexpectedGetRequest(.one, .inputSwitch, "EXTRA"))),
+            .init("%1INPT 61", .failure(.invalidClass1Input("6"))),
+            .init("%1INPT 50", .failure(.invalidClass1InputChannel("0"))),
+            .init("%2INPT 71", .failure(.invalidClass2Input("7"))),
+            .init("%2INPT 60", .failure(.invalidClass2InputChannel("0"))),
+        ]
+        PJLink.InputSwitchClass1.allCases.forEach { inputSwitch in
+            testCases.append(
+                .init(
+                    "%1INPT \(inputSwitch.input.rawValue)\(inputSwitch.channel.rawValue)",
+                    .success(.request(.set(.inputSwitchClass1(inputSwitch)))),
+                    false
+                )
+            )
+        }
+        PJLink.InputSwitchClass2.allCases.forEach { inputSwitch in
+            testCases.append(
+                .init(
+                    "%2INPT \(inputSwitch.input.rawValue)\(inputSwitch.channel.rawValue)",
+                    .success(.request(.set(.inputSwitchClass2(inputSwitch)))),
+                    false
+                )
+            )
+        }
+        try run(testCases)
+    }
+
+    @Test
+    func inputSwitchResponse() throws {
+        var testCases: [TestCase] = [
+            .init(
+                "%1INPT=OK",
+                .success(.response(.set(.init(class: .one, command: .inputSwitch, code: .ok))))
+            ),
+            .init(
+                "%1INPT=OK",
+                .success(.response(.set(.init(class: .one, command: .inputSwitch, code: .ok)))),
+                true
+            ),
+            .init(
+                "%1INPT=OK",
+                .failure(.invalidClass1Input("O")),
+                false
+            ),
+            .init(
+                "%1INPT=ERR1",
+                .success(.response(.set(.init(class: .one, command: .inputSwitch, code: .undefinedCommand))))
+            ),
+            .init(
+                "%1INPT=ERR1",
+                .success(.response(.set(.init(class: .one, command: .inputSwitch, code: .undefinedCommand)))),
+                true
+            ),
+            .init(
+                "%1INPT=ERR1",
+                .success(.response(.get(.failure(.init(class: .one, command: .inputSwitch, code: .undefinedCommand))))),
+                false
+            ),
+            .init(
+                "%1INPT=ERR2",
+                .success(.response(.set(.init(class: .one, command: .inputSwitch, code: .outOfParameter))))
+            ),
+            .init(
+                "%1INPT=ERR2",
+                .success(.response(.set(.init(class: .one, command: .inputSwitch, code: .outOfParameter)))),
+                true
+            ),
+            .init(
+                "%1INPT=ERR2",
+                .success(.response(.get(.failure(.init(class: .one, command: .inputSwitch, code: .outOfParameter))))),
+                false
+            ),
+            .init(
+                "%1INPT=ERR3",
+                .success(.response(.set(.init(class: .one, command: .inputSwitch, code: .unavailableTime))))
+            ),
+            .init(
+                "%1INPT=ERR3",
+                .success(.response(.set(.init(class: .one, command: .inputSwitch, code: .unavailableTime)))),
+                true
+            ),
+            .init(
+                "%1INPT=ERR3",
+                .success(.response(.get(.failure(.init(class: .one, command: .inputSwitch, code: .unavailableTime))))),
+                false
+            ),
+            .init(
+                "%1INPT=ERR4",
+                .success(.response(.set(.init(class: .one, command: .inputSwitch, code: .projectorFailure))))
+            ),
+            .init(
+                "%1INPT=ERR4",
+                .success(.response(.set(.init(class: .one, command: .inputSwitch, code: .projectorFailure)))),
+                true
+            ),
+            .init(
+                "%1INPT=ERR4",
+                .success(.response(.get(.failure(.init(class: .one, command: .inputSwitch, code: .projectorFailure))))),
+                false
+            ),
+            .init(
+                "%2INPT=OK",
+                .success(.response(.set(.init(class: .two, command: .inputSwitch, code: .ok))))
+            ),
+            .init(
+                "%2INPT=OK",
+                .success(.response(.set(.init(class: .two, command: .inputSwitch, code: .ok)))),
+                true
+            ),
+            .init(
+                "%2INPT=OK",
+                .failure(.invalidClass2Input("O")),
+                false
+            ),
+            .init(
+                "%2INPT=ERR1",
+                .success(.response(.set(.init(class: .two, command: .inputSwitch, code: .undefinedCommand))))
+            ),
+            .init(
+                "%2INPT=ERR1",
+                .success(.response(.set(.init(class: .two, command: .inputSwitch, code: .undefinedCommand)))),
+                true
+            ),
+            .init(
+                "%2INPT=ERR1",
+                .success(.response(.get(.failure(.init(class: .two, command: .inputSwitch, code: .undefinedCommand))))),
+                false
+            ),
+            .init(
+                "%2INPT=ERR2",
+                .success(.response(.set(.init(class: .two, command: .inputSwitch, code: .outOfParameter))))
+            ),
+            .init(
+                "%2INPT=ERR2",
+                .success(.response(.set(.init(class: .two, command: .inputSwitch, code: .outOfParameter)))),
+                true
+            ),
+            .init(
+                "%2INPT=ERR2",
+                .success(.response(.get(.failure(.init(class: .two, command: .inputSwitch, code: .outOfParameter))))),
+                false
+            ),
+            .init(
+                "%2INPT=ERR3",
+                .success(.response(.set(.init(class: .two, command: .inputSwitch, code: .unavailableTime))))
+            ),
+            .init(
+                "%2INPT=ERR3",
+                .success(.response(.set(.init(class: .two, command: .inputSwitch, code: .unavailableTime)))),
+                true
+            ),
+            .init(
+                "%2INPT=ERR3",
+                .success(.response(.get(.failure(.init(class: .two, command: .inputSwitch, code: .unavailableTime))))),
+                false
+            ),
+            .init(
+                "%2INPT=ERR4",
+                .success(.response(.set(.init(class: .two, command: .inputSwitch, code: .projectorFailure))))
+            ),
+            .init(
+                "%2INPT=ERR4",
+                .success(.response(.set(.init(class: .two, command: .inputSwitch, code: .projectorFailure)))),
+                true
+            ),
+            .init(
+                "%2INPT=ERR4",
+                .success(.response(.get(.failure(.init(class: .two, command: .inputSwitch, code: .projectorFailure))))),
+                false
+            ),
+            .init(
+                "%2INPT=71",
+                .failure(.invalidClass2Input("7"))
+            ),
+            .init(
+                "%2INPT=60",
+                .failure(.invalidClass2InputChannel("0"))
+            ),
+        ]
+        PJLink.InputSwitchClass1.allCases.forEach { inputSwitch in
+            let inputStr = "\(inputSwitch.input.rawValue)\(inputSwitch.channel.rawValue)"
+            testCases.append(
+                .init(
+                    "%1INPT=\(inputStr)",
+                    .success(.response(.get(.success(.inputSwitchClass1(inputSwitch)))))
+                )
+            )
+            testCases.append(
+                .init(
+                    "%1INPT=\(inputStr)",
+                    .failure(.invalidSetResponseCode(inputStr)),
+                    true
+                )
+            )
+            testCases.append(
+                .init(
+                    "%1INPT=\(inputStr)",
+                    .success(.response(.get(.success(.inputSwitchClass1(inputSwitch))))),
+                    false
+                )
+            )
+        }
+        PJLink.InputSwitchClass2.allCases.forEach { inputSwitch in
+            let inputStr = "\(inputSwitch.input.rawValue)\(inputSwitch.channel.rawValue)"
+            testCases.append(
+                .init(
+                    "%2INPT=\(inputStr)",
+                    .success(.response(.get(.success(.inputSwitchClass2(inputSwitch)))))
+                )
+            )
+            testCases.append(
+                .init(
+                    "%2INPT=\(inputStr)",
+                    .failure(.invalidSetResponseCode(inputStr)),
+                    true
+                )
+            )
+            testCases.append(
+                .init(
+                    "%2INPT=\(inputStr)",
+                    .success(.response(.get(.success(.inputSwitchClass2(inputSwitch))))),
+                    false
+                )
+            )
+        }
+        try run(testCases)
+    }
+
+    @Test
+    func muteRequest() throws {
+
+    }
+
+    @Test
+    func muteResponse() throws {
+
+    }
+
     /*
     @Test
     func getRequestsHappyPath() throws {
