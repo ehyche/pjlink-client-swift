@@ -29,6 +29,9 @@ extension PJLink.LampsStatus: LosslessStringConvertibleThrowing {
             guard let usageTime = Int(components[index]) else {
                 throw PJLink.Error.invalidLampUsageTime(components[index])
             }
+            guard usageTime >= Self.lampUsageMin, usageTime <= Self.lampUsageMax else {
+                throw PJLink.Error.lampUsageTimeOutOfRange(usageTime)
+            }
             guard let onOff = PJLink.OnOff(rawValue: components[index + 1]) else {
                 throw PJLink.Error.invalidLampOnOff(components[index + 1])
             }
@@ -42,6 +45,9 @@ extension PJLink.LampsStatus: LosslessStringConvertibleThrowing {
             .map(\.description)
             .joined(separator: " ")
     }
+
+    private static let lampUsageMin = 0
+    private static let lampUsageMax = 99_999
 }
 
 extension PJLink.LampStatus: CustomStringConvertible {
