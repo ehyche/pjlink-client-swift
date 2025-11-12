@@ -476,6 +476,274 @@ struct StringParsingTests {
         try run(testCases)
     }
 
+    @Test
+    func lampRequest() throws {
+        let testCases: [TestCase] = [
+            .init("%1LAMP ?", .success(.request(.get(.lamp)))),
+            .init("%2LAMP ?", .failure(.unexpectedGetRequest(.two, .lamp, ""))),
+            .init("%3LAMP ?", .failure(.invalidClass("3"))),
+            .init("%1LAMP ?XTRA",  .failure(.unexpectedGetRequest(.one, .lamp, "XTRA"))),
+        ]
+        try run(testCases)
+    }
+
+    @Test
+    func lampResponse() throws {
+        let testCases: [TestCase] = [
+            .init("%1LAMP=0 0 0", .failure(.invalidLampStatusCount(3))),
+            .init("%1LAMP=A 0", .failure(.invalidLampUsageTime("A"))),
+            .init("%1LAMP=-1 0", .failure(.lampUsageTimeOutOfRange(-1))),
+            .init("%1LAMP=100000 0", .failure(.lampUsageTimeOutOfRange(100000))),
+            .init("%1LAMP=0 2", .failure(.invalidLampOnOff("2"))),
+            .init("%1LAMP=1 0", .success(.response(.get(.success(.lamp(.init(lampStatus: [.init(usageTime: 1, state: .off)]))))))),
+            .init("%1LAMP=1 1", .success(.response(.get(.success(.lamp(.init(lampStatus: [.init(usageTime: 1, state: .on)]))))))),
+            .init("%2LAMP=1 0", .failure(.unexpectedGetResponse(.two, .lamp))),
+            .init(
+                "%1LAMP=ERR1",
+                .success(.response(.set(.init(class: .one, command: .lamp, code: .undefinedCommand))))
+            ),
+            .init(
+                "%1LAMP=ERR1",
+                .success(.response(.set(.init(class: .one, command: .lamp, code: .undefinedCommand)))),
+                true
+            ),
+            .init(
+                "%1LAMP=ERR1",
+                .success(.response(.get(.failure(.init(class: .one, command: .lamp, code: .undefinedCommand))))),
+                false
+            ),
+            .init(
+                "%1LAMP=ERR2",
+                .success(.response(.set(.init(class: .one, command: .lamp, code: .outOfParameter))))
+            ),
+            .init(
+                "%1LAMP=ERR2",
+                .success(.response(.set(.init(class: .one, command: .lamp, code: .outOfParameter)))),
+                true
+            ),
+            .init(
+                "%1LAMP=ERR2",
+                .success(.response(.get(.failure(.init(class: .one, command: .lamp, code: .outOfParameter))))),
+                false
+            ),
+            .init(
+                "%1LAMP=ERR3",
+                .success(.response(.set(.init(class: .one, command: .lamp, code: .unavailableTime))))
+            ),
+            .init(
+                "%1LAMP=ERR3",
+                .success(.response(.set(.init(class: .one, command: .lamp, code: .unavailableTime)))),
+                true
+            ),
+            .init(
+                "%1LAMP=ERR3",
+                .success(.response(.get(.failure(.init(class: .one, command: .lamp, code: .unavailableTime))))),
+                false
+            ),
+            .init(
+                "%1LAMP=ERR4",
+                .success(.response(.set(.init(class: .one, command: .lamp, code: .projectorFailure))))
+            ),
+            .init(
+                "%1LAMP=ERR4",
+                .success(.response(.set(.init(class: .one, command: .lamp, code: .projectorFailure)))),
+                true
+            ),
+            .init(
+                "%1LAMP=ERR4",
+                .success(.response(.get(.failure(.init(class: .one, command: .lamp, code: .projectorFailure))))),
+                false
+            ),
+        ]
+        try run(testCases)
+    }
+
+    @Test
+    func inputListRequest() throws {
+        let testCases: [TestCase] = [
+            .init("%1INST ?", .success(.request(.get(.inputListClass1)))),
+            .init("%2INST ?", .success(.request(.get(.inputListClass2)))),
+            .init("%3INST ?", .failure(.invalidClass("3"))),
+            .init("%1INST ?XTRA",  .failure(.unexpectedGetRequest(.one, .inputList, "XTRA"))),
+            .init("%2INST ?XTRA",  .failure(.unexpectedGetRequest(.two, .inputList, "XTRA"))),
+        ]
+        try run(testCases)
+    }
+
+    @Test
+    func inputListResponse() throws {
+        var testCases: [TestCase] = [
+            .init(
+                "%3INST=11",
+                .failure(.invalidClass("3"))
+            ),
+            .init(
+                "%1INST=ERR1",
+                .success(.response(.set(.init(class: .one, command: .inputList, code: .undefinedCommand))))
+            ),
+            .init(
+                "%1INST=ERR1",
+                .success(.response(.set(.init(class: .one, command: .inputList, code: .undefinedCommand)))),
+                true
+            ),
+            .init(
+                "%1INST=ERR1",
+                .success(.response(.get(.failure(.init(class: .one, command: .inputList, code: .undefinedCommand))))),
+                false
+            ),
+            .init(
+                "%1INST=ERR2",
+                .success(.response(.set(.init(class: .one, command: .inputList, code: .outOfParameter))))
+            ),
+            .init(
+                "%1INST=ERR2",
+                .success(.response(.set(.init(class: .one, command: .inputList, code: .outOfParameter)))),
+                true
+            ),
+            .init(
+                "%1INST=ERR2",
+                .success(.response(.get(.failure(.init(class: .one, command: .inputList, code: .outOfParameter))))),
+                false
+            ),
+            .init(
+                "%1INST=ERR3",
+                .success(.response(.set(.init(class: .one, command: .inputList, code: .unavailableTime))))
+            ),
+            .init(
+                "%1INST=ERR3",
+                .success(.response(.set(.init(class: .one, command: .inputList, code: .unavailableTime)))),
+                true
+            ),
+            .init(
+                "%1INST=ERR3",
+                .success(.response(.get(.failure(.init(class: .one, command: .inputList, code: .unavailableTime))))),
+                false
+            ),
+            .init(
+                "%1INST=ERR4",
+                .success(.response(.set(.init(class: .one, command: .inputList, code: .projectorFailure))))
+            ),
+            .init(
+                "%1INST=ERR4",
+                .success(.response(.set(.init(class: .one, command: .inputList, code: .projectorFailure)))),
+                true
+            ),
+            .init(
+                "%1INST=ERR4",
+                .success(.response(.get(.failure(.init(class: .one, command: .inputList, code: .projectorFailure))))),
+                false
+            ),
+        ]
+        PJLink.InputSwitchClass1.allCases.forEach { inputSwitch in
+            testCases.append(
+                .init(
+                    "%1INST=\(inputSwitch.description)",
+                    .success(.response(.get(.success(.inputListClass1(.init(switches: [inputSwitch]))))))
+                )
+            )
+        }
+        PJLink.InputSwitchClass2.allCases.forEach { inputSwitch in
+            testCases.append(
+                .init(
+                    "%2INST=\(inputSwitch.description)",
+                    .success(.response(.get(.success(.inputListClass2(.init(switches: [inputSwitch]))))))
+                )
+            )
+        }
+        testCases.append(
+            .init(
+                "%1INST=\(PJLink.InputSwitchesClass1(switches: PJLink.InputSwitchClass1.allCases).description)",
+                .success(.response(.get(.success(.inputListClass1(.init(switches: PJLink.InputSwitchClass1.allCases))))))
+            )
+        )
+        testCases.append(
+            .init(
+                "%2INST=\(PJLink.InputSwitchesClass2(switches: PJLink.InputSwitchClass2.allCases).description)",
+                .success(.response(.get(.success(.inputListClass2(.init(switches: PJLink.InputSwitchClass2.allCases))))))
+            )
+        )
+        try run(testCases)
+    }
+
+    @Test
+    func projectorNameRequest() throws {
+        let testCases: [TestCase] = [
+            .init("%1NAME ?", .success(.request(.get(.projectorName)))),
+            .init("%2NAME ?", .failure(.unexpectedGetRequest(.two, .projectorName, ""))),
+            .init("%3NAME ?", .failure(.invalidClass("3"))),
+            .init("%1NAME ?XTRA",  .failure(.unexpectedGetRequest(.one, .projectorName, "XTRA"))),
+            .init("%2NAME ?XTRA",  .failure(.unexpectedGetRequest(.two, .projectorName, "XTRA"))),
+        ]
+        try run(testCases)
+    }
+
+    @Test
+    func projectorNameResponse() throws {
+        var testCases: [TestCase] = [
+            .init(
+                "%3NAME=foo",
+                .failure(.invalidClass("3"))
+            ),
+            .init(
+                "%1NAME=ERR1",
+                .success(.response(.set(.init(class: .one, command: .projectorName, code: .undefinedCommand))))
+            ),
+            .init(
+                "%1NAME=ERR1",
+                .success(.response(.set(.init(class: .one, command: .projectorName, code: .undefinedCommand)))),
+                true
+            ),
+            .init(
+                "%1NAME=ERR1",
+                .success(.response(.get(.failure(.init(class: .one, command: .projectorName, code: .undefinedCommand))))),
+                false
+            ),
+            .init(
+                "%1NAME=ERR2",
+                .success(.response(.set(.init(class: .one, command: .projectorName, code: .outOfParameter))))
+            ),
+            .init(
+                "%1NAME=ERR2",
+                .success(.response(.set(.init(class: .one, command: .projectorName, code: .outOfParameter)))),
+                true
+            ),
+            .init(
+                "%1NAME=ERR2",
+                .success(.response(.get(.failure(.init(class: .one, command: .projectorName, code: .outOfParameter))))),
+                false
+            ),
+            .init(
+                "%1NAME=ERR3",
+                .success(.response(.set(.init(class: .one, command: .projectorName, code: .unavailableTime))))
+            ),
+            .init(
+                "%1NAME=ERR3",
+                .success(.response(.set(.init(class: .one, command: .projectorName, code: .unavailableTime)))),
+                true
+            ),
+            .init(
+                "%1NAME=ERR3",
+                .success(.response(.get(.failure(.init(class: .one, command: .projectorName, code: .unavailableTime))))),
+                false
+            ),
+            .init(
+                "%1NAME=ERR4",
+                .success(.response(.set(.init(class: .one, command: .projectorName, code: .projectorFailure))))
+            ),
+            .init(
+                "%1NAME=ERR4",
+                .success(.response(.set(.init(class: .one, command: .projectorName, code: .projectorFailure)))),
+                true
+            ),
+            .init(
+                "%1NAME=ERR4",
+                .success(.response(.get(.failure(.init(class: .one, command: .projectorName, code: .projectorFailure))))),
+                false
+            ),
+        ]
+        try run(testCases)
+    }
+
     /*
     @Test
     func getRequestsHappyPath() throws {
