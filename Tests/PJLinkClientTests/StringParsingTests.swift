@@ -310,12 +310,170 @@ struct StringParsingTests {
 
     @Test
     func muteRequest() throws {
-
+        var testCases: [TestCase] = [
+            .init("%1AVMT ?", .success(.request(.get(.avMute)))),
+            .init("%2AVMT ?", .failure(.unexpectedGetRequest(.two, .avMute, ""))),
+            .init("%3AVMT ?", .failure(.invalidClass("3"))),
+            .init("%1AVMT ?XTRA",  .failure(.unexpectedGetRequest(.one, .avMute, "XTRA"))),
+            .init("%1AVMT 41", .failure(.invalidMute("4"))),
+            .init("%1AVMT 32", .failure(.invalidOnOff("2"))),
+        ]
+        PJLink.MuteState.allCases.forEach { muteState in
+            testCases.append(
+                .init(
+                    "%1AVMT \(muteState.description)",
+                    .success(.request(.set(.avMute(muteState))))
+                )
+            )
+        }
+        try run(testCases)
     }
 
     @Test
     func muteResponse() throws {
+        var testCases: [TestCase] = [
+            .init(
+                "%1AVMT=OK",
+                .success(.response(.set(.init(class: .one, command: .avMute, code: .ok))))
+            ),
+            .init(
+                "%1AVMT=OK",
+                .success(.response(.set(.init(class: .one, command: .avMute, code: .ok)))),
+                true
+            ),
+            .init(
+                "%1AVMT=OK",
+                .failure(.invalidMute("O")),
+                false
+            ),
+            .init(
+                "%1AVMT=ERR1",
+                .success(.response(.set(.init(class: .one, command: .avMute, code: .undefinedCommand))))
+            ),
+            .init(
+                "%1AVMT=ERR1",
+                .success(.response(.set(.init(class: .one, command: .avMute, code: .undefinedCommand)))),
+                true
+            ),
+            .init(
+                "%1AVMT=ERR1",
+                .success(.response(.get(.failure(.init(class: .one, command: .avMute, code: .undefinedCommand))))),
+                false
+            ),
+            .init(
+                "%1AVMT=ERR2",
+                .success(.response(.set(.init(class: .one, command: .avMute, code: .outOfParameter))))
+            ),
+            .init(
+                "%1AVMT=ERR2",
+                .success(.response(.set(.init(class: .one, command: .avMute, code: .outOfParameter)))),
+                true
+            ),
+            .init(
+                "%1AVMT=ERR2",
+                .success(.response(.get(.failure(.init(class: .one, command: .avMute, code: .outOfParameter))))),
+                false
+            ),
+            .init(
+                "%1AVMT=ERR3",
+                .success(.response(.set(.init(class: .one, command: .avMute, code: .unavailableTime))))
+            ),
+            .init(
+                "%1AVMT=ERR3",
+                .success(.response(.set(.init(class: .one, command: .avMute, code: .unavailableTime)))),
+                true
+            ),
+            .init(
+                "%1AVMT=ERR3",
+                .success(.response(.get(.failure(.init(class: .one, command: .avMute, code: .unavailableTime))))),
+                false
+            ),
+            .init(
+                "%1AVMT=ERR4",
+                .success(.response(.set(.init(class: .one, command: .avMute, code: .projectorFailure))))
+            ),
+            .init(
+                "%1AVMT=ERR4",
+                .success(.response(.set(.init(class: .one, command: .avMute, code: .projectorFailure)))),
+                true
+            ),
+            .init(
+                "%1AVMT=ERR4",
+                .success(.response(.get(.failure(.init(class: .one, command: .avMute, code: .projectorFailure))))),
+                false
+            ),
+            .init(
+                "%1AVMT=41",
+                .failure(.invalidMute("4"))
+            ),
+            .init(
+                "%1AVMT=32",
+                .failure(.invalidOnOff("2"))
+            ),
+        ]
+        PJLink.MuteState.allCases.forEach { muteState in
+            testCases.append(
+                .init(
+                    "%1AVMT=\(muteState.description)",
+                    .success(.response(.get(.success(.avMute(muteState)))))
+                )
+            )
+        }
+        try run(testCases)
+    }
 
+    @Test
+    func errorStatusRequest() throws {
+        let testCases: [TestCase] = [
+            .init("%1ERST ?", .success(.request(.get(.errorStatus)))),
+            .init("%2ERST ?", .failure(.unexpectedGetRequest(.two, .errorStatus, ""))),
+            .init("%3ERST ?", .failure(.invalidClass("3"))),
+            .init("%1ERST ?XTRA",  .failure(.unexpectedGetRequest(.one, .errorStatus, "XTRA"))),
+        ]
+        try run(testCases)
+    }
+
+    @Test
+    func errorStatusResponse() throws {
+        var testCases: [TestCase] = [
+            .init(
+                "%2ERST=000000",
+                .failure(.unexpectedGetResponse(.two, .errorStatus))
+            ),
+            .init(
+                "%1ERST=000003",
+                .failure(.invalidErrorStatus("000003"))
+            ),
+            .init(
+                "%1ERST=000030",
+                .failure(.invalidErrorStatus("000030"))
+            ),
+            .init(
+                "%1ERST=000300",
+                .failure(.invalidErrorStatus("000300"))
+            ),
+            .init(
+                "%1ERST=003000",
+                .failure(.invalidErrorStatus("003000"))
+            ),
+            .init(
+                "%1ERST=030000",
+                .failure(.invalidErrorStatus("030000"))
+            ),
+            .init(
+                "%1ERST=300000",
+                .failure(.invalidErrorStatus("300000"))
+            ),
+        ]
+        PJLink.ErrorStatus.allCases.forEach { errorStatus in
+            testCases.append(
+                .init(
+                    "%1ERST=\(errorStatus.description)",
+                    .success(.response(.get(.success(.errorStatus(errorStatus)))))
+                )
+            )
+        }
+        try run(testCases)
     }
 
     /*
