@@ -117,7 +117,7 @@ extension PJLink.GetResponseSuccess {
         case (.one, .projectorClass):
             self = .projectorClass(try .init(parameters))
         case (.two, .serialNumber):
-            self = .serialNumber(.init(value: parameters))
+            self = .serialNumber(try .init(parameters))
         case (.two, .softwareVersion):
             self = .softwareVersion(.init(value: parameters))
         case (.two, .inputTerminalName):

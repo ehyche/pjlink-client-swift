@@ -1144,6 +1144,104 @@ struct StringParsingTests {
         try run(testCases)
     }
 
+    @Test
+    func serialNumberRequest() throws {
+        let testCases: [TestCase] = [
+            .init("%1SNUM ?", .failure(.unexpectedGetRequest(.one, .serialNumber, ""))),
+            .init("%2SNUM ?", .success(.request(.get(.serialNumber)))),
+            .init("%3SNUM ?", .failure(.invalidClass("3"))),
+            .init("%2SNUM ?XTRA",  .failure(.unexpectedGetRequest(.two, .serialNumber, "XTRA"))),
+        ]
+        try run(testCases)
+    }
+
+    @Test
+    func serialNumberResponse() throws {
+        let testCases: [TestCase] = [
+            .init(
+                "%2SNUM=foo",
+                .success(.response(.get(.success(.serialNumber(.init(value: "foo"))))))
+            ),
+            .init(
+                "%1SNUM=foo",
+                .failure(.unexpectedGetResponse(.one, .serialNumber))
+            ),
+            .init(
+                "%3SNUM=foo",
+                .failure(.invalidClass("3"))
+            ),
+            .init(
+                "%2SNUM=012345678901234567890123456789012", // Length 33
+                .failure(.stringExceedsMaximumLength(33, 32))
+            ),
+            .init(
+                "%2SNUM=Name\tWith\tTab", // Contains character lower than legal bounds
+                .failure(.characterOutOfValidBounds(9, 32...126))
+            ),
+            .init(
+                "%2SNUM=Name With Illegal Character: ≥", // Contains character higher than legal bounds
+                .failure(.characterOutOfValidBounds(226, 32...126))
+            ),
+            .init(
+                "%2SNUM=ERR1",
+                .success(.response(.set(.init(class: .two, command: .serialNumber, code: .undefinedCommand))))
+            ),
+            .init(
+                "%2SNUM=ERR1",
+                .success(.response(.set(.init(class: .two, command: .serialNumber, code: .undefinedCommand)))),
+                true
+            ),
+            .init(
+                "%2SNUM=ERR1",
+                .success(.response(.get(.failure(.init(class: .two, command: .serialNumber, code: .undefinedCommand))))),
+                false
+            ),
+            .init(
+                "%2SNUM=ERR2",
+                .success(.response(.set(.init(class: .two, command: .serialNumber, code: .outOfParameter))))
+            ),
+            .init(
+                "%2SNUM=ERR2",
+                .success(.response(.set(.init(class: .two, command: .serialNumber, code: .outOfParameter)))),
+                true
+            ),
+            .init(
+                "%2SNUM=ERR2",
+                .success(.response(.get(.failure(.init(class: .two, command: .serialNumber, code: .outOfParameter))))),
+                false
+            ),
+            .init(
+                "%2SNUM=ERR3",
+                .success(.response(.set(.init(class: .two, command: .serialNumber, code: .unavailableTime))))
+            ),
+            .init(
+                "%2SNUM=ERR3",
+                .success(.response(.set(.init(class: .two, command: .serialNumber, code: .unavailableTime)))),
+                true
+            ),
+            .init(
+                "%2SNUM=ERR3",
+                .success(.response(.get(.failure(.init(class: .two, command: .serialNumber, code: .unavailableTime))))),
+                false
+            ),
+            .init(
+                "%2SNUM=ERR4",
+                .success(.response(.set(.init(class: .two, command: .serialNumber, code: .projectorFailure))))
+            ),
+            .init(
+                "%2SNUM=ERR4",
+                .success(.response(.set(.init(class: .two, command: .serialNumber, code: .projectorFailure)))),
+                true
+            ),
+            .init(
+                "%2SNUM=ERR4",
+                .success(.response(.get(.failure(.init(class: .two, command: .serialNumber, code: .projectorFailure))))),
+                false
+            ),
+        ]
+        try run(testCases)
+    }
+
     /*
     @Test
     func getRequestsHappyPath() throws {
