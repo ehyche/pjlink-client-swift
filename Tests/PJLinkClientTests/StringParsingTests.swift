@@ -1544,6 +1544,100 @@ struct StringParsingTests {
         try run(testCases)
     }
 
+    @Test
+    func recommendedResolutionRequest() throws {
+        let testCases: [TestCase] = [
+            .init("%1RRES ?", .failure(.unexpectedGetRequest(.one, .recommendedResolution, ""))),
+            .init("%2RRES ?", .success(.request(.get(.recommendedResolution)))),
+            .init("%3RRES ?", .failure(.invalidClass("3"))),
+            .init("%2RRES ?XTRA",  .failure(.unexpectedGetRequest(.two, .recommendedResolution, "XTRA"))),
+        ]
+        try run(testCases)
+    }
+
+    @Test
+    func recommendedResolutionResponse() throws {
+        let testCases: [TestCase] = [
+            .init(
+                "%2RRES=1920x1080",
+                .success(.response(.get(.success(.recommendedResolution(.init(horizontal: 1920, vertical: 1080))))))
+            ),
+            .init(
+                "%1RRES=1920x1080",
+                .failure(.unexpectedGetResponse(.one, .recommendedResolution))
+            ),
+            .init(
+                "%3RRES=1920x1080",
+                .failure(.invalidClass("3"))
+            ),
+            .init(
+                "%2RRES=1920x1080x640",
+                .failure(.invalidResolution("1920x1080x640"))
+            ),
+            .init(
+                "%2RRES=1920xfoo",
+                .failure(.invalidResolution("1920xfoo"))
+            ),
+            .init(
+                "%2RRES=ERR1",
+                .success(.response(.set(.init(class: .two, command: .recommendedResolution, code: .undefinedCommand))))
+            ),
+            .init(
+                "%2RRES=ERR1",
+                .success(.response(.set(.init(class: .two, command: .recommendedResolution, code: .undefinedCommand)))),
+                true
+            ),
+            .init(
+                "%2RRES=ERR1",
+                .success(.response(.get(.failure(.init(class: .two, command: .recommendedResolution, code: .undefinedCommand))))),
+                false
+            ),
+            .init(
+                "%2RRES=ERR2",
+                .success(.response(.set(.init(class: .two, command: .recommendedResolution, code: .outOfParameter))))
+            ),
+            .init(
+                "%2RRES=ERR2",
+                .success(.response(.set(.init(class: .two, command: .recommendedResolution, code: .outOfParameter)))),
+                true
+            ),
+            .init(
+                "%2RRES=ERR2",
+                .success(.response(.get(.failure(.init(class: .two, command: .recommendedResolution, code: .outOfParameter))))),
+                false
+            ),
+            .init(
+                "%2RRES=ERR3",
+                .success(.response(.set(.init(class: .two, command: .recommendedResolution, code: .unavailableTime))))
+            ),
+            .init(
+                "%2RRES=ERR3",
+                .success(.response(.set(.init(class: .two, command: .recommendedResolution, code: .unavailableTime)))),
+                true
+            ),
+            .init(
+                "%2RRES=ERR3",
+                .success(.response(.get(.failure(.init(class: .two, command: .recommendedResolution, code: .unavailableTime))))),
+                false
+            ),
+            .init(
+                "%2RRES=ERR4",
+                .success(.response(.set(.init(class: .two, command: .recommendedResolution, code: .projectorFailure))))
+            ),
+            .init(
+                "%2RRES=ERR4",
+                .success(.response(.set(.init(class: .two, command: .recommendedResolution, code: .projectorFailure)))),
+                true
+            ),
+            .init(
+                "%2RRES=ERR4",
+                .success(.response(.get(.failure(.init(class: .two, command: .recommendedResolution, code: .projectorFailure))))),
+                false
+            ),
+        ]
+        try run(testCases)
+    }
+
     /*
     @Test
     func getRequestsHappyPath() throws {
