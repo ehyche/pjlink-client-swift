@@ -2114,6 +2114,46 @@ struct StringParsingTests {
         try run(testCases)
     }
 
+    @Test
+    func freezeRequest() throws {
+        let testCases: [TestCase] = [
+            .init("%2FREZ ?", .success(.request(.get(.freeze)))),
+            .init("%1FREZ ?", .failure(.unexpectedGetRequest(.one, .freeze, ""))),
+            .init("%2FREZ ?X", .failure(.unexpectedGetRequest(.two, .freeze, "X"))),
+            .init("%2FREZ 1", .success(.request(.set(.freeze(.start))))),
+            .init("%2FREZ 0", .success(.request(.set(.freeze(.stop))))),
+            .init("%1FREZ 0", .failure(.unexpectedSetRequest(.one, .freeze))),
+            .init("%2FREZ x", .failure(.invalidFreeze("x"))),
+        ]
+        try run(testCases)
+    }
+
+    @Test
+    func freezeResponse() throws {
+        let testCases: [TestCase] = [
+            .init("%2FREZ=0", .success(.response(.get(.success(.freeze(.stop)))))),
+            .init("%2FREZ=1", .success(.response(.get(.success(.freeze(.start)))))),
+            .init("%2FREZ=2", .failure(.invalidFreeze("2"))),
+            .init("%1FREZ=0", .failure(.unexpectedGetResponse(.one, .freeze))),
+            .init("%2FREZ=OK", .success(.response(.set(.init(class: .two, command: .freeze, code: .ok))))),
+            .init("%2FREZ=OK", .success(.response(.set(.init(class: .two, command: .freeze, code: .ok)))), true),
+            .init("%2FREZ=OK", .failure(.invalidFreeze("OK")), false),
+            .init("%2FREZ=ERR1", .success(.response(.set(.init(class: .two, command: .freeze, code: .undefinedCommand))))),
+            .init("%2FREZ=ERR1", .success(.response(.set(.init(class: .two, command: .freeze, code: .undefinedCommand)))), true),
+            .init("%2FREZ=ERR1", .success(.response(.get(.failure(.init(class: .two, command: .freeze, code: .undefinedCommand))))), false),
+            .init("%2FREZ=ERR2", .success(.response(.set(.init(class: .two, command: .freeze, code: .outOfParameter))))),
+            .init("%2FREZ=ERR2", .success(.response(.set(.init(class: .two, command: .freeze, code: .outOfParameter)))), true),
+            .init("%2FREZ=ERR2", .success(.response(.get(.failure(.init(class: .two, command: .freeze, code: .outOfParameter))))), false),
+            .init("%2FREZ=ERR3", .success(.response(.set(.init(class: .two, command: .freeze, code: .unavailableTime))))),
+            .init("%2FREZ=ERR3", .success(.response(.set(.init(class: .two, command: .freeze, code: .unavailableTime)))), true),
+            .init("%2FREZ=ERR3", .success(.response(.get(.failure(.init(class: .two, command: .freeze, code: .unavailableTime))))), false),
+            .init("%2FREZ=ERR4", .success(.response(.set(.init(class: .two, command: .freeze, code: .projectorFailure))))),
+            .init("%2FREZ=ERR4", .success(.response(.set(.init(class: .two, command: .freeze, code: .projectorFailure)))), true),
+            .init("%2FREZ=ERR4", .success(.response(.get(.failure(.init(class: .two, command: .freeze, code: .projectorFailure))))), false),
+        ]
+        try run(testCases)
+    }
+
     /*
     @Test
     func getRequestsHappyPath() throws {
