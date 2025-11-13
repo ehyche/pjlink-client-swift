@@ -694,11 +694,11 @@ struct StringParsingTests {
             ),
             .init(
                 "%1NAME=01234567890123456789012345678901234567890123456789012345678901234", // Length 65
-                .failure(.projectorNameExceedsMaximumLength(65))
+                .failure(.stringExceedsMaximumLength(65, 64))
             ),
             .init(
                 "%1NAME=Name\tWith\tTab", // Contains illegal character
-                .failure(.projectorNameContainsInvalidASCIIValue(9))
+                .failure(.characterOutOfValidBounds(9, 32...255))
             ),
             .init(
                 "%1NAME=ERR1",
@@ -773,6 +773,89 @@ struct StringParsingTests {
 
     @Test
     func manufacturerNameResponse() throws {
+        let testCases: [TestCase] = [
+            .init(
+                "%1INF1=foo",
+                .success(.response(.get(.success(.manufacturerName(.init(value: "foo"))))))
+            ),
+            .init(
+                "%2INF1=foo",
+                .failure(.unexpectedGetResponse(.two, .manufacturerName))
+            ),
+            .init(
+                "%3INF1=foo",
+                .failure(.invalidClass("3"))
+            ),
+            .init(
+                "%1INF1=012345678901234567890123456789012", // Length 33
+                .failure(.stringExceedsMaximumLength(33, 32))
+            ),
+            .init(
+                "%1INF1=Name\tWith\tTab", // Contains character lower than legal bounds
+                .failure(.characterOutOfValidBounds(9, 32...126))
+            ),
+            .init(
+                "%1INF1=Name With Illegal Character: ≥", // Contains character higher than legal bounds
+                .failure(.characterOutOfValidBounds(226, 32...126))
+            ),
+            .init(
+                "%1INF1=ERR1",
+                .success(.response(.set(.init(class: .one, command: .manufacturerName, code: .undefinedCommand))))
+            ),
+            .init(
+                "%1INF1=ERR1",
+                .success(.response(.set(.init(class: .one, command: .manufacturerName, code: .undefinedCommand)))),
+                true
+            ),
+            .init(
+                "%1INF1=ERR1",
+                .success(.response(.get(.failure(.init(class: .one, command: .manufacturerName, code: .undefinedCommand))))),
+                false
+            ),
+            .init(
+                "%1INF1=ERR2",
+                .success(.response(.set(.init(class: .one, command: .manufacturerName, code: .outOfParameter))))
+            ),
+            .init(
+                "%1INF1=ERR2",
+                .success(.response(.set(.init(class: .one, command: .manufacturerName, code: .outOfParameter)))),
+                true
+            ),
+            .init(
+                "%1INF1=ERR2",
+                .success(.response(.get(.failure(.init(class: .one, command: .manufacturerName, code: .outOfParameter))))),
+                false
+            ),
+            .init(
+                "%1INF1=ERR3",
+                .success(.response(.set(.init(class: .one, command: .manufacturerName, code: .unavailableTime))))
+            ),
+            .init(
+                "%1INF1=ERR3",
+                .success(.response(.set(.init(class: .one, command: .manufacturerName, code: .unavailableTime)))),
+                true
+            ),
+            .init(
+                "%1INF1=ERR3",
+                .success(.response(.get(.failure(.init(class: .one, command: .manufacturerName, code: .unavailableTime))))),
+                false
+            ),
+            .init(
+                "%1INF1=ERR4",
+                .success(.response(.set(.init(class: .one, command: .manufacturerName, code: .projectorFailure))))
+            ),
+            .init(
+                "%1INF1=ERR4",
+                .success(.response(.set(.init(class: .one, command: .manufacturerName, code: .projectorFailure)))),
+                true
+            ),
+            .init(
+                "%1INF1=ERR4",
+                .success(.response(.get(.failure(.init(class: .one, command: .manufacturerName, code: .projectorFailure))))),
+                false
+            ),
+        ]
+        try run(testCases)
 
     }
 
