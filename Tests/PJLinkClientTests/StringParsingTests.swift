@@ -1054,6 +1054,96 @@ struct StringParsingTests {
         try run(testCases)
     }
 
+    @Test
+    func classRequest() throws {
+        let testCases: [TestCase] = [
+            .init("%1CLSS ?", .success(.request(.get(.projectorClass)))),
+            .init("%2CLSS ?", .failure(.unexpectedGetRequest(.two, .projectorClass, ""))),
+            .init("%3CLSS ?", .failure(.invalidClass("3"))),
+            .init("%1CLSS ?XTRA",  .failure(.unexpectedGetRequest(.one, .projectorClass, "XTRA"))),
+        ]
+        try run(testCases)
+    }
+
+    @Test
+    func classResponse() throws {
+        let testCases: [TestCase] = [
+            .init(
+                "%1CLSS=1",
+                .success(.response(.get(.success(.projectorClass(.one)))))
+            ),
+            .init(
+                "%1CLSS=2",
+                .success(.response(.get(.success(.projectorClass(.two)))))
+            ),
+            .init(
+                "%2CLSS=1",
+                .failure(.unexpectedGetResponse(.two, .projectorClass))
+            ),
+            .init(
+                "%3CLSS=3",
+                .failure(.invalidClass("3"))
+            ),
+            .init(
+                "%1CLSS=ERR1",
+                .success(.response(.set(.init(class: .one, command: .projectorClass, code: .undefinedCommand))))
+            ),
+            .init(
+                "%1CLSS=ERR1",
+                .success(.response(.set(.init(class: .one, command: .projectorClass, code: .undefinedCommand)))),
+                true
+            ),
+            .init(
+                "%1CLSS=ERR1",
+                .success(.response(.get(.failure(.init(class: .one, command: .projectorClass, code: .undefinedCommand))))),
+                false
+            ),
+            .init(
+                "%1CLSS=ERR2",
+                .success(.response(.set(.init(class: .one, command: .projectorClass, code: .outOfParameter))))
+            ),
+            .init(
+                "%1CLSS=ERR2",
+                .success(.response(.set(.init(class: .one, command: .projectorClass, code: .outOfParameter)))),
+                true
+            ),
+            .init(
+                "%1CLSS=ERR2",
+                .success(.response(.get(.failure(.init(class: .one, command: .projectorClass, code: .outOfParameter))))),
+                false
+            ),
+            .init(
+                "%1CLSS=ERR3",
+                .success(.response(.set(.init(class: .one, command: .projectorClass, code: .unavailableTime))))
+            ),
+            .init(
+                "%1CLSS=ERR3",
+                .success(.response(.set(.init(class: .one, command: .projectorClass, code: .unavailableTime)))),
+                true
+            ),
+            .init(
+                "%1CLSS=ERR3",
+                .success(.response(.get(.failure(.init(class: .one, command: .projectorClass, code: .unavailableTime))))),
+                false
+            ),
+            .init(
+                "%1CLSS=ERR4",
+                .success(.response(.set(.init(class: .one, command: .projectorClass, code: .projectorFailure))))
+            ),
+            .init(
+                "%1CLSS=ERR4",
+                .success(.response(.set(.init(class: .one, command: .projectorClass, code: .projectorFailure)))),
+                true
+            ),
+            .init(
+                "%1CLSS=ERR4",
+                .success(.response(.get(.failure(.init(class: .one, command: .projectorClass, code: .projectorFailure))))),
+                false
+            ),
+        ]
+        try run(testCases)
+    }
+
     /*
     @Test
     func getRequestsHappyPath() throws {
