@@ -856,7 +856,104 @@ struct StringParsingTests {
             ),
         ]
         try run(testCases)
+    }
 
+    @Test
+    func productNameRequest() throws {
+        let testCases: [TestCase] = [
+            .init("%1INF2 ?", .success(.request(.get(.productName)))),
+            .init("%2INF2 ?", .failure(.unexpectedGetRequest(.two, .productName, ""))),
+            .init("%3INF2 ?", .failure(.invalidClass("3"))),
+            .init("%1INF2 ?XTRA",  .failure(.unexpectedGetRequest(.one, .productName, "XTRA"))),
+        ]
+        try run(testCases)
+    }
+
+    @Test
+    func productNameResponse() throws {
+        let testCases: [TestCase] = [
+            .init(
+                "%1INF2=foo",
+                .success(.response(.get(.success(.productName(.init(value: "foo"))))))
+            ),
+            .init(
+                "%2INF2=foo",
+                .failure(.unexpectedGetResponse(.two, .productName))
+            ),
+            .init(
+                "%3INF2=foo",
+                .failure(.invalidClass("3"))
+            ),
+            .init(
+                "%1INF2=012345678901234567890123456789012", // Length 33
+                .failure(.stringExceedsMaximumLength(33, 32))
+            ),
+            .init(
+                "%1INF2=Name\tWith\tTab", // Contains character lower than legal bounds
+                .failure(.characterOutOfValidBounds(9, 32...126))
+            ),
+            .init(
+                "%1INF2=Name With Illegal Character: ≥", // Contains character higher than legal bounds
+                .failure(.characterOutOfValidBounds(226, 32...126))
+            ),
+            .init(
+                "%1INF2=ERR1",
+                .success(.response(.set(.init(class: .one, command: .productName, code: .undefinedCommand))))
+            ),
+            .init(
+                "%1INF2=ERR1",
+                .success(.response(.set(.init(class: .one, command: .productName, code: .undefinedCommand)))),
+                true
+            ),
+            .init(
+                "%1INF2=ERR1",
+                .success(.response(.get(.failure(.init(class: .one, command: .productName, code: .undefinedCommand))))),
+                false
+            ),
+            .init(
+                "%1INF2=ERR2",
+                .success(.response(.set(.init(class: .one, command: .productName, code: .outOfParameter))))
+            ),
+            .init(
+                "%1INF2=ERR2",
+                .success(.response(.set(.init(class: .one, command: .productName, code: .outOfParameter)))),
+                true
+            ),
+            .init(
+                "%1INF2=ERR2",
+                .success(.response(.get(.failure(.init(class: .one, command: .productName, code: .outOfParameter))))),
+                false
+            ),
+            .init(
+                "%1INF2=ERR3",
+                .success(.response(.set(.init(class: .one, command: .productName, code: .unavailableTime))))
+            ),
+            .init(
+                "%1INF2=ERR3",
+                .success(.response(.set(.init(class: .one, command: .productName, code: .unavailableTime)))),
+                true
+            ),
+            .init(
+                "%1INF2=ERR3",
+                .success(.response(.get(.failure(.init(class: .one, command: .productName, code: .unavailableTime))))),
+                false
+            ),
+            .init(
+                "%1INF2=ERR4",
+                .success(.response(.set(.init(class: .one, command: .productName, code: .projectorFailure))))
+            ),
+            .init(
+                "%1INF2=ERR4",
+                .success(.response(.set(.init(class: .one, command: .productName, code: .projectorFailure)))),
+                true
+            ),
+            .init(
+                "%1INF2=ERR4",
+                .success(.response(.get(.failure(.init(class: .one, command: .productName, code: .projectorFailure))))),
+                false
+            ),
+        ]
+        try run(testCases)
     }
 
     /*
