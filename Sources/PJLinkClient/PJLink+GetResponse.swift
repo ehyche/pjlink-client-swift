@@ -119,7 +119,7 @@ extension PJLink.GetResponseSuccess {
         case (.two, .serialNumber):
             self = .serialNumber(try .init(parameters))
         case (.two, .softwareVersion):
-            self = .softwareVersion(.init(value: parameters))
+            self = .softwareVersion(try .init(parameters))
         case (.two, .inputTerminalName):
             self = .inputTerminalName(.init(value: parameters))
         case (.two, .inputResolution):

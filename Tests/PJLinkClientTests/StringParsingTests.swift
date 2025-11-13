@@ -1242,6 +1242,104 @@ struct StringParsingTests {
         try run(testCases)
     }
 
+    @Test
+    func softwareVersionRequest() throws {
+        let testCases: [TestCase] = [
+            .init("%1SVER ?", .failure(.unexpectedGetRequest(.one, .softwareVersion, ""))),
+            .init("%2SVER ?", .success(.request(.get(.softwareVersion)))),
+            .init("%3SVER ?", .failure(.invalidClass("3"))),
+            .init("%2SVER ?XTRA",  .failure(.unexpectedGetRequest(.two, .softwareVersion, "XTRA"))),
+        ]
+        try run(testCases)
+    }
+
+    @Test
+    func softwareVersionResponse() throws {
+        let testCases: [TestCase] = [
+            .init(
+                "%2SVER=foo",
+                .success(.response(.get(.success(.softwareVersion(.init(value: "foo"))))))
+            ),
+            .init(
+                "%1SVER=foo",
+                .failure(.unexpectedGetResponse(.one, .softwareVersion))
+            ),
+            .init(
+                "%3SVER=foo",
+                .failure(.invalidClass("3"))
+            ),
+            .init(
+                "%2SVER=012345678901234567890123456789012", // Length 33
+                .failure(.stringExceedsMaximumLength(33, 32))
+            ),
+            .init(
+                "%2SVER=Name\tWith\tTab", // Contains character lower than legal bounds
+                .failure(.characterOutOfValidBounds(9, 32...126))
+            ),
+            .init(
+                "%2SVER=Name With Illegal Character: ≥", // Contains character higher than legal bounds
+                .failure(.characterOutOfValidBounds(226, 32...126))
+            ),
+            .init(
+                "%2SVER=ERR1",
+                .success(.response(.set(.init(class: .two, command: .softwareVersion, code: .undefinedCommand))))
+            ),
+            .init(
+                "%2SVER=ERR1",
+                .success(.response(.set(.init(class: .two, command: .softwareVersion, code: .undefinedCommand)))),
+                true
+            ),
+            .init(
+                "%2SVER=ERR1",
+                .success(.response(.get(.failure(.init(class: .two, command: .softwareVersion, code: .undefinedCommand))))),
+                false
+            ),
+            .init(
+                "%2SVER=ERR2",
+                .success(.response(.set(.init(class: .two, command: .softwareVersion, code: .outOfParameter))))
+            ),
+            .init(
+                "%2SVER=ERR2",
+                .success(.response(.set(.init(class: .two, command: .softwareVersion, code: .outOfParameter)))),
+                true
+            ),
+            .init(
+                "%2SVER=ERR2",
+                .success(.response(.get(.failure(.init(class: .two, command: .softwareVersion, code: .outOfParameter))))),
+                false
+            ),
+            .init(
+                "%2SVER=ERR3",
+                .success(.response(.set(.init(class: .two, command: .softwareVersion, code: .unavailableTime))))
+            ),
+            .init(
+                "%2SVER=ERR3",
+                .success(.response(.set(.init(class: .two, command: .softwareVersion, code: .unavailableTime)))),
+                true
+            ),
+            .init(
+                "%2SVER=ERR3",
+                .success(.response(.get(.failure(.init(class: .two, command: .softwareVersion, code: .unavailableTime))))),
+                false
+            ),
+            .init(
+                "%2SVER=ERR4",
+                .success(.response(.set(.init(class: .two, command: .softwareVersion, code: .projectorFailure))))
+            ),
+            .init(
+                "%2SVER=ERR4",
+                .success(.response(.set(.init(class: .two, command: .softwareVersion, code: .projectorFailure)))),
+                true
+            ),
+            .init(
+                "%2SVER=ERR4",
+                .success(.response(.get(.failure(.init(class: .two, command: .softwareVersion, code: .projectorFailure))))),
+                false
+            ),
+        ]
+        try run(testCases)
+    }
+
     /*
     @Test
     func getRequestsHappyPath() throws {
