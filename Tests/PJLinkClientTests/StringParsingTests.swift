@@ -1442,6 +1442,108 @@ struct StringParsingTests {
         try run(testCases)
     }
 
+    @Test
+    func inputResolutionRequest() throws {
+        let testCases: [TestCase] = [
+            .init("%1IRES ?", .failure(.unexpectedGetRequest(.one, .inputResolution, ""))),
+            .init("%2IRES ?", .success(.request(.get(.inputResolution)))),
+            .init("%3IRES ?", .failure(.invalidClass("3"))),
+            .init("%2IRES ?XTRA",  .failure(.unexpectedGetRequest(.two, .inputResolution, "XTRA"))),
+        ]
+        try run(testCases)
+    }
+
+    @Test
+    func inputResolutionResponse() throws {
+        let testCases: [TestCase] = [
+            .init(
+                "%2IRES=1920x1080",
+                .success(.response(.get(.success(.inputResolution(.ok(.init(horizontal: 1920, vertical: 1080)))))))
+            ),
+            .init(
+                "%2IRES=-",
+                .success(.response(.get(.success(.inputResolution(.noSignal)))))
+            ),
+            .init(
+                "%2IRES=*",
+                .success(.response(.get(.success(.inputResolution(.unknownSignal)))))
+            ),
+            .init(
+                "%1IRES=1920x1080",
+                .failure(.unexpectedGetResponse(.one, .inputResolution))
+            ),
+            .init(
+                "%3IRES=1920x1080",
+                .failure(.invalidClass("3"))
+            ),
+            .init(
+                "%2IRES=1920x1080x640",
+                .failure(.invalidResolution("1920x1080x640"))
+            ),
+            .init(
+                "%2IRES=1920xfoo",
+                .failure(.invalidResolution("1920xfoo"))
+            ),
+            .init(
+                "%2IRES=ERR1",
+                .success(.response(.set(.init(class: .two, command: .inputResolution, code: .undefinedCommand))))
+            ),
+            .init(
+                "%2IRES=ERR1",
+                .success(.response(.set(.init(class: .two, command: .inputResolution, code: .undefinedCommand)))),
+                true
+            ),
+            .init(
+                "%2IRES=ERR1",
+                .success(.response(.get(.failure(.init(class: .two, command: .inputResolution, code: .undefinedCommand))))),
+                false
+            ),
+            .init(
+                "%2IRES=ERR2",
+                .success(.response(.set(.init(class: .two, command: .inputResolution, code: .outOfParameter))))
+            ),
+            .init(
+                "%2IRES=ERR2",
+                .success(.response(.set(.init(class: .two, command: .inputResolution, code: .outOfParameter)))),
+                true
+            ),
+            .init(
+                "%2IRES=ERR2",
+                .success(.response(.get(.failure(.init(class: .two, command: .inputResolution, code: .outOfParameter))))),
+                false
+            ),
+            .init(
+                "%2IRES=ERR3",
+                .success(.response(.set(.init(class: .two, command: .inputResolution, code: .unavailableTime))))
+            ),
+            .init(
+                "%2IRES=ERR3",
+                .success(.response(.set(.init(class: .two, command: .inputResolution, code: .unavailableTime)))),
+                true
+            ),
+            .init(
+                "%2IRES=ERR3",
+                .success(.response(.get(.failure(.init(class: .two, command: .inputResolution, code: .unavailableTime))))),
+                false
+            ),
+            .init(
+                "%2IRES=ERR4",
+                .success(.response(.set(.init(class: .two, command: .inputResolution, code: .projectorFailure))))
+            ),
+            .init(
+                "%2IRES=ERR4",
+                .success(.response(.set(.init(class: .two, command: .inputResolution, code: .projectorFailure)))),
+                true
+            ),
+            .init(
+                "%2IRES=ERR4",
+                .success(.response(.get(.failure(.init(class: .two, command: .inputResolution, code: .projectorFailure))))),
+                false
+            ),
+        ]
+        try run(testCases)
+    }
+
     /*
     @Test
     func getRequestsHappyPath() throws {
