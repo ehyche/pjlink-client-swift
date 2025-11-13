@@ -1751,6 +1751,10 @@ struct StringParsingTests {
                 .success(.response(.get(.success(.lampReplacementModelNumber(.init(value: "foo"))))))
             ),
             .init(
+                "%2RLMP=",
+                .success(.response(.get(.success(.lampReplacementModelNumber(.init(value: ""))))))
+            ),
+            .init(
                 "%1RLMP=foo",
                 .failure(.unexpectedGetResponse(.one, .lampReplacementModelNumber))
             ),
@@ -1824,6 +1828,108 @@ struct StringParsingTests {
             .init(
                 "%2RLMP=ERR4",
                 .success(.response(.get(.failure(.init(class: .two, command: .lampReplacementModelNumber, code: .projectorFailure))))),
+                false
+            ),
+        ]
+        try run(testCases)
+    }
+
+    @Test
+    func filterReplacementModelNumberRequest() throws {
+        let testCases: [TestCase] = [
+            .init("%1RFIL ?", .failure(.unexpectedGetRequest(.one, .filterReplacementModelNumber, ""))),
+            .init("%2RFIL ?", .success(.request(.get(.filterReplacementModelNumber)))),
+            .init("%3RFIL ?", .failure(.invalidClass("3"))),
+            .init("%2RFIL ?XTRA",  .failure(.unexpectedGetRequest(.two, .filterReplacementModelNumber, "XTRA"))),
+        ]
+        try run(testCases)
+    }
+
+    @Test
+    func filterReplacementModelNumberResponse() throws {
+        let testCases: [TestCase] = [
+            .init(
+                "%2RFIL=foo",
+                .success(.response(.get(.success(.filterReplacementModelNumber(.init(value: "foo"))))))
+            ),
+            .init(
+                "%2RFIL=",
+                .success(.response(.get(.success(.filterReplacementModelNumber(.init(value: ""))))))
+            ),
+            .init(
+                "%1RFIL=foo",
+                .failure(.unexpectedGetResponse(.one, .filterReplacementModelNumber))
+            ),
+            .init(
+                "%3RFIL=foo",
+                .failure(.invalidClass("3"))
+            ),
+            .init(
+                "%2RFIL=012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678",
+                .failure(.stringExceedsMaximumLength(129, 128))
+            ),
+            .init(
+                "%2RFIL=Name\tWith\tTab", // Contains character lower than legal bounds
+                .failure(.characterOutOfValidBounds(9, 32...126))
+            ),
+            .init(
+                "%2RFIL=Name With Illegal Character: ≥", // Contains character higher than legal bounds
+                .failure(.characterOutOfValidBounds(226, 32...126))
+            ),
+            .init(
+                "%2RFIL=ERR1",
+                .success(.response(.set(.init(class: .two, command: .filterReplacementModelNumber, code: .undefinedCommand))))
+            ),
+            .init(
+                "%2RFIL=ERR1",
+                .success(.response(.set(.init(class: .two, command: .filterReplacementModelNumber, code: .undefinedCommand)))),
+                true
+            ),
+            .init(
+                "%2RFIL=ERR1",
+                .success(.response(.get(.failure(.init(class: .two, command: .filterReplacementModelNumber, code: .undefinedCommand))))),
+                false
+            ),
+            .init(
+                "%2RFIL=ERR2",
+                .success(.response(.set(.init(class: .two, command: .filterReplacementModelNumber, code: .outOfParameter))))
+            ),
+            .init(
+                "%2RFIL=ERR2",
+                .success(.response(.set(.init(class: .two, command: .filterReplacementModelNumber, code: .outOfParameter)))),
+                true
+            ),
+            .init(
+                "%2RFIL=ERR2",
+                .success(.response(.get(.failure(.init(class: .two, command: .filterReplacementModelNumber, code: .outOfParameter))))),
+                false
+            ),
+            .init(
+                "%2RFIL=ERR3",
+                .success(.response(.set(.init(class: .two, command: .filterReplacementModelNumber, code: .unavailableTime))))
+            ),
+            .init(
+                "%2RFIL=ERR3",
+                .success(.response(.set(.init(class: .two, command: .filterReplacementModelNumber, code: .unavailableTime)))),
+                true
+            ),
+            .init(
+                "%2RFIL=ERR3",
+                .success(.response(.get(.failure(.init(class: .two, command: .filterReplacementModelNumber, code: .unavailableTime))))),
+                false
+            ),
+            .init(
+                "%2RFIL=ERR4",
+                .success(.response(.set(.init(class: .two, command: .filterReplacementModelNumber, code: .projectorFailure))))
+            ),
+            .init(
+                "%2RFIL=ERR4",
+                .success(.response(.set(.init(class: .two, command: .filterReplacementModelNumber, code: .projectorFailure)))),
+                true
+            ),
+            .init(
+                "%2RFIL=ERR4",
+                .success(.response(.get(.failure(.init(class: .two, command: .filterReplacementModelNumber, code: .projectorFailure))))),
                 false
             ),
         ]
