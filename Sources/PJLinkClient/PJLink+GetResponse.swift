@@ -113,7 +113,7 @@ extension PJLink.GetResponseSuccess {
         case (.one, .productName):
             self = .productName(try .init(parameters))
         case (.one, .otherInformation):
-            self = .otherInformation(.init(value: parameters))
+            self = .otherInformation(try .init(parameters))
         case (.one, .projectorClass):
             self = .projectorClass(try .init(parameters))
         case (.two, .serialNumber):

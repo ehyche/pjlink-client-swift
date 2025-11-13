@@ -956,6 +956,104 @@ struct StringParsingTests {
         try run(testCases)
     }
 
+    @Test
+    func otherInformationRequest() throws {
+        let testCases: [TestCase] = [
+            .init("%1INFO ?", .success(.request(.get(.otherInformation)))),
+            .init("%2INFO ?", .failure(.unexpectedGetRequest(.two, .otherInformation, ""))),
+            .init("%3INFO ?", .failure(.invalidClass("3"))),
+            .init("%1INFO ?XTRA",  .failure(.unexpectedGetRequest(.one, .otherInformation, "XTRA"))),
+        ]
+        try run(testCases)
+    }
+
+    @Test
+    func otherInformationResponse() throws {
+        let testCases: [TestCase] = [
+            .init(
+                "%1INFO=foo",
+                .success(.response(.get(.success(.otherInformation(.init(value: "foo"))))))
+            ),
+            .init(
+                "%2INFO=foo",
+                .failure(.unexpectedGetResponse(.two, .otherInformation))
+            ),
+            .init(
+                "%3INFO=foo",
+                .failure(.invalidClass("3"))
+            ),
+            .init(
+                "%1INFO=012345678901234567890123456789012", // Length 33
+                .failure(.stringExceedsMaximumLength(33, 32))
+            ),
+            .init(
+                "%1INFO=Name\tWith\tTab", // Contains character lower than legal bounds
+                .failure(.characterOutOfValidBounds(9, 32...126))
+            ),
+            .init(
+                "%1INFO=Name With Illegal Character: ≥", // Contains character higher than legal bounds
+                .failure(.characterOutOfValidBounds(226, 32...126))
+            ),
+            .init(
+                "%1INFO=ERR1",
+                .success(.response(.set(.init(class: .one, command: .otherInformation, code: .undefinedCommand))))
+            ),
+            .init(
+                "%1INFO=ERR1",
+                .success(.response(.set(.init(class: .one, command: .otherInformation, code: .undefinedCommand)))),
+                true
+            ),
+            .init(
+                "%1INFO=ERR1",
+                .success(.response(.get(.failure(.init(class: .one, command: .otherInformation, code: .undefinedCommand))))),
+                false
+            ),
+            .init(
+                "%1INFO=ERR2",
+                .success(.response(.set(.init(class: .one, command: .otherInformation, code: .outOfParameter))))
+            ),
+            .init(
+                "%1INFO=ERR2",
+                .success(.response(.set(.init(class: .one, command: .otherInformation, code: .outOfParameter)))),
+                true
+            ),
+            .init(
+                "%1INFO=ERR2",
+                .success(.response(.get(.failure(.init(class: .one, command: .otherInformation, code: .outOfParameter))))),
+                false
+            ),
+            .init(
+                "%1INFO=ERR3",
+                .success(.response(.set(.init(class: .one, command: .otherInformation, code: .unavailableTime))))
+            ),
+            .init(
+                "%1INFO=ERR3",
+                .success(.response(.set(.init(class: .one, command: .otherInformation, code: .unavailableTime)))),
+                true
+            ),
+            .init(
+                "%1INFO=ERR3",
+                .success(.response(.get(.failure(.init(class: .one, command: .otherInformation, code: .unavailableTime))))),
+                false
+            ),
+            .init(
+                "%1INFO=ERR4",
+                .success(.response(.set(.init(class: .one, command: .otherInformation, code: .projectorFailure))))
+            ),
+            .init(
+                "%1INFO=ERR4",
+                .success(.response(.set(.init(class: .one, command: .otherInformation, code: .projectorFailure)))),
+                true
+            ),
+            .init(
+                "%1INFO=ERR4",
+                .success(.response(.get(.failure(.init(class: .one, command: .otherInformation, code: .projectorFailure))))),
+                false
+            ),
+        ]
+        try run(testCases)
+    }
+
     /*
     @Test
     func getRequestsHappyPath() throws {
