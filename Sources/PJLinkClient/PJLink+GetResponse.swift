@@ -129,9 +129,9 @@ extension PJLink.GetResponseSuccess {
         case (.two , .filterUsageTime):
             self = .filterUsageTime(try .init(parameters))
         case (.two, .lampReplacementModelNumber):
-            self = .lampReplacementModelNumber(.init(value: parameters))
+            self = .lampReplacementModelNumber(try .init(parameters))
         case (.two, .filterReplacementModelNumber):
-            self = .filterReplacementModelNumber(.init(value: parameters))
+            self = .filterReplacementModelNumber(try .init(parameters))
         case (.two, .freeze):
             self = .freeze(try .init(parameters))
         default:

@@ -1732,6 +1732,104 @@ struct StringParsingTests {
         try run(testCases)
     }
 
+    @Test
+    func lampReplacementModelNumberRequest() throws {
+        let testCases: [TestCase] = [
+            .init("%1RLMP ?", .failure(.unexpectedGetRequest(.one, .lampReplacementModelNumber, ""))),
+            .init("%2RLMP ?", .success(.request(.get(.lampReplacementModelNumber)))),
+            .init("%3RLMP ?", .failure(.invalidClass("3"))),
+            .init("%2RLMP ?XTRA",  .failure(.unexpectedGetRequest(.two, .lampReplacementModelNumber, "XTRA"))),
+        ]
+        try run(testCases)
+    }
+
+    @Test
+    func lampReplacementModelNumberResponse() throws {
+        let testCases: [TestCase] = [
+            .init(
+                "%2RLMP=foo",
+                .success(.response(.get(.success(.lampReplacementModelNumber(.init(value: "foo"))))))
+            ),
+            .init(
+                "%1RLMP=foo",
+                .failure(.unexpectedGetResponse(.one, .lampReplacementModelNumber))
+            ),
+            .init(
+                "%3RLMP=foo",
+                .failure(.invalidClass("3"))
+            ),
+            .init(
+                "%2RLMP=012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678",
+                .failure(.stringExceedsMaximumLength(129, 128))
+            ),
+            .init(
+                "%2RLMP=Name\tWith\tTab", // Contains character lower than legal bounds
+                .failure(.characterOutOfValidBounds(9, 32...126))
+            ),
+            .init(
+                "%2RLMP=Name With Illegal Character: ≥", // Contains character higher than legal bounds
+                .failure(.characterOutOfValidBounds(226, 32...126))
+            ),
+            .init(
+                "%2RLMP=ERR1",
+                .success(.response(.set(.init(class: .two, command: .lampReplacementModelNumber, code: .undefinedCommand))))
+            ),
+            .init(
+                "%2RLMP=ERR1",
+                .success(.response(.set(.init(class: .two, command: .lampReplacementModelNumber, code: .undefinedCommand)))),
+                true
+            ),
+            .init(
+                "%2RLMP=ERR1",
+                .success(.response(.get(.failure(.init(class: .two, command: .lampReplacementModelNumber, code: .undefinedCommand))))),
+                false
+            ),
+            .init(
+                "%2RLMP=ERR2",
+                .success(.response(.set(.init(class: .two, command: .lampReplacementModelNumber, code: .outOfParameter))))
+            ),
+            .init(
+                "%2RLMP=ERR2",
+                .success(.response(.set(.init(class: .two, command: .lampReplacementModelNumber, code: .outOfParameter)))),
+                true
+            ),
+            .init(
+                "%2RLMP=ERR2",
+                .success(.response(.get(.failure(.init(class: .two, command: .lampReplacementModelNumber, code: .outOfParameter))))),
+                false
+            ),
+            .init(
+                "%2RLMP=ERR3",
+                .success(.response(.set(.init(class: .two, command: .lampReplacementModelNumber, code: .unavailableTime))))
+            ),
+            .init(
+                "%2RLMP=ERR3",
+                .success(.response(.set(.init(class: .two, command: .lampReplacementModelNumber, code: .unavailableTime)))),
+                true
+            ),
+            .init(
+                "%2RLMP=ERR3",
+                .success(.response(.get(.failure(.init(class: .two, command: .lampReplacementModelNumber, code: .unavailableTime))))),
+                false
+            ),
+            .init(
+                "%2RLMP=ERR4",
+                .success(.response(.set(.init(class: .two, command: .lampReplacementModelNumber, code: .projectorFailure))))
+            ),
+            .init(
+                "%2RLMP=ERR4",
+                .success(.response(.set(.init(class: .two, command: .lampReplacementModelNumber, code: .projectorFailure)))),
+                true
+            ),
+            .init(
+                "%2RLMP=ERR4",
+                .success(.response(.get(.failure(.init(class: .two, command: .lampReplacementModelNumber, code: .projectorFailure))))),
+                false
+            ),
+        ]
+        try run(testCases)
+    }
+
     /*
     @Test
     func getRequestsHappyPath() throws {
