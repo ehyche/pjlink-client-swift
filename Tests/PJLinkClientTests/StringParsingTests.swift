@@ -1340,6 +1340,108 @@ struct StringParsingTests {
         try run(testCases)
     }
 
+    @Test
+    func inputTerminalNameRequest() throws {
+        var testCases: [TestCase] = [
+            .init("%1INNM ?11", .failure(.unexpectedGetRequest(.one, .inputTerminalName, "11"))),
+            .init("%3INNM ?11", .failure(.invalidClass("3"))),
+            .init("%2INNM ?71", .failure(.invalidClass2Input("7"))),
+            .init("%2INNM ?60", .failure(.invalidClass2InputChannel("0"))),
+        ]
+        PJLink.InputSwitchClass2.allCases.forEach { inputSwitch in
+            testCases.append(
+                .init(
+                    "%2INNM ?\(inputSwitch.description)",
+                    .success(.request(.get(.inputTerminalName(inputSwitch))))
+                )
+            )
+        }
+        try run(testCases)
+    }
+
+    @Test
+    func inputTerminalNameResponse() throws {
+        let testCases: [TestCase] = [
+            .init(
+                "%2INNM=foo",
+                .success(.response(.get(.success(.inputTerminalName(.init(value: "foo"))))))
+            ),
+            .init(
+                "%1INNM=foo",
+                .failure(.unexpectedGetResponse(.one, .inputTerminalName))
+            ),
+            .init(
+                "%3INNM=foo",
+                .failure(.invalidClass("3"))
+            ),
+            .init(
+                "%2INNM=012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678",
+                .failure(.stringExceedsMaximumLength(129, 128))
+            ),
+            .init(
+                "%2INNM=Name\tWith\tTab", // Contains character lower than legal bounds
+                .failure(.characterOutOfValidBounds(9, 32...255))
+            ),
+            .init(
+                "%2INNM=ERR1",
+                .success(.response(.set(.init(class: .two, command: .inputTerminalName, code: .undefinedCommand))))
+            ),
+            .init(
+                "%2INNM=ERR1",
+                .success(.response(.set(.init(class: .two, command: .inputTerminalName, code: .undefinedCommand)))),
+                true
+            ),
+            .init(
+                "%2INNM=ERR1",
+                .success(.response(.get(.failure(.init(class: .two, command: .inputTerminalName, code: .undefinedCommand))))),
+                false
+            ),
+            .init(
+                "%2INNM=ERR2",
+                .success(.response(.set(.init(class: .two, command: .inputTerminalName, code: .outOfParameter))))
+            ),
+            .init(
+                "%2INNM=ERR2",
+                .success(.response(.set(.init(class: .two, command: .inputTerminalName, code: .outOfParameter)))),
+                true
+            ),
+            .init(
+                "%2INNM=ERR2",
+                .success(.response(.get(.failure(.init(class: .two, command: .inputTerminalName, code: .outOfParameter))))),
+                false
+            ),
+            .init(
+                "%2INNM=ERR3",
+                .success(.response(.set(.init(class: .two, command: .inputTerminalName, code: .unavailableTime))))
+            ),
+            .init(
+                "%2INNM=ERR3",
+                .success(.response(.set(.init(class: .two, command: .inputTerminalName, code: .unavailableTime)))),
+                true
+            ),
+            .init(
+                "%2INNM=ERR3",
+                .success(.response(.get(.failure(.init(class: .two, command: .inputTerminalName, code: .unavailableTime))))),
+                false
+            ),
+            .init(
+                "%2INNM=ERR4",
+                .success(.response(.set(.init(class: .two, command: .inputTerminalName, code: .projectorFailure))))
+            ),
+            .init(
+                "%2INNM=ERR4",
+                .success(.response(.set(.init(class: .two, command: .inputTerminalName, code: .projectorFailure)))),
+                true
+            ),
+            .init(
+                "%2INNM=ERR4",
+                .success(.response(.get(.failure(.init(class: .two, command: .inputTerminalName, code: .projectorFailure))))),
+                false
+            ),
+        ]
+        try run(testCases)
+    }
+
     /*
     @Test
     func getRequestsHappyPath() throws {
