@@ -1936,6 +1936,95 @@ struct StringParsingTests {
         try run(testCases)
     }
 
+    @Test
+    func speakerVolumeAdjustmentRequest() throws {
+        let testCases: [TestCase] = [
+            .init("%1SVOL 0", .failure(.unexpectedSetRequest(.one, .speakerVolume))),
+            .init("%2SVOL 0", .success(.request(.set(.speakerVolume(.decrease))))),
+            .init("%2SVOL 1", .success(.request(.set(.speakerVolume(.increase))))),
+            .init("%3SVOL 1", .failure(.invalidClass("3"))),
+            .init("%2SVOL 2", .failure(.invalidVolume("2"))),
+        ]
+        try run(testCases)
+    }
+
+    @Test
+    func speakerVolumeAdjustmentResponse() throws {
+        let testCases: [TestCase] = [
+            .init(
+                "%2SVOL=OK",
+                .success(.response(.set(.init(class: .two, command: .speakerVolume, code: .ok))))
+            ),
+            .init(
+                "%2SVOL=OK",
+                .success(.response(.set(.init(class: .two, command: .speakerVolume, code: .ok)))),
+                true
+            ),
+            .init(
+                "%2SVOL=OK",
+                .failure(.unexpectedGetResponse(.two, .speakerVolume)),
+                false
+            ),
+            .init(
+                "%2SVOL=ERR1",
+                .success(.response(.set(.init(class: .two, command: .speakerVolume, code: .undefinedCommand))))
+            ),
+            .init(
+                "%2SVOL=ERR1",
+                .success(.response(.set(.init(class: .two, command: .speakerVolume, code: .undefinedCommand)))),
+                true
+            ),
+            .init(
+                "%2SVOL=ERR1",
+                .success(.response(.get(.failure(.init(class: .two, command: .speakerVolume, code: .undefinedCommand))))),
+                false
+            ),
+            .init(
+                "%2SVOL=ERR2",
+                .success(.response(.set(.init(class: .two, command: .speakerVolume, code: .outOfParameter))))
+            ),
+            .init(
+                "%2SVOL=ERR2",
+                .success(.response(.set(.init(class: .two, command: .speakerVolume, code: .outOfParameter)))),
+                true
+            ),
+            .init(
+                "%2SVOL=ERR2",
+                .success(.response(.get(.failure(.init(class: .two, command: .speakerVolume, code: .outOfParameter))))),
+                false
+            ),
+            .init(
+                "%2SVOL=ERR3",
+                .success(.response(.set(.init(class: .two, command: .speakerVolume, code: .unavailableTime))))
+            ),
+            .init(
+                "%2SVOL=ERR3",
+                .success(.response(.set(.init(class: .two, command: .speakerVolume, code: .unavailableTime)))),
+                true
+            ),
+            .init(
+                "%2SVOL=ERR3",
+                .success(.response(.get(.failure(.init(class: .two, command: .speakerVolume, code: .unavailableTime))))),
+                false
+            ),
+            .init(
+                "%2SVOL=ERR4",
+                .success(.response(.set(.init(class: .two, command: .speakerVolume, code: .projectorFailure))))
+            ),
+            .init(
+                "%2SVOL=ERR4",
+                .success(.response(.set(.init(class: .two, command: .speakerVolume, code: .projectorFailure)))),
+                true
+            ),
+            .init(
+                "%2SVOL=ERR4",
+                .success(.response(.get(.failure(.init(class: .two, command: .speakerVolume, code: .projectorFailure))))),
+                false
+            ),
+        ]
+        try run(testCases)
+    }
+
     /*
     @Test
     func getRequestsHappyPath() throws {
