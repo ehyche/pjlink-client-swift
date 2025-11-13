@@ -1638,6 +1638,100 @@ struct StringParsingTests {
         try run(testCases)
     }
 
+    @Test
+    func filterUsageTimeRequest() throws {
+        let testCases: [TestCase] = [
+            .init("%1FILT ?", .failure(.unexpectedGetRequest(.one, .filterUsageTime, ""))),
+            .init("%2FILT ?", .success(.request(.get(.filterUsageTime)))),
+            .init("%3FILT ?", .failure(.invalidClass("3"))),
+            .init("%2FILT ?XTRA",  .failure(.unexpectedGetRequest(.two, .filterUsageTime, "XTRA"))),
+        ]
+        try run(testCases)
+    }
+
+    @Test
+    func filterUsageTimeResponse() throws {
+        let testCases: [TestCase] = [
+            .init(
+                "%2FILT=12345",
+                .success(.response(.get(.success(.filterUsageTime(.init(value: 12345))))))
+            ),
+            .init(
+                "%1FILT=12345",
+                .failure(.unexpectedGetResponse(.one, .filterUsageTime))
+            ),
+            .init(
+                "%3FILT=12345",
+                .failure(.invalidClass("3"))
+            ),
+            .init(
+                "%2FILT=foo",
+                .failure(.invalidFilterUsageTime("foo"))
+            ),
+            .init(
+                "%2FILT=100000",
+                .failure(.filterUsageTimeOutOfRange(100_000))
+            ),
+            .init(
+                "%2FILT=ERR1",
+                .success(.response(.set(.init(class: .two, command: .filterUsageTime, code: .undefinedCommand))))
+            ),
+            .init(
+                "%2FILT=ERR1",
+                .success(.response(.set(.init(class: .two, command: .filterUsageTime, code: .undefinedCommand)))),
+                true
+            ),
+            .init(
+                "%2FILT=ERR1",
+                .success(.response(.get(.failure(.init(class: .two, command: .filterUsageTime, code: .undefinedCommand))))),
+                false
+            ),
+            .init(
+                "%2FILT=ERR2",
+                .success(.response(.set(.init(class: .two, command: .filterUsageTime, code: .outOfParameter))))
+            ),
+            .init(
+                "%2FILT=ERR2",
+                .success(.response(.set(.init(class: .two, command: .filterUsageTime, code: .outOfParameter)))),
+                true
+            ),
+            .init(
+                "%2FILT=ERR2",
+                .success(.response(.get(.failure(.init(class: .two, command: .filterUsageTime, code: .outOfParameter))))),
+                false
+            ),
+            .init(
+                "%2FILT=ERR3",
+                .success(.response(.set(.init(class: .two, command: .filterUsageTime, code: .unavailableTime))))
+            ),
+            .init(
+                "%2FILT=ERR3",
+                .success(.response(.set(.init(class: .two, command: .filterUsageTime, code: .unavailableTime)))),
+                true
+            ),
+            .init(
+                "%2FILT=ERR3",
+                .success(.response(.get(.failure(.init(class: .two, command: .filterUsageTime, code: .unavailableTime))))),
+                false
+            ),
+            .init(
+                "%2FILT=ERR4",
+                .success(.response(.set(.init(class: .two, command: .filterUsageTime, code: .projectorFailure))))
+            ),
+            .init(
+                "%2FILT=ERR4",
+                .success(.response(.set(.init(class: .two, command: .filterUsageTime, code: .projectorFailure)))),
+                true
+            ),
+            .init(
+                "%2FILT=ERR4",
+                .success(.response(.get(.failure(.init(class: .two, command: .filterUsageTime, code: .projectorFailure))))),
+                false
+            ),
+        ]
+        try run(testCases)
+    }
+
     /*
     @Test
     func getRequestsHappyPath() throws {
