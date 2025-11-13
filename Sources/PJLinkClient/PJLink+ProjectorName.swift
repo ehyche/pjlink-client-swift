@@ -20,8 +20,12 @@ extension PJLink.ProjectorName {
 extension PJLink.ProjectorName: LosslessStringConvertibleThrowing {
 
     public init(_ description: String) throws {
-        guard description.count <= Self.maxLength else {
+        let utf8 = Array(description.utf8)
+        guard utf8.count <= Self.maxLength else {
             throw PJLink.Error.projectorNameExceedsMaximumLength(description.count)
+        }
+        if let firstInvalidIndex = utf8.firstIndex(where: { $0 < Self.minCodeUnitValue }) {
+            throw PJLink.Error.projectorNameContainsInvalidASCIIValue(utf8[firstInvalidIndex])
         }
         self.init(value: description)
     }
@@ -29,4 +33,5 @@ extension PJLink.ProjectorName: LosslessStringConvertibleThrowing {
     public var description: String { value }
 
     private static let maxLength = 64
+    private static let minCodeUnitValue: UInt8 = 32
 }

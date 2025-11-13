@@ -34,6 +34,7 @@ extension PJLink {
         case filterUsageTimeOutOfRange(Int)
         case invalidSetResponseCode(String)
         case projectorNameExceedsMaximumLength(Int)
+        case projectorNameContainsInvalidASCIIValue(UInt8)
         case manufacturerNameExceedsMaximumLength(Int)
         case unexpectedGetRequest(PJLink.Class, PJLink.Command, String)
         case unexpectedSetRequest(PJLink.Class, PJLink.Command)

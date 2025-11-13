@@ -697,6 +697,10 @@ struct StringParsingTests {
                 .failure(.projectorNameExceedsMaximumLength(65))
             ),
             .init(
+                "%1NAME=Name\tWith\tTab", // Contains illegal character
+                .failure(.projectorNameContainsInvalidASCIIValue(9))
+            ),
+            .init(
                 "%1NAME=ERR1",
                 .success(.response(.set(.init(class: .one, command: .projectorName, code: .undefinedCommand))))
             ),
