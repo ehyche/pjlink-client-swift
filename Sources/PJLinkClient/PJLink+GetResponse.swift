@@ -107,9 +107,9 @@ extension PJLink.GetResponseSuccess {
         case (.two, .inputList):
             self = .inputListClass2(try .init(parameters))
         case (.one, .projectorName):
-            self = .projectorName(.init(value: parameters))
+            self = .projectorName(try .init(parameters))
         case (.one, .manufacturerName):
-            self = .manufacturerName(.init(value: parameters))
+            self = .manufacturerName(try .init(parameters))
         case (.one, .productName):
             self = .productName(.init(value: parameters))
         case (.one, .otherInformation):

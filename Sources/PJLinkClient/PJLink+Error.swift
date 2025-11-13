@@ -33,6 +33,8 @@ extension PJLink {
         case invalidFilterUsageTime(String)
         case filterUsageTimeOutOfRange(Int)
         case invalidSetResponseCode(String)
+        case projectorNameExceedsMaximumLength(Int)
+        case manufacturerNameExceedsMaximumLength(Int)
         case unexpectedGetRequest(PJLink.Class, PJLink.Command, String)
         case unexpectedSetRequest(PJLink.Class, PJLink.Command)
         case unexpectedGetResponse(PJLink.Class, PJLink.Command)

@@ -679,10 +679,22 @@ struct StringParsingTests {
 
     @Test
     func projectorNameResponse() throws {
-        var testCases: [TestCase] = [
+        let testCases: [TestCase] = [
+            .init(
+                "%1NAME=foo",
+                .success(.response(.get(.success(.projectorName(.init(value: "foo"))))))
+            ),
+            .init(
+                "%2NAME=foo",
+                .failure(.unexpectedGetResponse(.two, .projectorName))
+            ),
             .init(
                 "%3NAME=foo",
                 .failure(.invalidClass("3"))
+            ),
+            .init(
+                "%1NAME=01234567890123456789012345678901234567890123456789012345678901234", // Length 65
+                .failure(.projectorNameExceedsMaximumLength(65))
             ),
             .init(
                 "%1NAME=ERR1",
@@ -742,6 +754,22 @@ struct StringParsingTests {
             ),
         ]
         try run(testCases)
+    }
+
+    @Test
+    func manufacturerNameRequest() throws {
+        let testCases: [TestCase] = [
+            .init("%1INF1 ?", .success(.request(.get(.manufacturerName)))),
+            .init("%2INF1 ?", .failure(.unexpectedGetRequest(.two, .manufacturerName, ""))),
+            .init("%3INF1 ?", .failure(.invalidClass("3"))),
+            .init("%1INF1 ?XTRA",  .failure(.unexpectedGetRequest(.one, .manufacturerName, "XTRA"))),
+        ]
+        try run(testCases)
+    }
+
+    @Test
+    func manufacturerNameResponse() throws {
+
     }
 
     /*

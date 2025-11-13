@@ -16,3 +16,17 @@ extension PJLink.ManufacturerName {
 
     public static let mock = Self(value: "Mock Manufacturer Name")
 }
+
+extension PJLink.ManufacturerName: LosslessStringConvertibleThrowing {
+
+    public init(_ description: String) throws {
+        guard description.count <= Self.maxLength else {
+            throw PJLink.Error.manufacturerNameExceedsMaximumLength(description.count)
+        }
+        self.init(value: description)
+    }
+
+    public var description: String { value }
+
+    private static let maxLength = 32
+}
