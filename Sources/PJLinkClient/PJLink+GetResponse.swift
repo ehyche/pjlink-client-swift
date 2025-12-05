@@ -200,7 +200,7 @@ extension PJLink.GetResponseSuccess {
         case .avMute: .avMute
         case .errorStatus: .errorStatus
         case .lamp: .lamp
-        case .inputListClass1, .inputListClass2: .inputSwitch
+        case .inputListClass1, .inputListClass2: .inputList
         case .projectorName: .projectorName
         case .manufacturerName: .manufacturerName
         case .productName: .productName

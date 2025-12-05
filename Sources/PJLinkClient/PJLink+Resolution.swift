@@ -67,6 +67,11 @@ extension PJLink.Resolution {
     public static let mock = Self(horizontal: 1920, vertical: 1080)
 }
 
+extension PJLink.InputResolution {
+
+    public static let mock: Self = .ok(.mock)
+}
+
 extension PJLink.InputResolution: CaseIterable {
 
     public static let allCases: [PJLink.InputResolution] = [
