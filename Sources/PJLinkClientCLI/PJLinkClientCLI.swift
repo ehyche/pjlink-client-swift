@@ -11,31 +11,23 @@ import PJLinkClient
 
 @main
 struct PJLinkClientCLI: ParsableCommand {
+    @Option(help: "The IP address of the projector host.")
+    var host: String
+
+    @Option(help: "The password for the projector.")
+    var password: String = ""
+
     mutating func run() async throws {
-        let connection = NetworkConnection(to: .hostPort(host: "192.168.64.2", port: 4352)) {
-            TCP {
-                IP()
-            }
-        }
+        // Connect to the projector
+        let connectionState = try await PJLink.Client.authenticate(
+            at: .hostPort(host: .init(host), port: 4352),
+            password: password
+        )
 
-        let expectedResponse = Data("PJLINK 0\r".utf8)
-        let connectionResponse = try await connection.receive(exactly: 9).content
+        // Fetch the state
+        let state = try await PJLink.Client.fetchState(from: connectionState)
 
-        guard expectedResponse == connectionResponse else {
-            print("Did not receive expected connection response.")
-            return
-        }
-        print("Received non-authenticated connection response.")
-
-        let powerQuery = Data("%1POWR ?\r".utf8)
-        try await connection.send(powerQuery)
-
-        let powerQueryResponse = try await connection.receive(atLeast: 9, atMost: 10).content
-
-        guard let powerQueryResponseString = String(data: powerQueryResponse, encoding: .utf8) else {
-            print("Received power query response could not be converted to UTF8 string.")
-            return
-        }
-        print("Received \"\(powerQueryResponseString)\"")
+        // Print out the state
+        print("Projector State:\n\n\(state)")
     }
 }

@@ -197,3 +197,59 @@ extension PJLink.State {
         }
     }
 }
+
+extension PJLink.State: CustomStringConvertible {
+
+    public var description: String {
+        switch self {
+        case .class1(let class1State): class1State.description
+        case .class2(let class2State): class2State.description
+        }
+    }
+}
+
+extension PJLink.Class1State: CustomStringConvertible {
+
+    public var description: String {
+        """
+        class: 1
+        power: \(power)
+        mute: \(mute)
+        error: \(error)
+        lamps: \(lamps)
+        inputSwitches: \(inputSwitches)
+        activeInputSwitch: \(activeInputSwitch)
+        projectorName: \(projectorName)
+        manufacturerName: \(manufacturerName)
+        productName: \(productName)
+        otherInformation: \(otherInformation)
+        """
+    }
+}
+
+extension PJLink.Class2State: CustomStringConvertible {
+
+    public var description: String {
+        """
+        class: 2
+        power: \(power)
+        mute: \(mute)
+        error: \(error)
+        lamps: \(lamps)
+        inputSwitches: \(inputSwitches)
+        activeInputSwitch: \(activeInputSwitch)
+        projectorName: \(projectorName)
+        manufacturerName: \(manufacturerName)
+        productName: \(productName)
+        otherInformation: \(otherInformation)
+        serialNumber: \(serialNumber)
+        softwareVersion: \(softwareVersion)
+        inputResolution: \(inputResolution)
+        recommendedResolution: \(recommendedResolution)
+        filterUsageTime: \(filterUsageTime)
+        lampReplacementModelNumber: \(lampReplacementModelNumber)
+        filterReplacementModelNumber: \(filterReplacementModelNumber)
+        freeze: \(freeze)
+        """
+    }
+}

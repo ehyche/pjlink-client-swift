@@ -16,6 +16,7 @@ extension PJLink {
         case invalidCommand(String)
         case invalidSeparator(String)
         case unexpectedGetResponse(String)
+        case unexpectedSetResponse(String)
         case invalidClass1Input(String)
         case invalidClass2Input(String)
         case invalidClass1InputChannel(String)
@@ -55,6 +56,7 @@ extension PJLink {
         case unexpectedResponseCommand(request: PJLink.Command, response: PJLink.Command)
         case unexpectedResponse(request: String, response: String)
         case queryFailed(request: String, code: String)
+        case setFailed(request: String, code: String)
         case projectorRespondedWithError(request: String, response: String)
     }
 }

@@ -48,3 +48,46 @@ extension PJLink.SetResponse {
 
     public var isOK: Bool { code.isOK }
 }
+
+extension PJLink.SetResponse: LosslessStringConvertibleThrowing {
+
+    public init(_ description: String) throws {
+        var mutableDesc = description
+        let pjlinkId = String(mutableDesc.prefix(1))
+        guard pjlinkId == PJLink.identifier else {
+            throw PJLink.Error.invalidID(pjlinkId)
+        }
+        mutableDesc.removeFirst(1)
+
+        let classRawValue = String(mutableDesc.prefix(1))
+        guard let pjlinkClass = PJLink.Class(rawValue: classRawValue) else {
+            throw PJLink.Error.invalidClass(classRawValue)
+        }
+        mutableDesc.removeFirst(1)
+
+        let commandRawValue = mutableDesc.prefix(4).uppercased()
+        guard let pjlinkCommand = PJLink.Command(rawValue: commandRawValue) else {
+            throw PJLink.Error.invalidCommand(commandRawValue)
+        }
+        mutableDesc.removeFirst(4)
+
+        let separator = String(mutableDesc.prefix(1))
+        guard separator == PJLink.separatorResponse else {
+            let error: PJLink.Error = separator == PJLink.separatorRequest ?
+                .unexpectedSetResponse(description) :
+                .invalidSeparator(separator)
+            throw error
+        }
+        mutableDesc.removeFirst(1)
+
+        self = .init(
+            class: pjlinkClass,
+            command: pjlinkCommand,
+            code: try PJLink.SetResponseCode(mutableDesc)
+        )
+    }
+
+    public var description: String {
+        PJLink.identifier + self.class.rawValue + self.command.rawValue + PJLink.separatorResponse + self.code.rawValue
+    }
+}

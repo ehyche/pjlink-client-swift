@@ -520,4 +520,104 @@ extension PJLink.Client {
 
         return response
     }
+
+    public static func setPower(
+        to onOff: PJLink.OnOff,
+        from connectionState: PJLink.ConnectionState
+    ) async throws -> PJLink.PowerStatus {
+        // Set the power on or off
+        try await setThrowing(request: .power(onOff), from: connectionState)
+        // Fetch the power status
+        return try await queryPowerStatus(from: connectionState)
+    }
+
+    public static func setInputClass1(
+        to inputSwitch: PJLink.InputSwitchClass1,
+        from connectionState: PJLink.ConnectionState
+    ) async throws -> PJLink.InputSwitchClass1 {
+        // Set the input
+        try await setThrowing(request: .inputSwitchClass1(inputSwitch), from: connectionState)
+        // Fetch the current input
+        return try await queryInputSwitchClass1(from: connectionState)
+    }
+
+    public static func setInputClass2(
+        to inputSwitch: PJLink.InputSwitchClass2,
+        from connectionState: PJLink.ConnectionState
+    ) async throws -> PJLink.InputSwitchClass2 {
+        // Set the input
+        try await setThrowing(request: .inputSwitchClass2(inputSwitch), from: connectionState)
+        // Fetch the current input
+        return try await queryInputSwitchClass2(from: connectionState)
+    }
+
+    public static func setMuteState(
+        to muteState: PJLink.MuteState,
+        from connectionState: PJLink.ConnectionState
+    ) async throws -> PJLink.MuteState {
+        // Set the mute state
+        try await setThrowing(request: .avMute(muteState), from: connectionState)
+        // Fetch the current mute state
+        return try await queryMuteState(from: connectionState)
+    }
+
+    public static func setSpeakerVolume(
+        to volume: PJLink.VolumeAdjustment,
+        from connectionState: PJLink.ConnectionState
+    ) async throws {
+        try await setThrowing(request: .speakerVolume(volume), from: connectionState)
+    }
+
+    public static func setMicrophoneVolume(
+        to volume: PJLink.VolumeAdjustment,
+        from connectionState: PJLink.ConnectionState
+    ) async throws {
+        try await setThrowing(request: .microphoneVolume(volume), from: connectionState)
+    }
+
+    public static func setFreeze(
+        to freeze: PJLink.Freeze,
+        from connectionState: PJLink.ConnectionState
+    ) async throws -> PJLink.Freeze {
+        // Set the freeze state
+        try await setThrowing(request: .freeze(freeze), from: connectionState)
+        // Fetch the current freeze state
+        return try await queryFreeze(from: connectionState)
+    }
+
+    private static func setThrowing(
+        request: PJLink.SetRequest,
+        from connectionState: PJLink.ConnectionState
+    ) async throws {
+        let response = try await set(request: request, from: connectionState)
+        switch response.code {
+        case .ok:
+            break
+        default:
+            throw PJLink.Error.setFailed(request: request.description, code: response.code.rawValue)
+        }
+    }
+
+    private static func set(
+        request: PJLink.SetRequest,
+        from connectionState: PJLink.ConnectionState
+    ) async throws -> PJLink.SetResponse {
+        let requestString = connectionState.auth.description + request.description.crTerminated
+
+        try await connectionState.connection.send(Data(requestString.utf8))
+
+        let responseData = try await connectionState.connection.receive(atMost: 136).content
+        let responseUTF8 = try responseData.toUTF8String()
+        let response = try PJLink.SetResponse(responseUTF8)
+
+        // Do some error-checking.
+        //
+        // We expect that the associated command in the response should
+        // be the same as the command in the request.
+        guard request.command == response.command else {
+            throw PJLink.Error.unexpectedResponseCommand(request: request.command, response: response.command)
+        }
+
+        return response
+    }
 }
