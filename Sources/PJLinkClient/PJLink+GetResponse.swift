@@ -74,9 +74,52 @@ extension PJLink.GetResponse {
         case .failure(let getResponseFailure): getResponseFailure.command
         }
     }
+
+    public var isSuccess: Bool {
+        switch self {
+        case .success: true
+        case .failure: false
+        }
+    }
 }
 
-extension PJLink.GetResponse: CustomStringConvertible {
+extension PJLink.GetResponse: LosslessStringConvertibleThrowing {
+
+    public init(_ description: String) throws {
+        var mutableDesc = description
+        let pjlinkId = String(mutableDesc.prefix(1))
+        guard pjlinkId == PJLink.identifier else {
+            throw PJLink.Error.invalidID(pjlinkId)
+        }
+        mutableDesc.removeFirst(1)
+
+        let classRawValue = String(mutableDesc.prefix(1))
+        guard let pjlinkClass = PJLink.Class(rawValue: classRawValue) else {
+            throw PJLink.Error.invalidClass(classRawValue)
+        }
+        mutableDesc.removeFirst(1)
+
+        let commandRawValue = mutableDesc.prefix(4).uppercased()
+        guard let pjlinkCommand = PJLink.Command(rawValue: commandRawValue) else {
+            throw PJLink.Error.invalidCommand(commandRawValue)
+        }
+        mutableDesc.removeFirst(4)
+
+        let separator = String(mutableDesc.prefix(1))
+        guard separator == PJLink.separatorResponse else {
+            let error: PJLink.Error = separator == PJLink.separatorRequest ?
+                .unexpectedGetResponse(description) :
+                .invalidSeparator(separator)
+            throw error
+        }
+        mutableDesc.removeFirst(1)
+
+        if let getResponseCode = PJLink.GetResponseCode(rawValue: mutableDesc) {
+            self = .failure(.init(class: pjlinkClass, command: pjlinkCommand, code: getResponseCode))
+        } else {
+            self = .success(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc))
+        }
+    }
 
     public var description: String {
         switch self {
@@ -215,6 +258,160 @@ extension PJLink.GetResponseSuccess {
         case .lampReplacementModelNumber: .lampReplacementModelNumber
         case .filterReplacementModelNumber: .filterReplacementModelNumber
         case .freeze: .freeze
+        }
+    }
+
+    public var powerStatus: PJLink.PowerStatus? {
+        switch self {
+        case .power(let powerStatus): powerStatus
+        default: nil
+        }
+    }
+
+    public var inputSwitchClass1: PJLink.InputSwitchClass1? {
+        switch self {
+        case .inputSwitchClass1(let inputSwitchClass1): inputSwitchClass1
+        default: nil
+        }
+    }
+
+    public var inputSwitchClass2: PJLink.InputSwitchClass2? {
+        switch self {
+        case .inputSwitchClass2(let inputSwitchClass2): inputSwitchClass2
+        default: nil
+        }
+    }
+
+    public var muteState: PJLink.MuteState? {
+        switch self {
+        case .avMute(let muteState): muteState
+        default: nil
+        }
+    }
+
+    public var errorStatus: PJLink.ErrorStatus? {
+        switch self {
+        case .errorStatus(let errorStatus): errorStatus
+        default: nil
+        }
+    }
+
+    public var projectorClass: PJLink.Class? {
+        switch self {
+        case .projectorClass(let projectorClass): projectorClass
+        default: nil
+        }
+    }
+
+    public var lampsStatus: PJLink.LampsStatus? {
+        switch self {
+        case .lamp(let lampsStatus): lampsStatus
+        default: nil
+        }
+    }
+
+    public var inputListClass1: PJLink.InputSwitchesClass1? {
+        switch self {
+        case .inputListClass1(let inputListClass1): inputListClass1
+        default: nil
+        }
+    }
+
+    public var inputListClass2: PJLink.InputSwitchesClass2? {
+        switch self {
+        case .inputListClass2(let inputListClass2): inputListClass2
+        default: nil
+        }
+    }
+
+    public var projectorName: PJLink.ProjectorName? {
+        switch self {
+        case .projectorName(let projectorName): projectorName
+        default: nil
+        }
+    }
+
+    public var manufacturerName: PJLink.ManufacturerName? {
+        switch self {
+        case .manufacturerName(let manufacturerName): manufacturerName
+        default: nil
+        }
+    }
+
+    public var productName: PJLink.ProductName? {
+        switch self {
+        case .productName(let productName): productName
+        default: nil
+        }
+    }
+
+    public var otherInformation: PJLink.OtherInformation? {
+        switch self {
+        case .otherInformation(let otherInformation): otherInformation
+        default: nil
+        }
+    }
+
+    public var serialNumber: PJLink.SerialNumber? {
+        switch self {
+        case .serialNumber(let serialNumber): serialNumber
+        default: nil
+        }
+    }
+
+    public var softwareVersion: PJLink.SoftwareVersion? {
+        switch self {
+        case .softwareVersion(let softwareVersion): softwareVersion
+        default: nil
+        }
+    }
+
+    public var inputTerminalName: PJLink.InputTerminalName? {
+        switch self {
+        case .inputTerminalName(let inputTerminalName): inputTerminalName
+        default: nil
+        }
+    }
+
+    public var inputResolution: PJLink.InputResolution? {
+        switch self {
+        case .inputResolution(let inputResolution): inputResolution
+        default: nil
+        }
+    }
+
+    public var recommendedResolution: PJLink.Resolution? {
+        switch self {
+        case .recommendedResolution(let resolution): resolution
+        default: nil
+        }
+    }
+
+    public var filterUsageTime: PJLink.FilterUsageTime? {
+        switch self {
+        case .filterUsageTime(let filterUsageTime): filterUsageTime
+        default: nil
+        }
+    }
+
+    public var lampReplacementModelNumber: PJLink.ModelNumber? {
+        switch self {
+        case .lampReplacementModelNumber(let modelNumber): modelNumber
+        default: nil
+        }
+    }
+
+    public var filterReplacementModelNumber: PJLink.ModelNumber? {
+        switch self {
+        case .filterReplacementModelNumber(let modelNumber): modelNumber
+        default: nil
+        }
+    }
+
+    public var freeze: PJLink.Freeze? {
+        switch self {
+        case .freeze(let freeze): freeze
+        default: nil
         }
     }
 }

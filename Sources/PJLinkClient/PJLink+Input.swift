@@ -24,3 +24,16 @@ extension PJLink {
         case `internal` = "6"
     }
 }
+
+extension PJLink.InputClass1 {
+
+    public var asClass2: PJLink.InputClass2 {
+        switch self {
+        case .rgb: .rgb
+        case .video: .video
+        case .digital: .digital
+        case .storage: .storage
+        case .network: .network
+        }
+    }
+}

@@ -33,3 +33,18 @@ extension PJLink.SetResponseCode: LosslessStringConvertibleThrowing {
 
     public var description: String { rawValue }
 }
+
+extension PJLink.SetResponseCode {
+
+    public var isOK: Bool {
+        switch self {
+        case .ok: true
+        default: false
+        }
+    }
+}
+
+extension PJLink.SetResponse {
+
+    public var isOK: Bool { code.isOK }
+}

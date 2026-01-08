@@ -15,13 +15,23 @@ extension PJLink {
         var switches: [InputSwitchClass1]
     }
 
-    public struct InputSwitchClass2: Equatable, Sendable {
+    public struct InputSwitchClass2: Hashable, Sendable {
         var input: InputClass2
         var channel: InputChannelClass2
     }
 
     public struct InputSwitchesClass2: Equatable, Sendable {
         var switches: [InputSwitchClass2]
+    }
+
+    /// Class-independent input information
+    public struct Input: Equatable, Sendable {
+        /// `InputClass2` is a superset of `InputClass1`, so we can use `InputClass2` for both classes
+        public var input: InputClass2
+        /// `InputChannelClass2` is a superset of `InputChannelClass1`, so we can use `InputChannelClass2` for both classes
+        public var channel: InputChannelClass2
+        /// `InputTerminalName` will only be available for Class2 devices
+        public var name: InputTerminalName?
     }
 }
 
@@ -123,9 +133,23 @@ extension PJLink.InputSwitchClass2: CaseIterable {
     }
 }
 
+extension PJLink.InputSwitchClass1 {
+
+    public var asInput: PJLink.Input {
+        .init(input: input.asClass2, channel: channel.asClass2, name: nil)
+    }
+}
+
 extension PJLink.InputSwitchesClass1 {
 
     public static let mock = Self(switches: PJLink.InputSwitchClass1.allCases)
+}
+
+extension PJLink.InputSwitchClass2 {
+
+    public func toInput(withName name: PJLink.InputTerminalName?) -> PJLink.Input {
+        .init(input: input, channel: channel, name: name)
+    }
 }
 
 extension PJLink.InputSwitchesClass2 {

@@ -12,4 +12,5 @@ extension PJLink {
     public static let separatorResponse = "="
     public static let prefixGet = "?"
     public static let terminator = "\r"
+    public static let pjlink = "PJLINK"
 }

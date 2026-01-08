@@ -56,3 +56,20 @@ extension PJLink {
         case z = "Z"
     }
 }
+
+extension PJLink.InputChannelClass1 {
+
+    public var asClass2: PJLink.InputChannelClass2 {
+        switch self {
+        case .one: .one
+        case .two: .two
+        case .three: .three
+        case .four: .four
+        case .five: .five
+        case .six: .six
+        case .seven: .seven
+        case .eight: .eight
+        case .nine: .nine
+        }
+    }
+}

@@ -5,6 +5,8 @@
 //  Created by Eric Hyche on 10/17/25.
 //
 
+import Foundation
+
 extension PJLink {
     public enum Message: Equatable {
         case request(Request)
@@ -111,6 +113,27 @@ extension PJLink.Message {
         }
     }
 
+    public var isSetRequest: Bool {
+        switch self {
+        case .request(let request): request.isSet
+        case .response: false
+        }
+    }
+
+    public var isSetResponse: Bool {
+        switch self {
+        case .request: false
+        case .response(let response): response.isSet
+        }
+    }
+
+    public var isSuccessfulResponse: Bool {
+        switch self {
+        case .request: false
+        case .response(let response): response.isSuccess
+        }
+    }
+
     public var separator: String {
         switch self {
         case .request: PJLink.separatorRequest
@@ -135,6 +158,13 @@ extension PJLink.Message {
 }
 
 extension PJLink.Message.Request {
+
+    public var isSet: Bool {
+        switch self {
+        case .get: false
+        case .set: true
+        }
+    }
 
     public var `class`: PJLink.Class {
         switch self {
@@ -172,6 +202,20 @@ extension PJLink.Message.Response {
         switch self {
         case .get(let getResponse): getResponse.command
         case .set(let setResponse): setResponse.command
+        }
+    }
+
+    public var isSet: Bool {
+        switch self {
+        case .get: false
+        case .set: true
+        }
+    }
+
+    public var isSuccess: Bool {
+        switch self {
+        case .get(let getResponse): getResponse.isSuccess
+        case .set(let setResponse): setResponse.isOK
         }
     }
 }
