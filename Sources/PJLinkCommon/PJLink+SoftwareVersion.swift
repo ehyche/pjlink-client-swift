@@ -7,7 +7,7 @@
 
 extension PJLink {
 
-    public struct SoftwareVersion: Equatable, Sendable {
+    public struct SoftwareVersion: Equatable, Sendable, Codable {
         public var value: String
     }
 }

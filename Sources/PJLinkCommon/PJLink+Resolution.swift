@@ -7,13 +7,13 @@
 
 extension PJLink {
 
-    public enum InputResolution: Equatable, Sendable {
+    public enum InputResolution: Equatable, Sendable, Codable {
         case ok(Resolution)
         case noSignal
         case unknownSignal
     }
 
-    public struct Resolution: Equatable, Sendable {
+    public struct Resolution: Equatable, Sendable, Codable {
         var horizontal: Int
         var vertical: Int
     }

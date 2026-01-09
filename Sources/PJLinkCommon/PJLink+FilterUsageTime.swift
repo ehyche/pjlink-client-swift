@@ -7,7 +7,7 @@
 
 extension PJLink {
 
-    public struct FilterUsageTime: Equatable, Sendable {
+    public struct FilterUsageTime: Equatable, Sendable, Codable {
         public var value: Int
     }
 }

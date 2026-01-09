@@ -7,12 +7,12 @@
 
 extension PJLink {
 
-    public struct LampStatus: Equatable, Sendable {
+    public struct LampStatus: Equatable, Sendable, Codable {
         var usageTime: Int
         var state: OnOff
     }
 
-    public struct LampsStatus: Equatable, Sendable {
+    public struct LampsStatus: Equatable, Sendable, Codable {
         var lampStatus: [LampStatus]
     }
 }

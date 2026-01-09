@@ -6,7 +6,7 @@
 //
 
 extension PJLink {
-    public enum Mute: String, CaseIterable, Equatable, Sendable {
+    public enum Mute: String, CaseIterable, Equatable, Sendable, Codable {
         case video = "1"
         case audio = "2"
         case audioVideo = "3"

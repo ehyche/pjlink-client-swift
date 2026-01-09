@@ -6,21 +6,21 @@
 //
 
 extension PJLink {
-    public struct InputSwitchClass1: Equatable, Sendable {
+    public struct InputSwitchClass1: Equatable, Sendable, Codable {
         public var input: InputClass1
         public var channel: InputChannelClass1
     }
 
-    public struct InputSwitchesClass1: Equatable, Sendable {
+    public struct InputSwitchesClass1: Equatable, Sendable, Codable {
         public var switches: [InputSwitchClass1]
     }
 
-    public struct InputSwitchClass2: Hashable, Sendable {
+    public struct InputSwitchClass2: Hashable, Sendable, Codable {
         public var input: InputClass2
         public var channel: InputChannelClass2
     }
 
-    public struct InputSwitchesClass2: Equatable, Sendable {
+    public struct InputSwitchesClass2: Equatable, Sendable, Codable {
         public var switches: [InputSwitchClass2]
     }
 

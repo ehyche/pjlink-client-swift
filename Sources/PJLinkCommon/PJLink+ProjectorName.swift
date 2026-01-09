@@ -7,7 +7,7 @@
 
 extension PJLink {
 
-    public struct ProjectorName: Equatable, Sendable {
+    public struct ProjectorName: Equatable, Sendable, Codable {
         public var value: String
     }
 }

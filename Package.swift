@@ -24,6 +24,12 @@ let package = Package(
             ]
         ),
         .target(
+            name: "PJLinkServer",
+            dependencies: [
+                .target(name: "PJLinkCommon"),
+            ]
+        ),
+        .target(
             name: "PJLinkCommon",
             dependencies: [
             ]

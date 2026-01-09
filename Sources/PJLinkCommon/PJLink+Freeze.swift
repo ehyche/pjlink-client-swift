@@ -7,7 +7,7 @@
 
 extension PJLink {
 
-    public enum Freeze: String, CaseIterable, Equatable, Sendable {
+    public enum Freeze: String, CaseIterable, Equatable, Sendable, Codable {
         case stop = "0"
         case start = "1"
     }

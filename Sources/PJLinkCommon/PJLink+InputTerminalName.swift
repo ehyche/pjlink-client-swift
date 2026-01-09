@@ -7,7 +7,7 @@
 
 extension PJLink {
 
-    public struct InputTerminalName: Equatable, Sendable {
+    public struct InputTerminalName: Equatable, Sendable, Codable {
         public var value: String
     }
 }
