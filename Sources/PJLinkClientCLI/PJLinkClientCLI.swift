@@ -7,6 +7,7 @@
 import ArgumentParser
 import Foundation
 import Network
+import PJLinkCommon
 import PJLinkClient
 
 @main

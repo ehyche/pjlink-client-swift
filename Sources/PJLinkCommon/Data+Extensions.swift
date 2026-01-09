@@ -26,7 +26,7 @@ extension Data {
         }
     }
 
-    func toUTF8String() throws -> String {
+    public func toUTF8String() throws -> String {
         guard let utf8String = String(data: self, encoding: .utf8) else {
             throw PJLink.Error.couldNotConvertToUTF8(self)
         }

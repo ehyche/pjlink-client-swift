@@ -142,7 +142,7 @@ extension PJLink.AuthResponse: LosslessStringConvertibleThrowing {
 
 extension PJLink.AuthState {
 
-    static func level1(projectorRandom4: PJLink.Buffer4, password: String) throws -> Self {
+    public static func level1(projectorRandom4: PJLink.Buffer4, password: String) throws -> Self {
         // Construct the string to be hashed. This string consists of:
         // - The hex-encoded 4-byte projector random number
         // - The password
@@ -154,7 +154,7 @@ extension PJLink.AuthState {
         return .level1(hash: md5)
     }
 
-    static func level2(projectorRandom16: PJLink.Buffer16, password: String) throws -> Self {
+    public static func level2(projectorRandom16: PJLink.Buffer16, password: String) throws -> Self {
         // Generate a 16-byte client random number
         let clientRandom16 = PJLink.Buffer16(data: try Data.random(count: 16))
 

@@ -23,6 +23,30 @@ extension PJLink {
         public var manufacturerName: ManufacturerName
         public var productName: ProductName
         public var otherInformation: OtherInformation
+
+        public init(
+            power: PowerStatus,
+            mute: MuteState,
+            error: ErrorStatus,
+            lamps: LampsStatus,
+            inputSwitches: InputSwitchesClass1,
+            activeInputSwitch: InputSwitchClass1,
+            projectorName: ProjectorName,
+            manufacturerName: ManufacturerName,
+            productName: ProductName,
+            otherInformation: OtherInformation
+        ) {
+            self.power = power
+            self.mute = mute
+            self.error = error
+            self.lamps = lamps
+            self.inputSwitches = inputSwitches
+            self.activeInputSwitch = activeInputSwitch
+            self.projectorName = projectorName
+            self.manufacturerName = manufacturerName
+            self.productName = productName
+            self.otherInformation = otherInformation
+        }
     }
 
     public struct Class2State {
@@ -45,6 +69,48 @@ extension PJLink {
         public var lampReplacementModelNumber: ModelNumber
         public var filterReplacementModelNumber: ModelNumber
         public var freeze: Freeze
+
+        public init(
+            power: PowerStatus,
+            mute: MuteState,
+            error: ErrorStatus,
+            lamps: LampsStatus,
+            inputSwitches: InputSwitchesClass2,
+            activeInputSwitch: InputSwitchClass2,
+            inputNames: [InputSwitchClass2 : InputTerminalName],
+            projectorName: ProjectorName,
+            manufacturerName: ManufacturerName,
+            productName: ProductName,
+            otherInformation: OtherInformation,
+            serialNumber: SerialNumber,
+            softwareVersion: SoftwareVersion,
+            inputResolution: InputResolution,
+            recommendedResolution: Resolution,
+            filterUsageTime: FilterUsageTime,
+            lampReplacementModelNumber: ModelNumber,
+            filterReplacementModelNumber: ModelNumber,
+            freeze: Freeze
+        ) {
+            self.power = power
+            self.mute = mute
+            self.error = error
+            self.lamps = lamps
+            self.inputSwitches = inputSwitches
+            self.activeInputSwitch = activeInputSwitch
+            self.inputNames = inputNames
+            self.projectorName = projectorName
+            self.manufacturerName = manufacturerName
+            self.productName = productName
+            self.otherInformation = otherInformation
+            self.serialNumber = serialNumber
+            self.softwareVersion = softwareVersion
+            self.inputResolution = inputResolution
+            self.recommendedResolution = recommendedResolution
+            self.filterUsageTime = filterUsageTime
+            self.lampReplacementModelNumber = lampReplacementModelNumber
+            self.filterReplacementModelNumber = filterReplacementModelNumber
+            self.freeze = freeze
+        }
     }
 }
 

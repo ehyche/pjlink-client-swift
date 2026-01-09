@@ -7,21 +7,21 @@
 
 extension PJLink {
     public struct InputSwitchClass1: Equatable, Sendable {
-        var input: InputClass1
-        var channel: InputChannelClass1
+        public var input: InputClass1
+        public var channel: InputChannelClass1
     }
 
     public struct InputSwitchesClass1: Equatable, Sendable {
-        var switches: [InputSwitchClass1]
+        public var switches: [InputSwitchClass1]
     }
 
     public struct InputSwitchClass2: Hashable, Sendable {
-        var input: InputClass2
-        var channel: InputChannelClass2
+        public var input: InputClass2
+        public var channel: InputChannelClass2
     }
 
     public struct InputSwitchesClass2: Equatable, Sendable {
-        var switches: [InputSwitchClass2]
+        public var switches: [InputSwitchClass2]
     }
 
     /// Class-independent input information

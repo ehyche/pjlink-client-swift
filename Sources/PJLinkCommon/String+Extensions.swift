@@ -9,7 +9,7 @@ import Foundation
 
 extension String {
 
-    var crTerminated: String {
+    public var crTerminated: String {
         if hasSuffix("\r") {
             return self
         } else {
@@ -17,7 +17,7 @@ extension String {
         }
     }
 
-    var crTerminatedData: Data {
+    public var crTerminatedData: Data {
         Data(crTerminated.utf8)
     }
 }

@@ -20,6 +20,12 @@ let package = Package(
         .target(
             name: "PJLinkClient",
             dependencies: [
+                .target(name: "PJLinkCommon"),
+            ]
+        ),
+        .target(
+            name: "PJLinkCommon",
+            dependencies: [
             ]
         ),
         .testTarget(
