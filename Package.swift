@@ -8,6 +8,7 @@ let package = Package(
     platforms: [.macOS(.v26)],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.0"),
+        .package(url: "https://github.com/pointfreeco/swift-concurrency-extras.git", from: "1.3.2"),
     ],
     targets: [
         .executableTarget(
@@ -15,6 +16,13 @@ let package = Package(
             dependencies: [
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 .target(name: "PJLinkClient"),
+            ]
+        ),
+        .executableTarget(
+            name: "PJLinkServerCLI",
+            dependencies: [
+                .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                .target(name: "PJLinkServer"),
             ]
         ),
         .target(
@@ -27,6 +35,7 @@ let package = Package(
             name: "PJLinkServer",
             dependencies: [
                 .target(name: "PJLinkCommon"),
+                .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
             ]
         ),
         .target(

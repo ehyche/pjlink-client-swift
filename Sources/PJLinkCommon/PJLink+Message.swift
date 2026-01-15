@@ -179,6 +179,56 @@ extension PJLink.Message.Request {
         case .set(let setRequest): setRequest.command
         }
     }
+
+    public var parameterDescription: String {
+        switch self {
+        case .get(let getRequest): getRequest.description
+        case .set(let setRequest): setRequest.description
+        }
+    }
+}
+
+extension PJLink.Message.Request: LosslessStringConvertibleThrowing {
+
+    public init(_ description: String) throws {
+        var mutableDesc = description
+        let pjlinkId = String(mutableDesc.prefix(1))
+        guard pjlinkId == PJLink.identifier else {
+            throw PJLink.Error.invalidID(pjlinkId)
+        }
+        mutableDesc.removeFirst(1)
+
+        let classRawValue = String(mutableDesc.prefix(1))
+        guard let pjlinkClass = PJLink.Class(rawValue: classRawValue) else {
+            throw PJLink.Error.invalidClass(classRawValue)
+        }
+        mutableDesc.removeFirst(1)
+
+        let commandRawValue = mutableDesc.prefix(4).uppercased()
+        guard let pjlinkCommand = PJLink.Command(rawValue: commandRawValue) else {
+            throw PJLink.Error.invalidCommand(commandRawValue)
+        }
+        mutableDesc.removeFirst(4)
+
+        let separator = String(mutableDesc.prefix(1))
+        guard separator == PJLink.separatorRequest else {
+            throw PJLink.Error.unexpectedSeparator(separator)
+        }
+        mutableDesc.removeFirst(1)
+
+        if mutableDesc.prefix(1) == PJLink.prefixGet {
+            // Get Request
+            mutableDesc.removeFirst(1)
+            self = .get(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc))
+        } else {
+            // Set Request
+            self = .set(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc))
+        }
+    }
+
+    public var description: String {
+        PJLink.identifier + self.class.rawValue + self.command.rawValue + PJLink.separatorRequest + parameterDescription
+    }
 }
 
 extension PJLink.Message.Response {

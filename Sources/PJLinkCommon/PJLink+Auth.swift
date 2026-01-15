@@ -21,21 +21,51 @@ extension PJLink {
     }
 
     public struct Buffer4: Equatable {
-        var data: Data
+        public var data: Data
+
+        public init(data: Data) {
+            self.data = data
+        }
     }
 
     public struct Buffer16: Equatable {
-        var data: Data
+        public var data: Data
+
+        public init(data: Data) {
+            self.data = data
+        }
     }
 
     public struct Buffer32: Equatable {
-        var data: Data
+        public var data: Data
+
+        public init(data: Data) {
+            self.data = data
+        }
+    }
+
+    public enum ClientAuthState: Equatable {
+        // We haven't sent or received anything yet.
+        case indeterminate
+        // We have received "PJLINK 0" indicating authentication is disabled
+        case disabled
+        // We have received something like "PJLINK 1 498e4a67" and then
+        // we need to send a "PJLINK 2" to determine the security level.
+        // We hold the 4-byte random number as an associated value.
+        case securityLevelRequestPending(random4: Buffer4, password: String)
     }
 
     public enum AuthState: Equatable {
+        // Projector has disabled authentication
         case disabled
-        case level1(hash: Buffer16)
-        case level2(random: Buffer16, hash: Buffer32)
+        // Projector is using Class1 authentication
+        case level1(projectorRandom: Buffer4, password: String)
+        // Projector is using Class2 authentication
+        case level2(clientRandom: Buffer16, projectorRandom: Buffer16, password: String)
+        // At least 1 response has been authenticated, so there
+        // is no further need to supply the authenticated
+        // data before the request.
+        case authenticated
     }
 
     public enum SecurityLevel: String {
@@ -64,11 +94,11 @@ extension PJLink.Buffer16 {
         self.data = data
     }
 
-    func combine(with other: Self, transform: (UInt8, UInt8) -> UInt8) -> Self {
+    public func combine(with other: Self, transform: (UInt8, UInt8) -> UInt8) -> Self {
         Self(data: Data(zip(self.data, other.data).map(transform)))
     }
 
-    func xor(with other: Self) -> Self {
+    public func xor(with other: Self) -> Self {
         combine(with: other, transform: ^)
     }
 }
@@ -83,10 +113,24 @@ extension PJLink.Buffer32 {
     }
 }
 
-extension PJLink.AuthRequest: CustomStringConvertible {
+extension PJLink.AuthRequest: LosslessStringConvertibleThrowing {
+
+    public init(_ description: String) throws {
+        let components = description.split(separator: " ")
+        guard components.count == 2 else {
+            throw PJLink.Error.invalidAuthRequestFieldCount(description)
+        }
+        guard components[0] == PJLink.pjlink else {
+            throw PJLink.Error.invalidAuthRequestHeader(String(components[0]))
+        }
+        guard components[1] == PJLink.SecurityLevel.level2.rawValue else {
+            throw PJLink.Error.invalidSecurityLevel(String(components[1]))
+        }
+        self = .securityLevel
+    }
 
     public var description: String {
-        PJLink.pjlink + " 2"
+        PJLink.pjlink + " " + PJLink.SecurityLevel.level2.rawValue
     }
 }
 
@@ -142,44 +186,36 @@ extension PJLink.AuthResponse: LosslessStringConvertibleThrowing {
 
 extension PJLink.AuthState {
 
-    public static func level1(projectorRandom4: PJLink.Buffer4, password: String) throws -> Self {
-        // Construct the string to be hashed. This string consists of:
-        // - The hex-encoded 4-byte projector random number
-        // - The password
-        let toBeHashed = projectorRandom4.data.hexEncodedString + password
+    public static let level2ClientRandomCount = 32
+    public static let level2ClientHashCount = 64
 
-        // Perform an MD5 hash on this string
-        let md5 = try PJLink.Buffer16(Data(toBeHashed.utf8).md5)
-
-        return .level1(hash: md5)
-    }
-
-    public static func level2(projectorRandom16: PJLink.Buffer16, password: String) throws -> Self {
-        // Generate a 16-byte client random number
-        let clientRandom16 = PJLink.Buffer16(data: try Data.random(count: 16))
-
-        // XOR the projector and client random numbers
-        let xorRandom16 = clientRandom16.xor(with: projectorRandom16)
-
-        // Construct the string to be hashed. This string consists of:
-        // - The hex-encoded XOR of the projector and client random numbers
-        // - The password
-        let toBeHashed = xorRandom16.data.hexEncodedString + password
-
-        // Perform a SHA256 on this string
-        let sha256 = try PJLink.Buffer32(Data(toBeHashed.utf8).sha256)
-
-        return .level2(random: clientRandom16, hash: sha256)
-    }
-}
-
-extension PJLink.AuthState: CustomStringConvertible {
-
-    public var description: String {
+    public var expectedAuthSize: Int {
         switch self {
-        case .disabled: ""
-        case .level1(let hash): hash.data.hexEncodedString
-        case .level2(let random, let hash): random.data.hexEncodedString + hash.data.hexEncodedString
+        case .disabled: 0
+        case .level1: 32
+        case .level2: 96
+        case .authenticated: 0
+        }
+    }
+
+    public var hash: String {
+        switch self {
+        case .disabled:
+            return ""
+        case .level1(let projectorRandom, let password):
+            let toBeHashed = projectorRandom.data.hexEncodedString + password
+            return Data(toBeHashed.utf8).md5.hexEncodedString
+        case .level2(let clientRandom, let projectorRandom, let password):
+            // XOR the projector and client random numbers
+            let xorRandom16 = clientRandom.xor(with: projectorRandom)
+            // Construct the string to be hashed. This string consists of:
+            // - The hex-encoded XOR of the projector and client random numbers
+            // - The password
+            let toBeHashed = xorRandom16.data.hexEncodedString + password
+            // Perform a SHA256 on this data and then hex-encode it.
+            return Data(toBeHashed.utf8).sha256.hexEncodedString
+        case .authenticated:
+            return ""
         }
     }
 }

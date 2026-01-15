@@ -67,13 +67,13 @@ extension PJLink.Client {
         case .authDisabled:
             authState = .disabled
         case .securityLevel1(let buffer4):
-            authState = try .level1(projectorRandom4: buffer4, password: password)
+            authState = .level1(projectorRandom: buffer4, password: password)
         case .securityLevel2(let buffer16):
-            authState = try .level2(projectorRandom16: buffer16, password: password)
+            authState = .level2(clientRandom: try .init(Data.random(count: 16)), projectorRandom: buffer16, password: password)
         case .authError:
             // The projector responded with "ERRA" to our "PJLINK 2\r" request.
             // So we assume a class1-level security projector.
-            authState = try .level1(projectorRandom4: randomNumber4Bytes, password: password)
+            authState = .level1(projectorRandom: randomNumber4Bytes, password: password)
         }
 
         return .init(connection: connection, auth: authState)
@@ -223,11 +223,11 @@ extension PJLink.Client {
         guard request.isRequest else {
             throw PJLink.Error.inputMessageMustBeRequest(request.description)
         }
-        let requestString = connectionState.auth.description + request.description.crTerminated
+        let requestString = connectionState.auth.hash + request.description.crTerminated
 
         try await connectionState.connection.send(Data(requestString.utf8))
 
-        let responseData = try await connectionState.connection.receive(atMost: 136).content
+        let responseData = try await connectionState.connection.receive(atMost: PJLink.maxResponseSize).content
         let responseUTF8 = try responseData.toUTF8String()
 
         // As we are parsing, we give the PJLink.Message parser a hint
@@ -499,11 +499,11 @@ extension PJLink.Client {
         request: PJLink.GetRequest,
         from connectionState: PJLink.ConnectionState
     ) async throws -> PJLink.GetResponse {
-        let requestString = connectionState.auth.description + request.description.crTerminated
+        let requestString = connectionState.auth.hash + request.description.crTerminated
 
         try await connectionState.connection.send(Data(requestString.utf8))
 
-        let responseData = try await connectionState.connection.receive(atMost: 136).content
+        let responseData = try await connectionState.connection.receive(atMost: PJLink.maxResponseSize).content
         let responseUTF8 = try responseData.toUTF8String()
 
         // As we are parsing, we give the PJLink.Message parser a hint
@@ -603,11 +603,11 @@ extension PJLink.Client {
         request: PJLink.SetRequest,
         from connectionState: PJLink.ConnectionState
     ) async throws -> PJLink.SetResponse {
-        let requestString = connectionState.auth.description + request.description.crTerminated
+        let requestString = connectionState.auth.hash + request.description.crTerminated
 
         try await connectionState.connection.send(Data(requestString.utf8))
 
-        let responseData = try await connectionState.connection.receive(atMost: 136).content
+        let responseData = try await connectionState.connection.receive(atMost: PJLink.maxResponseSize).content
         let responseUTF8 = try responseData.toUTF8String()
         let response = try PJLink.SetResponse(responseUTF8)
 

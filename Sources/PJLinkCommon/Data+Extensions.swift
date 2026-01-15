@@ -11,7 +11,7 @@ import Security
 
 extension Data {
 
-    var hexEncodedString: String {
+    public var hexEncodedString: String {
         self.map { String(format: "%02x", $0) }.joined()
     }
 
@@ -36,7 +36,7 @@ extension Data {
         return String(utf8String.prefix(upTo: crIndex))
     }
 
-    static func random(count: Int) throws -> Data {
+    public static func random(count: Int) throws -> Data {
         guard count > 0 else {
             throw PJLink.Error.invalidRandomByteCountArgument(count)
         }
@@ -51,7 +51,7 @@ extension Data {
         return Data(bytes)
     }
 
-    var sha256: Data {
+    public var sha256: Data {
         var hash = SHA256()
         hash.update(data: self)
         let digest = hash.finalize()
@@ -62,7 +62,7 @@ extension Data {
         return Data(output)
     }
 
-    var md5: Data {
+    public var md5: Data {
         var hash = Insecure.MD5()
         hash.update(data: self)
         let digest = hash.finalize()
@@ -73,7 +73,7 @@ extension Data {
         return Data(output)
     }
 
-    init(hex: String) throws {
+    public init(hex: String) throws {
         let hexChars = try hex.map { try PJLink.HexCharacter($0) }
         guard hexChars.count.isMultiple(of: 2) else {
             throw PJLink.Error.oddNumberOfHexCharacters(hex)

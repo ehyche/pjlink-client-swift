@@ -15,6 +15,7 @@ extension PJLink {
         case invalidClass(String)
         case invalidCommand(String)
         case invalidSeparator(String)
+        case unexpectedSeparator(String)
         case unexpectedGetResponse(String)
         case unexpectedSetResponse(String)
         case invalidClass1Input(String)
@@ -42,6 +43,8 @@ extension PJLink {
         case unexpectedGetResponse(PJLink.Class, PJLink.Command)
         case unexpectedConnectionResponse(String)
         case unexpectedSecurityLevelResponse(String)
+        case invalidAuthRequestFieldCount(String)
+        case invalidAuthRequestHeader(String)
         case invalidAuthResponseFieldCount(String)
         case invalidAuthResponseHeader(String)
         case invalidSecurityLevel(String)
@@ -58,5 +61,8 @@ extension PJLink {
         case queryFailed(request: String, code: String)
         case setFailed(request: String, code: String)
         case projectorRespondedWithError(request: String, response: String)
+        case requestContainsNoIdentifier(String)
+        case unexpectedRequestAuthSize(expected: Int, actual: Int)
+        case requestFailsValidation(String)
     }
 }
