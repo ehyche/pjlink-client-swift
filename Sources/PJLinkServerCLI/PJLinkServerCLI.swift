@@ -12,11 +12,14 @@ import PJLinkServer
 
 @main
 struct PJLinkServerCLI: AsyncParsableCommand {
-    @Option(help: "The IP address of the projector host.")
-    var host: String
+    @Option(help: "The relative path to the server configuration JSON file.")
+    var configFile: String
 
     mutating func run() async throws {
-        let server = PJLink.Server(config: .mock)
+        let configFileURL = URL(filePath: configFile, relativeTo: URL.currentDirectory())
+        let configFileData = try Data(contentsOf: configFileURL)
+        let config = try JSONDecoder().decode(PJLink.ServerConfig.self, from: configFileData)
+        let server = PJLink.Server(config: config)
         try await server.run()
     }
 }

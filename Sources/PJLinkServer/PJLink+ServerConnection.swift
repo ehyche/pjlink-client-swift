@@ -7,6 +7,7 @@
 
 import ConcurrencyExtras
 import Network
+import os
 import PJLinkCommon
 
 extension PJLink {
@@ -33,17 +34,28 @@ extension PJLink {
         }
 
         public func run() async throws {
+            let logger = Logger(cat: .connection)
             connection.onBetterPathUpdate { connection, newValue in
-                print("ServerConnection onBetterPathUpdate(\(connection), \(newValue))")
+                logger.debug("Connection[\(connection.id)] onBetterPathUpdate: \(newValue)")
             }
             connection.onPathUpdate { connection, newPath in
-                print("ServerConnection onPathUpdate(\(connection), \(newPath))")
+                logger.debug("Connection[\(connection.id)] onPathUpdate: \(newPath.debugDescription)")
             }
             connection.onViabilityUpdate { connection, newViable in
-                print("ServerConnection onViabilityUpdate(\(connection), \(newViable))")
+                logger.debug("Connection[\(connection.id)] onViabilityUpdate: \(newViable)")
             }
             connection.onStateUpdate { connection, state in
-                print("ServerConnection onStateUpdate(\(connection), \(state))")
+                let stateDesc: String
+                switch state {
+                case .setup: stateDesc = "Setup"
+                case .waiting(let error): stateDesc = "Waiting(\(error))"
+                case .preparing: stateDesc = "Preparing"
+                case .ready: stateDesc = "Ready"
+                case .failed(let error): stateDesc = "Failed(\(error))"
+                case .cancelled: stateDesc = "Cancelled"
+                @unknown default: stateDesc = "Unknown"
+                }
+                logger.debug("Connection[\(connection.id)] onStateUpdate: \(stateDesc)")
                 switch state {
                 case .failed:
                     self.onTerminated(self)
@@ -55,41 +67,66 @@ extension PJLink {
             }
 
             // We need to send the initial auth response
-            if authConfig.password != nil {
-                let random4 = try PJLink.Buffer4.random()
-                let authResponse = PJLink.AuthResponse.securityLevel1(random4)
-                try await connection.send(authResponse.description.crTerminatedData)
-                authState.setValue(.class1AuthResponseSent(random4))
-            } else {
-                let authResponse = PJLink.AuthResponse.authDisabled
-                try await connection.send(authResponse.description.crTerminatedData)
-                authState.setValue(.disabled)
+            do {
+                let authResponse: PJLink.AuthResponse
+                if authConfig.password != nil {
+                    // We have a password in the AuthConfig, so we need
+                    // to send the initial "PJLINK 1 49834a67" response
+                    // with a 4-byte random number.
+                    let random4 = try PJLink.Buffer4.random()
+                    authResponse = PJLink.AuthResponse.securityLevel1(random4)
+                    try await connection.send(authResponse.description.crTerminatedData)
+                    authState.setValue(.class1AuthResponseSent(random4))
+                } else {
+                    // We have no password in the AuthConfig, so authentication is disabled.
+                    // We therefore send "PJLINK 0".
+                    authResponse = PJLink.AuthResponse.authDisabled
+                    try await connection.send(authResponse.description.crTerminatedData)
+                    authState.setValue(.disabled)
+                }
+            } catch {
+                logger.error("Connection[\(self.connection.id)] Initial Auth Response Error: \(error)")
+                return
             }
 
             // Loop through, receiving a request and processing it.
             while !connection.state.isFinished {
-                let (authMessage, request) = try await receiveRequest(on: connection)
+                let authMessage: AuthMessage
+                let request: Message.Request?
+                do {
+                    (authMessage, request) = try await receiveRequest(on: connection, logger: logger)
+                } catch {
+                    logger.error("Connection[\(self.connection.id)] Error Receiving Request: \(error)")
+                    continue
+                }
 
-                try await processRequest(
-                    authState: authState,
-                    authMessage: authMessage,
-                    authConfig: authConfig,
-                    state: state,
-                    request: request,
-                    connection: connection
-                )
+                do {
+                    try await processRequest(
+                        authState: authState,
+                        authMessage: authMessage,
+                        authConfig: authConfig,
+                        state: state,
+                        request: request,
+                        connection: connection,
+                        logger: logger
+                    )
+                } catch {
+                    logger.error("Connection[\(self.connection.id)] Error Processing Request: \(error)")
+                }
             }
 
-            print("ServerConnection run() finished")
+            logger.debug("Connection[\(self.connection.id)] run() finished")
         }
     }
 
     static func receiveRequest(
-        on connection: NetworkConnection<TCP>
+        on connection: NetworkConnection<TCP>,
+        logger: Logger
     ) async throws -> (AuthMessage, Message.Request?) {
         let maxRequestSize = PJLink.maxAuthRequestSize + PJLink.maxRequestSize
         let requestData = try await connection.receive(atMost: maxRequestSize).content
         let requestUTF8 = try requestData.toUTF8String()
+        logger.info("Connection[\(connection.id)] RECV: \"\(requestUTF8, privacy: .public)\"")
 
         // We look for the "%" which marks the beginning of the request.
         var request: Message.Request?
@@ -109,13 +146,15 @@ extension PJLink {
         authConfig: AuthConfig,
         state: LockIsolated<PJLink.State>,
         request: Message.Request?,
-        connection: NetworkConnection<TCP>
+        connection: NetworkConnection<TCP>,
+        logger: Logger
     ) async throws {
         if authMessage == .securityLevel {
             // We received a "PJLINK 2" request, so respond with "PJLINK 2 3db2...97eo".
             let projectorRandom16 = try Buffer16.random()
             let authResponse: AuthResponse = .securityLevel2(projectorRandom16)
             try await connection.send(authResponse.description.crTerminatedData)
+            logger.info("Connection[\(connection.id)] SEND: \"\(authResponse.description)\"")
             // Update the ServerAuthState
             authState.setValue(.class2AuthResponseSent(projectorRandom16))
         } else if let request {
@@ -125,6 +164,7 @@ extension PJLink {
             let response = try generateResponse(state: state, request: request)
             // Send the response
             try await connection.send(response.description.crTerminatedData)
+            logger.info("Connection[\(connection.id)] SEND: \"\(response.description)\"")
             // Update the ServerAuthState
             updateAuthStateOnSuccess(authState: authState)
         }
