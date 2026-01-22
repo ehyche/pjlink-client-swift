@@ -16,7 +16,7 @@ struct PJLinkServerCLI: AsyncParsableCommand {
     var host: String
 
     mutating func run() async throws {
-        let server = PJLink.Server()
+        let server = PJLink.Server(config: .mock)
         try await server.run()
     }
 }

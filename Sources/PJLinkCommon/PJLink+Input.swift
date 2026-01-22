@@ -37,3 +37,17 @@ extension PJLink.InputClass1 {
         }
     }
 }
+
+extension PJLink.InputClass2 {
+
+    public var name: String {
+        switch self {
+        case .rgb: "RGB"
+        case .video: "Video"
+        case .digital: "Digital"
+        case .storage: "Storage"
+        case .network: "Network"
+        case .internal: "Internal"
+        }
+    }
+}

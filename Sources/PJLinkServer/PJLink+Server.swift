@@ -142,3 +142,13 @@ extension PJLink {
 //        authString == auth.hash
 //    }
 }
+
+extension PJLink.AuthConfig {
+
+    public static let mock = Self(password: "Mock Password")
+}
+
+extension PJLink.ServerConfig {
+
+    public static let mock: Self = .init(initialState: .mockClass2, auth: .mock)
+}

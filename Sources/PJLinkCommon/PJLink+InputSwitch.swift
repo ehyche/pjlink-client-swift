@@ -150,9 +150,18 @@ extension PJLink.InputSwitchClass2 {
     public func toInput(withName name: PJLink.InputTerminalName?) -> PJLink.Input {
         .init(input: input, channel: channel, name: name)
     }
+
+    public var name: String {
+        input.name + " " + channel.rawValue
+    }
 }
 
 extension PJLink.InputSwitchesClass2 {
 
     public static let mock = Self(switches: PJLink.InputSwitchClass2.allCases)
+
+    public static let mockNames: [PJLink.InputSwitchClass2: PJLink.InputTerminalName] =
+        PJLink.InputSwitchClass2.allCases.reduce(into: [:]) { result, switchValue in
+            result[switchValue] = .init(value: switchValue.name)
+        }
 }

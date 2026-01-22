@@ -49,5 +49,11 @@ let package = Package(
                 .target(name: "PJLinkClient"),
             ]
         ),
+        .testTarget(
+            name: "PJLinkServerTests",
+            dependencies: [
+                .target(name: "PJLinkServer"),
+            ]
+        ),
     ]
 )

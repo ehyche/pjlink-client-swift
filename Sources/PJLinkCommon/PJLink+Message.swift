@@ -89,7 +89,10 @@ extension PJLink.Message {
     }
 
     public var description: String {
-        PJLink.identifier + self.class.rawValue + command.rawValue + separator + parameterDescription
+        switch self {
+        case .request(let request): request.description
+        case .response(let response): response.description
+        }
     }
 
     public var `class`: PJLink.Class {

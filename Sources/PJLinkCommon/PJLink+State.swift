@@ -145,6 +145,19 @@ extension PJLink.Class1State {
         mutableSelf.mute = muteState
         return mutableSelf
     }
+
+    public static let mock = Self(
+        power: .standby,
+        mute: .init(mute: .audioVideo, state: .off),
+        error: .init(fan: .none, lamp: .none, temperature: .none, coverOpen: .none, filter: .none, other: .none),
+        lamps: .init(lampStatus: [.init(usageTime: 1234, state: .off)]),
+        inputSwitches: .mock,
+        activeInputSwitch: PJLink.InputSwitchesClass1.mock.switches[0],
+        projectorName: .mock,
+        manufacturerName: .mock,
+        productName: .mock,
+        otherInformation: .mock
+    )
 }
 
 extension PJLink.Class2State {
@@ -190,6 +203,28 @@ extension PJLink.Class2State {
         mutableSelf.freeze = freeze
         return mutableSelf
     }
+
+    public static let mock = Self(
+        power: .standby,
+        mute: .init(mute: .audioVideo, state: .off),
+        error: .init(fan: .none, lamp: .none, temperature: .none, coverOpen: .none, filter: .none, other: .none),
+        lamps: .init(lampStatus: [.mock1]),
+        inputSwitches: .mock,
+        activeInputSwitch: PJLink.InputSwitchesClass2.mock.switches[0],
+        inputNames: PJLink.InputSwitchesClass2.mockNames,
+        projectorName: .mock,
+        manufacturerName: .mock,
+        productName: .mock,
+        otherInformation: .mock,
+        serialNumber: .mock,
+        softwareVersion: .mock,
+        inputResolution: .mock,
+        recommendedResolution: .mock,
+        filterUsageTime: .mock,
+        lampReplacementModelNumber: .mock,
+        filterReplacementModelNumber: .mock,
+        freeze: .stop
+    )
 }
 
 extension PJLink.State {
@@ -346,6 +381,9 @@ extension PJLink.State {
         case .class2(let class2State): class2State.freeze
         }
     }
+
+    public static let mockClass1: Self = .class1(.mock)
+    public static let mockClass2: Self = .class2(.mock)
 }
 
 extension PJLink.State: CustomStringConvertible {

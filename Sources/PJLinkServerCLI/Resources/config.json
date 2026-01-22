@@ -1,0 +1,176 @@
+{
+  "initialState": {
+    "class2": {
+      "_0": {
+        "serialNumber": {
+          "value": "Mock Serial Number"
+        },
+        "productName": {
+          "value": "Mock Product Name"
+        },
+        "freeze": "0",
+        "inputSwitches": {
+          "switches": [
+            {
+              "input": "1",
+              "channel": "1"
+            },
+            {
+              "input": "1",
+              "channel": "2"
+            },
+            {
+              "input": "2",
+              "channel": "1"
+            },
+            {
+              "input": "2",
+              "channel": "2"
+            },
+            {
+              "input": "3",
+              "channel": "1"
+            },
+            {
+              "input": "4",
+              "channel": "1"
+            },
+            {
+              "input": "5",
+              "channel": "1"
+            },
+            {
+              "input": "6",
+              "channel": "1"
+            }
+          ]
+        },
+        "mute": {
+          "state": "0",
+          "mute": "3"
+        },
+        "error": {
+          "fan": "0",
+          "temperature": "0",
+          "coverOpen": "0",
+          "lamp": "0",
+          "filter": "0",
+          "other": "0"
+        },
+        "power": "0",
+        "lampReplacementModelNumber": {
+          "value": "Mock Model Number"
+        },
+        "filterReplacementModelNumber": {
+          "value": "Mock Model Number"
+        },
+        "activeInputSwitch": {
+          "input": "1",
+          "channel": "1"
+        },
+        "projectorName": {
+          "value": "Mock Projector Name"
+        },
+        "softwareVersion": {
+          "value": "Mock Software Version"
+        },
+        "speakerVolume": {
+          "value": 5
+        },
+        "otherInformation": {
+          "value": "Mock Other Information"
+        },
+        "recommendedResolution": {
+          "horizontal": 1920,
+          "vertical": 1080
+        },
+        "microphoneVolume": {
+          "value": 5
+        },
+        "manufacturerName": {
+          "value": "Mock Manufacturer Name"
+        },
+        "inputNames": [
+          {
+            "input": "1",
+            "channel": "1"
+          },
+          {
+            "value": "RGB 1"
+          },
+          {
+            "input": "1",
+            "channel": "2"
+          },
+          {
+            "value": "RGB 2"
+          },
+          {
+            "input": "2",
+            "channel": "1"
+          },
+          {
+            "value": "Video 1"
+          },
+          {
+            "input": "2",
+            "channel": "2"
+          },
+          {
+            "value": "Video 2"
+          },
+          {
+            "input": "3",
+            "channel": "1"
+          },
+          {
+            "value": "Digital 1"
+          },
+          {
+            "input": "4",
+            "channel": "1"
+          },
+          {
+            "value": "Storage 1"
+          },
+          {
+            "input": "5",
+            "channel": "1"
+          },
+          {
+            "value": "Network 1"
+          },
+          {
+            "input": "6",
+            "channel": "1"
+          },
+          {
+            "value": "Internal 1"
+          }
+        ],
+        "filterUsageTime": {
+          "value": 12345
+        },
+        "lamps": {
+          "lampStatus": [
+            {
+              "usageTime": 12345,
+              "state": "0"
+            }
+          ]
+        },
+        "inputResolution": {
+          "ok": {
+            "_0": {
+              "horizontal": 1920,
+              "vertical": 1080
+            }
+          }
+        }
+      }
+    }
+  },
+  "auth": {
+    "password": "Mock Password"
+  }
+}
