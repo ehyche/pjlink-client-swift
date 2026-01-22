@@ -74,7 +74,7 @@ extension PJLink.Message {
             // This is a response. Is a hint provided?
             if let isSetResponseHint {
                 if isSetResponseHint {
-                    self = .response(.set(.init(class: pjlinkClass, command: pjlinkCommand, code: try .init(mutableDesc))))
+                    self = .response(.set(.init(pjlinkClass: pjlinkClass, command: pjlinkCommand, code: try .init(mutableDesc))))
                 } else {
                     self = .response(.get(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc)))
                 }
@@ -235,7 +235,7 @@ extension PJLink.Message.Response {
 
     public init(pjlinkClass: PJLink.Class, command: PJLink.Command, parameters: String) throws {
         if let setResponseCode = PJLink.SetResponseCode(rawValue: parameters) {
-            self = .set(.init(class: pjlinkClass, command: command, code: setResponseCode))
+            self = .set(.init(pjlinkClass: pjlinkClass, command: command, code: setResponseCode))
         } else {
             self = .get(try .init(pjlinkClass: pjlinkClass, command: command, parameters: parameters))
         }
@@ -270,3 +270,12 @@ extension PJLink.Message.Response {
     }
 }
 
+extension PJLink.Message.Response: CustomStringConvertible {
+
+    public var description: String {
+        switch self {
+        case .get(let getResponse): getResponse.description
+        case .set(let setResponse): setResponse.description
+        }
+    }
+}

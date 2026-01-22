@@ -7,7 +7,7 @@
 
 extension PJLink {
 
-    public enum VolumeAdjustment: String {
+    public enum VolumeAdjustment: String, Sendable {
         case decrease = "0"
         case increase = "1"
     }

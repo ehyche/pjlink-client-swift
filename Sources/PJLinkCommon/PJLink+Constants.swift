@@ -16,4 +16,9 @@ extension PJLink {
     public static let pjlink = "PJLINK"
     public static let maxRequestSize = 136
     public static let maxResponseSize = 136
+    public static let maxAuthRequestSize = 96
+    public static let class1AuthRequestSize = 32
+    public static let class2AuthRequestSize = 96
+    public static let class2RandomNumberCount = 32
+    public static let class2HashCount = 64
 }

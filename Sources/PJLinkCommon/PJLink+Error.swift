@@ -63,6 +63,8 @@ extension PJLink {
         case projectorRespondedWithError(request: String, response: String)
         case requestContainsNoIdentifier(String)
         case unexpectedRequestAuthSize(expected: Int, actual: Int)
-        case requestFailsValidation(String)
+        case authenticationFailure(expected: String, actual: String)
+        case unexpectedAuthMessage(expected: AuthMessage, actual: AuthMessage)
+        case unexpectedAuthValidationState(state: ServerAuthState, message: AuthMessage, password: String?)
     }
 }

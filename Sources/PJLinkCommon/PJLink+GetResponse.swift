@@ -41,6 +41,12 @@ extension PJLink {
         public var `class`: PJLink.Class
         public var command: PJLink.Command
         public var code: GetResponseCode
+
+        public init(pjLinkClass: PJLink.Class, command: PJLink.Command, code: GetResponseCode) {
+            self.class = pjLinkClass
+            self.command = command
+            self.code = code
+        }
     }
 
     public enum GetResponseCode: String, CaseIterable, Equatable, Sendable {
@@ -55,7 +61,7 @@ extension PJLink.GetResponse {
 
     public init(pjlinkClass: PJLink.Class, command: PJLink.Command, parameters: String) throws {
         if let getResponseCode = PJLink.GetResponseCode(rawValue: parameters) {
-            self = .failure(.init(class: pjlinkClass, command: command, code: getResponseCode))
+            self = .failure(.init(pjLinkClass: pjlinkClass, command: command, code: getResponseCode))
         } else {
             self = .success(try .init(pjlinkClass: pjlinkClass, command: command, parameters: parameters))
         }
@@ -79,6 +85,13 @@ extension PJLink.GetResponse {
         switch self {
         case .success: true
         case .failure: false
+        }
+    }
+
+    public var parameterDescription: String {
+        switch self {
+        case .success(let getResponseSuccess): getResponseSuccess.description
+        case .failure(let getResponseFailure): getResponseFailure.description
         }
     }
 }
@@ -115,17 +128,14 @@ extension PJLink.GetResponse: LosslessStringConvertibleThrowing {
         mutableDesc.removeFirst(1)
 
         if let getResponseCode = PJLink.GetResponseCode(rawValue: mutableDesc) {
-            self = .failure(.init(class: pjlinkClass, command: pjlinkCommand, code: getResponseCode))
+            self = .failure(.init(pjLinkClass: pjlinkClass, command: pjlinkCommand, code: getResponseCode))
         } else {
             self = .success(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc))
         }
     }
 
     public var description: String {
-        switch self {
-        case .success(let getResponseSuccess): getResponseSuccess.description
-        case .failure(let getResponseFailure): getResponseFailure.description
-        }
+        PJLink.identifier + self.class.rawValue + self.command.rawValue + PJLink.separatorResponse + parameterDescription
     }
 }
 

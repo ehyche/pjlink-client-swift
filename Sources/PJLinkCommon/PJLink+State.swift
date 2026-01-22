@@ -7,12 +7,12 @@
 
 extension PJLink {
 
-    public enum State: Codable {
+    public enum State: Sendable, Codable {
         case class1(Class1State)
         case class2(Class2State)
     }
 
-    public struct Class1State: Codable {
+    public struct Class1State: Sendable, Codable {
         public var power: PowerStatus
         public var mute: MuteState
         public var error: ErrorStatus
@@ -49,7 +49,7 @@ extension PJLink {
         }
     }
 
-    public struct Class2State: Codable {
+    public struct Class2State: Sendable, Codable {
         public var power: PowerStatus
         public var mute: MuteState
         public var error: ErrorStatus
@@ -69,6 +69,8 @@ extension PJLink {
         public var lampReplacementModelNumber: ModelNumber
         public var filterReplacementModelNumber: ModelNumber
         public var freeze: Freeze
+        public var speakerVolume: Volume
+        public var microphoneVolume: Volume
 
         public init(
             power: PowerStatus,
@@ -89,7 +91,9 @@ extension PJLink {
             filterUsageTime: FilterUsageTime,
             lampReplacementModelNumber: ModelNumber,
             filterReplacementModelNumber: ModelNumber,
-            freeze: Freeze
+            freeze: Freeze,
+            speakerVolume: Volume = .init(),
+            microphoneVolume: Volume = .init()
         ) {
             self.power = power
             self.mute = mute
@@ -110,6 +114,8 @@ extension PJLink {
             self.lampReplacementModelNumber = lampReplacementModelNumber
             self.filterReplacementModelNumber = filterReplacementModelNumber
             self.freeze = freeze
+            self.speakerVolume = speakerVolume
+            self.microphoneVolume = microphoneVolume
         }
     }
 }
@@ -119,6 +125,26 @@ extension PJLink.Class1State {
     var inputs: [PJLink.Input] { inputSwitches.switches.map(\.asInput) }
 
     var activeInputIndex: Int? { inputSwitches.switches.firstIndex(of: activeInputSwitch) }
+
+    func withPower(_ power: PJLink.PowerStatus) -> PJLink.Class1State {
+        var mutableSelf = self
+        mutableSelf.power = power
+        return mutableSelf
+    }
+
+    public func withActiveInputSwitch(_ inputSwitch: PJLink.InputSwitchClass1) -> Self {
+        var mutableSelf = self
+        if let foundSwitchIndex = inputSwitches.switches.firstIndex(of: inputSwitch) {
+            mutableSelf.activeInputSwitch = inputSwitches.switches[foundSwitchIndex]
+        }
+        return mutableSelf
+    }
+
+    public func withAVMute(_ muteState: PJLink.MuteState) -> Self {
+        var mutableSelf = self
+        mutableSelf.mute = muteState
+        return mutableSelf
+    }
 }
 
 extension PJLink.Class2State {
@@ -126,6 +152,44 @@ extension PJLink.Class2State {
     var inputs: [PJLink.Input] { inputSwitches.switches.map { PJLink.Input(input: $0.input, channel: $0.channel, name: inputNames[$0]) } }
 
     var activeInputIndex: Int? { inputSwitches.switches.firstIndex(of: activeInputSwitch) }
+
+    func withPower(_ power: PJLink.PowerStatus) -> Self {
+        var mutableSelf = self
+        mutableSelf.power = power
+        return mutableSelf
+    }
+
+    public func withActiveInputSwitch(_ inputSwitch: PJLink.InputSwitchClass2) -> Self {
+        var mutableSelf = self
+        if let foundSwitchIndex = inputSwitches.switches.firstIndex(of: inputSwitch) {
+            mutableSelf.activeInputSwitch = inputSwitches.switches[foundSwitchIndex]
+        }
+        return mutableSelf
+    }
+
+    public func withAVMute(_ muteState: PJLink.MuteState) -> Self {
+        var mutableSelf = self
+        mutableSelf.mute = muteState
+        return mutableSelf
+    }
+
+    public func withSpeakerVolumeAdjustment(_ volumeAdjustment: PJLink.VolumeAdjustment) -> Self {
+        var mutableSelf = self
+        mutableSelf.speakerVolume = mutableSelf.speakerVolume.applyingAdjustment(volumeAdjustment)
+        return mutableSelf
+    }
+
+    public func withMicrophoneVolumeAdjustment(_ volumeAdjustment: PJLink.VolumeAdjustment) -> Self {
+        var mutableSelf = self
+        mutableSelf.microphoneVolume = mutableSelf.microphoneVolume.applyingAdjustment(volumeAdjustment)
+        return mutableSelf
+    }
+
+    public func withFreeze(_ freeze: PJLink.Freeze) -> Self {
+        var mutableSelf = self
+        mutableSelf.freeze = freeze
+        return mutableSelf
+    }
 }
 
 extension PJLink.State {
@@ -138,9 +202,19 @@ extension PJLink.State {
     }
 
     public var power: PJLink.PowerStatus {
-        switch self {
-        case .class1(let class1State): class1State.power
-        case .class2(let class2State): class2State.power
+        set {
+            switch self {
+            case .class1(let class1State):
+                self = .class1(class1State.withPower(newValue))
+            case .class2(let class2State):
+                self = .class2(class2State.withPower(newValue))
+            }
+        }
+        get {
+            switch self {
+            case .class1(let class1State): class1State.power
+            case .class2(let class2State): class2State.power
+            }
         }
     }
 
@@ -159,9 +233,19 @@ extension PJLink.State {
     }
 
     public var mute: PJLink.MuteState {
-        switch self {
-        case .class1(let class1State): class1State.mute
-        case .class2(let class2State): class2State.mute
+        set {
+            switch self {
+            case .class1(let class1State):
+                self = .class1(class1State.withAVMute(newValue))
+            case .class2(let class2State):
+                self = .class2(class2State.withAVMute(newValue))
+            }
+        }
+        get {
+            switch self {
+            case .class1(let class1State): class1State.mute
+            case .class2(let class2State): class2State.mute
+            }
         }
     }
 

@@ -11,6 +11,12 @@ extension PJLink {
         public var `class`: PJLink.Class
         public var command: PJLink.Command
         public var code: SetResponseCode
+
+        public init(pjlinkClass: PJLink.Class, command: PJLink.Command, code: SetResponseCode) {
+            self.class = pjlinkClass
+            self.command = command
+            self.code = code
+        }
     }
 
     public enum SetResponseCode: String, CaseIterable, Sendable {
@@ -81,7 +87,7 @@ extension PJLink.SetResponse: LosslessStringConvertibleThrowing {
         mutableDesc.removeFirst(1)
 
         self = .init(
-            class: pjlinkClass,
+            pjlinkClass: pjlinkClass,
             command: pjlinkCommand,
             code: try PJLink.SetResponseCode(mutableDesc)
         )

@@ -13,11 +13,14 @@ import PJLinkCommon
 extension PJLink {
 
     public final class Server {
-//        private var config: ServerConfig
-//        private var stateActor: StateActor
-        let serverConnections = LockIsolated<[ServerConnection]>([])
+        private let state: LockIsolated<PJLink.State>
+        private let authConfig: AuthConfig
+        private let serverConnections = LockIsolated<[ServerConnection]>([])
 
-        public init() { }
+        public init(config: ServerConfig) {
+            self.state = .init(config.initialState)
+            self.authConfig = config.auth
+        }
 
         public func run() async throws {
             let listener = try NetworkListener(
@@ -32,9 +35,9 @@ extension PJLink {
             listener.onStateUpdate { listener, state in
                 print("NetworkListener.onStateUpdate(\(listener), \(state))")
             }
-            try await listener.run { [serverConnections = self.serverConnections] connection in
+            try await listener.run { [serverConnections = self.serverConnections, state = self.state, authConfig = self.authConfig] connection in
                 print("NetworkListener.run() connection=\(connection)")
-                let serverConnection = ServerConnection(connection: connection) { serverConn in
+                let serverConnection = ServerConnection(connection: connection, state: state, authConfig: authConfig) { serverConn in
                     print("ServerConnection.onTerminated(\(serverConn))")
                     serverConnections.withValue {
                         if let index = $0.firstIndex(where: { $0 === serverConn }) {
@@ -56,8 +59,13 @@ extension PJLink {
         }
     }
 
-    public struct ServerConfig: Codable {
-        public var initialState: PJLink.State
+    public struct ServerConfig: Sendable, Codable {
+        public let initialState: PJLink.State
+        public let auth: AuthConfig
+    }
+
+    public struct AuthConfig: Sendable, Codable {
+        public let password: String?
     }
 
 //    public static func authenticate(
