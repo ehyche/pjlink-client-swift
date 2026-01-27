@@ -41,6 +41,7 @@ extension PJLink {
         case unexpectedGetRequest(PJLink.Class, PJLink.Command, String)
         case unexpectedSetRequest(PJLink.Class, PJLink.Command)
         case unexpectedGetResponse(PJLink.Class, PJLink.Command)
+        case noPasswordProvided
         case unexpectedConnectionResponse(String)
         case unexpectedSecurityLevelResponse(String)
         case invalidAuthRequestFieldCount(String)

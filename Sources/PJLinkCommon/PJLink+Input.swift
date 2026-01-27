@@ -36,6 +36,16 @@ extension PJLink.InputClass1 {
         case .network: .network
         }
     }
+
+    public var name: String {
+        switch self {
+        case .rgb: "RGB"
+        case .video: "Video"
+        case .digital: "Digital"
+        case .storage: "Storage"
+        case .network: "Network"
+        }
+    }
 }
 
 extension PJLink.InputClass2 {
@@ -48,6 +58,17 @@ extension PJLink.InputClass2 {
         case .storage: "Storage"
         case .network: "Network"
         case .internal: "Internal"
+        }
+    }
+
+    public var asClass1: PJLink.InputClass1? {
+        switch self {
+        case .rgb: .rgb
+        case .video: .video
+        case .digital: .digital
+        case .storage: .storage
+        case .network: .network
+        case .internal: nil
         }
     }
 }

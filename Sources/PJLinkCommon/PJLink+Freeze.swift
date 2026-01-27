@@ -13,6 +13,16 @@ extension PJLink {
     }
 }
 
+extension PJLink.Freeze {
+
+    public var displayName: String {
+        switch self {
+        case .stop: "Unfreeze"
+        case .start: "Freeze"
+        }
+    }
+}
+
 extension PJLink.Freeze: LosslessStringConvertibleThrowing {
 
     public init(_ description: String) throws {

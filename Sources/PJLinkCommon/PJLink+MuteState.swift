@@ -46,3 +46,10 @@ extension PJLink.MuteState: CaseIterable {
         }
     }
 }
+
+extension PJLink.MuteState {
+
+    public var displayName: String {
+        mute.displayName + " " + state.displayName
+    }
+}

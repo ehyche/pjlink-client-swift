@@ -73,3 +73,21 @@ extension PJLink.InputChannelClass1 {
         }
     }
 }
+
+extension PJLink.InputChannelClass2 {
+
+    public var asClass1: PJLink.InputChannelClass1? {
+        switch self {
+        case .one: .one
+        case .two: .two
+        case .three: .three
+        case .four: .four
+        case .five: .five
+        case .six: .six
+        case .seven: .seven
+        case .eight: .eight
+        case .nine: .nine
+        default: nil
+        }
+    }
+}

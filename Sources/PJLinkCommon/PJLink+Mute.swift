@@ -12,3 +12,14 @@ extension PJLink {
         case audioVideo = "3"
     }
 }
+
+extension PJLink.Mute {
+
+    public var displayName: String {
+        switch self {
+        case .video: "Video"
+        case .audio: "Audio"
+        case .audioVideo: "Audio and Video"
+        }
+    }
+}

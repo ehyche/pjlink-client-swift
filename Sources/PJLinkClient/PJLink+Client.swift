@@ -25,13 +25,10 @@ extension PJLink {
 
 extension PJLink.Client {
 
-    public static func authenticate(at endpoint: NWEndpoint, password: String = "") async throws -> PJLink.ConnectionState {
-        let connection = NetworkConnection(to: endpoint) {
-            TCP {
-                IP()
-            }
-        }
-
+    public static func authenticate(
+        on connection: NetworkConnection<TCP>,
+        password: String?
+    ) async throws -> PJLink.ConnectionState {
         // Upon connection, we should receive either:
         // "PJLINK 0" (Authentication disabled); OR
         // "PJLINK 1 498e4a67" (Authentication enabled with 4-byte random number)
@@ -60,6 +57,11 @@ extension PJLink.Client {
             // We could not parse the response to "PJLINK 2\r".
             // So we assume a class 1 projector.
             securityLevelResponse = .securityLevel1(randomNumber4Bytes)
+        }
+
+        // At this point, we know we need a password. If we don't have it, then fail.
+        guard let password else {
+            throw PJLink.Error.noPasswordProvided
         }
 
         let authState: PJLink.AuthState
@@ -530,6 +532,18 @@ extension PJLink.Client {
         try await setThrowing(request: .power(onOff), from: connectionState)
         // Fetch the power status
         return try await queryPowerStatus(from: connectionState)
+    }
+
+    public static func setInput(
+        to input: PJLink.Input,
+        from connectionState: PJLink.ConnectionState
+    ) async throws -> PJLink.Input {
+        switch input {
+        case .class1(let inputSwitchClass1):
+            return .class1(try await setInputClass1(to: inputSwitchClass1, from: connectionState))
+        case let .class2(inputSwitchClass2, inputTerminalName):
+            return .class2(try await setInputClass2(to: inputSwitchClass2, from: connectionState), inputTerminalName)
+        }
     }
 
     public static func setInputClass1(

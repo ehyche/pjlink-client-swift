@@ -25,13 +25,9 @@ extension PJLink {
     }
 
     /// Class-independent input information
-    public struct Input: Equatable, Sendable {
-        /// `InputClass2` is a superset of `InputClass1`, so we can use `InputClass2` for both classes
-        public var input: InputClass2
-        /// `InputChannelClass2` is a superset of `InputChannelClass1`, so we can use `InputChannelClass2` for both classes
-        public var channel: InputChannelClass2
-        /// `InputTerminalName` will only be available for Class2 devices
-        public var name: InputTerminalName?
+    public enum Input: Equatable, Sendable {
+        case class1(InputSwitchClass1)
+        case class2(InputSwitchClass2, InputTerminalName?)
     }
 }
 
@@ -136,7 +132,7 @@ extension PJLink.InputSwitchClass2: CaseIterable {
 extension PJLink.InputSwitchClass1 {
 
     public var asInput: PJLink.Input {
-        .init(input: input.asClass2, channel: channel.asClass2, name: nil)
+        .class1(self)
     }
 }
 
@@ -148,7 +144,7 @@ extension PJLink.InputSwitchesClass1 {
 extension PJLink.InputSwitchClass2 {
 
     public func toInput(withName name: PJLink.InputTerminalName?) -> PJLink.Input {
-        .init(input: input, channel: channel, name: name)
+        .class2(self, name)
     }
 
     public var name: String {
@@ -164,4 +160,34 @@ extension PJLink.InputSwitchesClass2 {
         PJLink.InputSwitchClass2.allCases.reduce(into: [:]) { result, switchValue in
             result[switchValue] = .init(value: switchValue.name)
         }
+}
+
+extension PJLink.Input {
+
+    public var asClass1: PJLink.InputSwitchClass1? {
+        switch self {
+        case .class1(let inputSwitchClass1): inputSwitchClass1
+        case .class2: nil
+        }
+    }
+
+    public var asClass2: PJLink.InputSwitchClass2? {
+        switch self {
+        case .class1: nil
+        case .class2(let inputSwitchClass2, _): inputSwitchClass2
+        }
+    }
+
+    public var displayName: String {
+        switch self {
+        case .class1(let inputSwitchClass1):
+            return "\(inputSwitchClass1.input.name) \(inputSwitchClass1.channel.rawValue)"
+        case .class2(let inputSwitchClass2, let inputTerminalName):
+            if let inputTerminalName {
+                return inputTerminalName.value
+            } else {
+                return "\(inputSwitchClass2.input.name) \(inputSwitchClass2.channel.rawValue)"
+            }
+        }
+    }
 }

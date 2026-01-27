@@ -162,7 +162,7 @@ extension PJLink.Class1State {
 
 extension PJLink.Class2State {
 
-    var inputs: [PJLink.Input] { inputSwitches.switches.map { PJLink.Input(input: $0.input, channel: $0.channel, name: inputNames[$0]) } }
+    var inputs: [PJLink.Input] { inputSwitches.switches.map { PJLink.Input.class2($0, inputNames[$0]) } }
 
     var activeInputIndex: Int? { inputSwitches.switches.firstIndex(of: activeInputSwitch) }
 
@@ -257,6 +257,26 @@ extension PJLink.State {
         switch self {
         case .class1(let class1State): class1State.inputs
         case .class2(let class2State): class2State.inputs
+        }
+    }
+
+    public var activeInput: PJLink.Input {
+        set {
+            switch (self, newValue) {
+            case let (.class1(class1State), .class1(newInputSwitch)):
+                self = .class1(class1State.withActiveInputSwitch(newInputSwitch))
+            case let (.class2(class2State), .class2(newInputSwitch, _)):
+                self = .class2(class2State.withActiveInputSwitch(newInputSwitch))
+            default:
+                // We don't support setting Class1 -> Class2 or vice-versa
+                break
+            }
+        }
+        get {
+            switch self {
+            case .class1(let class1State): class1State.activeInputSwitch.asInput
+            case .class2(let class2State): class2State.activeInputSwitch.toInput(withName: class2State.inputNames[class2State.activeInputSwitch])
+            }
         }
     }
 

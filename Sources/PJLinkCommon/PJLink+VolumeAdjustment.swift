@@ -7,9 +7,19 @@
 
 extension PJLink {
 
-    public enum VolumeAdjustment: String, Sendable {
+    public enum VolumeAdjustment: String, CaseIterable, Sendable {
         case decrease = "0"
         case increase = "1"
+    }
+}
+
+extension PJLink.VolumeAdjustment {
+
+    public var displayName: String {
+        switch self {
+        case .decrease: "Decrease"
+        case .increase: "Increase"
+        }
     }
 }
 

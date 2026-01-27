@@ -13,6 +13,16 @@ extension PJLink {
     }
 }
 
+extension PJLink.OnOff {
+
+    public var displayName: String {
+        switch self {
+        case .off: "Off"
+        case .on: "On"
+        }
+    }
+}
+
 extension PJLink.OnOff: LosslessStringConvertibleThrowing {
 
     public init(_ description: String) throws {
