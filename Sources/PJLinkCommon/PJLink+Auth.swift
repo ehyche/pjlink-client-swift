@@ -258,7 +258,7 @@ extension PJLink.AuthMessage: LosslessStringConvertibleThrowing {
             self = .none
             return
         }
-        guard description == PJLink.AuthMessage.securityLevel.description else {
+        guard description != PJLink.AuthMessage.securityLevel.description else {
             self = .securityLevel
             return
         }
