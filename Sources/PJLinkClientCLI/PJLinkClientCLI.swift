@@ -27,12 +27,15 @@ struct PJLinkClientCLI: AsyncParsableCommand {
 
         connection.onBetterPathUpdate { connection, newValue in
             logger.debug("Connection[\(connection.id)] onBetterPathUpdate: \(newValue)")
+            print("Connection[\(connection.id)] onBetterPathUpdate: \(newValue)")
         }
         connection.onPathUpdate { connection, newPath in
             logger.debug("Connection[\(connection.id)] onPathUpdate: \(newPath.debugDescription)")
+            print("Connection[\(connection.id)] onPathUpdate: \(newPath.debugDescription)")
         }
         connection.onViabilityUpdate { connection, newViable in
             logger.debug("Connection[\(connection.id)] onViabilityUpdate: \(newViable)")
+            print("Connection[\(connection.id)] onViabilityUpdate: \(newViable)")
         }
         connection.onStateUpdate { connection, state in
             let stateDesc: String
@@ -52,7 +55,8 @@ struct PJLinkClientCLI: AsyncParsableCommand {
             @unknown default:
                 stateDesc = "Unknown"
             }
-            logger.debug("Connection[\(connection.id)] onViabilityUpdate: \(stateDesc, privacy: .public)")
+            logger.debug("Connection[\(connection.id)] onStateUpdate: \(stateDesc, privacy: .public)")
+            print("Connection[\(connection.id)] onStateUpdate: \(stateDesc)")
         }
 
         // Do authentication
