@@ -52,6 +52,7 @@ extension PJLink {
         case invalidHexCharacter(Character)
         case oddNumberOfHexCharacters(String)
         case invalidDataBufferCount(expected: Int, actual: Int)
+        case emptyDataBufferReceived
         case couldNotConvertToUTF8(Data)
         case missingCarriageReturnSuffix(String)
         case invalidRandomByteCountArgument(Int)

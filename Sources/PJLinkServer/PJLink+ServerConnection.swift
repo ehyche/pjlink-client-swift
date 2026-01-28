@@ -95,9 +95,15 @@ extension PJLink {
                 let request: Message.Request?
                 do {
                     (authMessage, request) = try await receiveRequest(on: connection, logger: logger)
-                } catch {
-                    logger.error("Connection[\(self.connection.id)] Error Receiving Request: \(error)")
+                } catch let pjlinkError as PJLink.Error  {
+                    // We assume PJLink.Error are parsing errors, and therefore recoverable
+                    logger.error("Connection[\(self.connection.id)] Error Receiving Request: \(pjlinkError)")
                     continue
+                } catch {
+                    // We assume the rest of the errors are socket-related and not recoverable,
+                    // so we break out of the loop
+                    logger.error("Connection[\(self.connection.id)] Error Receiving Request: \(error)")
+                    break
                 }
 
                 do {

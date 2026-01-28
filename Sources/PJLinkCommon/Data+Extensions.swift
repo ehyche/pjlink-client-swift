@@ -27,6 +27,9 @@ extension Data {
     }
 
     public func toUTF8String() throws -> String {
+        guard !isEmpty else {
+            throw PJLink.Error.emptyDataBufferReceived
+        }
         guard let utf8String = String(data: self, encoding: .utf8) else {
             throw PJLink.Error.couldNotConvertToUTF8(self)
         }
