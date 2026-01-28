@@ -63,11 +63,8 @@ extension PJLink.SetRequest {
         case .freeze: .freeze
         }
     }
-}
 
-extension PJLink.SetRequest: CustomStringConvertible {
-
-    public var description: String {
+    public var parameterDescription: String {
         switch self {
         case .power(let onOff): onOff.rawValue
         case .inputSwitchClass1(let inputSwitch): inputSwitch.description
@@ -77,5 +74,12 @@ extension PJLink.SetRequest: CustomStringConvertible {
         case .microphoneVolume(let volumeAdjustment): volumeAdjustment.rawValue
         case .freeze(let freeze): freeze.rawValue
         }
+    }
+}
+
+extension PJLink.SetRequest: CustomStringConvertible {
+
+    public var description: String {
+        PJLink.identifier + self.class.description + self.command.rawValue + PJLink.separatorRequest + parameterDescription
     }
 }

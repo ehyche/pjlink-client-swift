@@ -7,6 +7,7 @@
 
 import Foundation
 import Network
+import os
 import PJLinkCommon
 
 extension PJLink {
@@ -29,11 +30,14 @@ extension PJLink.Client {
         on connection: NetworkConnection<TCP>,
         password: String?
     ) async throws -> PJLink.ConnectionState {
+        let logger = Logger(sub: .client, cat: .connection)
         // Upon connection, we should receive either:
         // "PJLINK 0" (Authentication disabled); OR
         // "PJLINK 1 498e4a67" (Authentication enabled with 4-byte random number)
         let connectionResponse = try await connection.receive(atLeast: 9, atMost: 18).content
         let connectionResponseUTF8 = try connectionResponse.toUTF8String()
+        logger.debug("RECV: \(connectionResponseUTF8)")
+        print("RECV: \(connectionResponseUTF8)")
         let authResponse = try PJLink.AuthResponse(connectionResponseUTF8)
 
         guard authResponse != .authDisabled else {
@@ -45,11 +49,17 @@ extension PJLink.Client {
         }
 
         // The client then responds with "PJLINK 2\r" to check the security level.
-        try await connection.send(PJLink.AuthRequest.securityLevel.description.crTerminatedData)
+        let requestString = PJLink.AuthRequest.securityLevel.description
+        let requestStringTerminatedData = requestString.crTerminatedData
+        try await connection.send(requestStringTerminatedData)
+        logger.debug("SEND: \(requestString)")
+        print("SEND: \(requestString)")
 
         // The projector should respond with "PJLINK 2 <hex-encoded-16-byte-random-number>\r"
         let securityLevelResponseData = try await connection.receive(atMost: 42).content
         let securityLevelUTF8 = try securityLevelResponseData.toUTF8String()
+        logger.debug("RECV: \(securityLevelUTF8)")
+        print("RECV: \(securityLevelUTF8)")
         let securityLevelResponse: PJLink.AuthResponse
         do {
             securityLevelResponse = try PJLink.AuthResponse(securityLevelUTF8)
@@ -221,16 +231,22 @@ extension PJLink.Client {
         request: PJLink.Message,
         from connectionState: PJLink.ConnectionState
     ) async throws -> PJLink.Message {
+        let logger = Logger(sub: .client, cat: .connection)
         // Make sure the input message is a request
         guard request.isRequest else {
             throw PJLink.Error.inputMessageMustBeRequest(request.description)
         }
-        let requestString = connectionState.auth.hash + request.description.crTerminated
+        let requestString = connectionState.auth.authString + request.description
+        let requestStringTerminated = requestString.crTerminated
 
-        try await connectionState.connection.send(Data(requestString.utf8))
+        try await connectionState.connection.send(Data(requestStringTerminated.utf8))
+        logger.debug("SEND: \(requestString)")
+        print("SEND: \(requestString)")
 
         let responseData = try await connectionState.connection.receive(atMost: PJLink.maxResponseSize).content
         let responseUTF8 = try responseData.toUTF8String()
+        logger.debug("RECV: \(responseUTF8)")
+        print("RECV: \(responseUTF8)")
 
         // As we are parsing, we give the PJLink.Message parser a hint
         // whether or not we are expecting a response to a set request.
@@ -501,12 +517,18 @@ extension PJLink.Client {
         request: PJLink.GetRequest,
         from connectionState: PJLink.ConnectionState
     ) async throws -> PJLink.GetResponse {
-        let requestString = connectionState.auth.hash + request.description.crTerminated
+        let logger = Logger(sub: .client, cat: .connection)
+        let requestString = connectionState.auth.authString + request.description
+        let requestStringTerminated = requestString.crTerminated
 
-        try await connectionState.connection.send(Data(requestString.utf8))
+        try await connectionState.connection.send(Data(requestStringTerminated.utf8))
+        logger.debug("SEND \(requestString)")
+        print("SEND \(requestString)")
 
         let responseData = try await connectionState.connection.receive(atMost: PJLink.maxResponseSize).content
         let responseUTF8 = try responseData.toUTF8String()
+        logger.debug("RECV: \(responseUTF8)")
+        print("RECV: \(responseUTF8)")
 
         // As we are parsing, we give the PJLink.Message parser a hint
         // whether or not we are expecting a response to a set request.
@@ -617,12 +639,18 @@ extension PJLink.Client {
         request: PJLink.SetRequest,
         from connectionState: PJLink.ConnectionState
     ) async throws -> PJLink.SetResponse {
-        let requestString = connectionState.auth.hash + request.description.crTerminated
+        let logger = Logger(sub: .client, cat: .connection)
+        let requestString = connectionState.auth.authString + request.description
+        let requestStringTerminated = requestString.crTerminated
 
-        try await connectionState.connection.send(Data(requestString.utf8))
+        try await connectionState.connection.send(Data(requestStringTerminated.utf8))
+        logger.debug("SEND \(requestString)")
+        print("SEND \(requestString)")
 
         let responseData = try await connectionState.connection.receive(atMost: PJLink.maxResponseSize).content
         let responseUTF8 = try responseData.toUTF8String()
+        logger.debug("RECV: \(responseUTF8)")
+        print("RECV: \(responseUTF8)")
         let response = try PJLink.SetResponse(responseUTF8)
 
         // Do some error-checking.

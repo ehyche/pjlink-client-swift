@@ -249,6 +249,15 @@ extension PJLink.AuthState {
             return ""
         }
     }
+
+    public var authString: String {
+        switch self {
+        case .disabled: ""
+        case .level1: self.hash
+        case .level2(let clientRandom, _, _): clientRandom.data.hexEncodedString + self.hash
+        case .authenticated: ""
+        }
+    }
 }
 
 extension PJLink.AuthMessage: LosslessStringConvertibleThrowing {

@@ -142,6 +142,10 @@ extension PJLink.GetRequest {
 extension PJLink.GetRequest: CustomStringConvertible {
 
     public var description: String {
+        PJLink.identifier + self.class.description + self.command.rawValue + PJLink.separatorRequest + parameterDescription
+    }
+
+    public var parameterDescription: String {
         switch self {
         case .inputTerminalName(let inputSwitch): PJLink.prefixGet + inputSwitch.description
         default: PJLink.prefixGet

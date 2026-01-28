@@ -187,8 +187,8 @@ extension PJLink {
             // We sent a Class 1 random number, we received a class 1 hash, and we have a password.
             // This is likely a Class 1 client.
             let auth = PJLink.AuthState.level1(projectorRandom: projectorRandom4, password: password)
-            if auth.hash != clientHash.data.hexEncodedString {
-                throw PJLink.Error.authenticationFailure(expected: auth.hash, actual: clientHash.data.hexEncodedString)
+            if auth.authString != clientHash.data.hexEncodedString {
+                throw PJLink.Error.authenticationFailure(expected: auth.authString, actual: clientHash.data.hexEncodedString)
             }
         case (.class1AuthResponseSent, .securityLevel, .some):
             // We sent a Class 1 random number, and we received a security level request ("PJLINK 2").
