@@ -169,6 +169,7 @@ struct PJLinkClientCLI: AsyncParsableCommand {
                 }
                 // Make the API call
                 let newFreeze = try await PJLink.Client.setFreeze(to: allFreeze[inputIndex], from: connectionState)
+                state.freeze = newFreeze
                 print("Freeze State set to: \(newFreeze.displayName)")
                 print("Current state: \n\(state)")
             }

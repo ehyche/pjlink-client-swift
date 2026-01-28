@@ -134,9 +134,17 @@ extension PJLink.InputSwitchClass1 {
     public var asInput: PJLink.Input {
         .class1(self)
     }
+
+    public var displayName: String {
+        input.displayName + " " + channel.rawValue
+    }
 }
 
 extension PJLink.InputSwitchesClass1 {
+
+    public var displayName: String {
+        "[" + switches.map(\.displayName).joined(separator: ", ") + "]"
+    }
 
     public static let mock = Self(switches: PJLink.InputSwitchClass1.allCases)
 }
@@ -147,18 +155,22 @@ extension PJLink.InputSwitchClass2 {
         .class2(self, name)
     }
 
-    public var name: String {
-        input.name + " " + channel.rawValue
+    public var displayName: String {
+        input.displayName + " " + channel.rawValue
     }
 }
 
 extension PJLink.InputSwitchesClass2 {
 
+    public var displayName: String {
+        "[" + switches.map(\.displayName).joined(separator: ", ") + "]"
+    }
+
     public static let mock = Self(switches: PJLink.InputSwitchClass2.allCases)
 
     public static let mockNames: [PJLink.InputSwitchClass2: PJLink.InputTerminalName] =
         PJLink.InputSwitchClass2.allCases.reduce(into: [:]) { result, switchValue in
-            result[switchValue] = .init(value: switchValue.name)
+            result[switchValue] = .init(value: switchValue.displayName)
         }
 }
 
@@ -181,12 +193,12 @@ extension PJLink.Input {
     public var displayName: String {
         switch self {
         case .class1(let inputSwitchClass1):
-            return "\(inputSwitchClass1.input.name) \(inputSwitchClass1.channel.rawValue)"
+            return inputSwitchClass1.displayName
         case .class2(let inputSwitchClass2, let inputTerminalName):
             if let inputTerminalName {
                 return inputTerminalName.value
             } else {
-                return "\(inputSwitchClass2.input.name) \(inputSwitchClass2.channel.rawValue)"
+                return inputSwitchClass2.displayName
             }
         }
     }

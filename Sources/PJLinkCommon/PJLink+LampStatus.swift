@@ -59,12 +59,23 @@ extension PJLink.LampStatus: CustomStringConvertible {
 
 extension PJLink.LampStatus {
 
+    public var displayName: String {
+        "(Usage: \(usageTime), State: \(state.displayName))"
+    }
+}
+
+extension PJLink.LampStatus {
+
     public static let mock1: Self = .init(usageTime: 12345, state: .off)
     public static let mock2: Self = .init(usageTime: 6789, state: .on)
     public static let mock3: Self = .init(usageTime: 42, state: .off)
 }
 
 extension PJLink.LampsStatus {
+
+    public var displayName: String {
+        "[" + lampStatus.map(\.displayName).joined(separator: ", ") + "]"
+    }
 
     public static let mock: Self = .init(lampStatus: [.mock1, .mock2, .mock3])
 }

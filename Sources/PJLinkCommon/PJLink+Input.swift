@@ -37,7 +37,7 @@ extension PJLink.InputClass1 {
         }
     }
 
-    public var name: String {
+    public var displayName: String {
         switch self {
         case .rgb: "RGB"
         case .video: "Video"
@@ -50,7 +50,7 @@ extension PJLink.InputClass1 {
 
 extension PJLink.InputClass2 {
 
-    public var name: String {
+    public var displayName: String {
         switch self {
         case .rgb: "RGB"
         case .video: "Video"

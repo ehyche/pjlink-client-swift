@@ -396,9 +396,21 @@ extension PJLink.State {
     }
 
     public var freeze: PJLink.Freeze? {
-        switch self {
-        case .class1: nil
-        case .class2(let class2State): class2State.freeze
+        set {
+            switch self {
+            case .class1:
+                break
+            case .class2(let class2State):
+                if let newValue {
+                    self = .class2(class2State.withFreeze(newValue))
+                }
+            }
+        }
+        get {
+            switch self {
+            case .class1: nil
+            case .class2(let class2State): class2State.freeze
+            }
         }
     }
 
@@ -420,17 +432,17 @@ extension PJLink.Class1State: CustomStringConvertible {
 
     public var description: String {
         """
-        class: 1
-        power: \(power)
-        mute: \(mute)
-        error: \(error)
-        lamps: \(lamps)
-        inputSwitches: \(inputSwitches)
-        activeInputSwitch: \(activeInputSwitch)
-        projectorName: \(projectorName)
-        manufacturerName: \(manufacturerName)
-        productName: \(productName)
-        otherInformation: \(otherInformation)
+        Class 1 Projector
+          power: \(power.displayName)
+          mute: \(mute.displayName)
+          error: \(error.displayName)
+          lamps: \(lamps.displayName)
+          inputSwitches: \(inputSwitches.displayName)
+          activeInputSwitch: \(activeInputSwitch.displayName)
+          projectorName: "\(projectorName.value)"
+          manufacturerName: "\(manufacturerName.value)"
+          productName: "\(productName.value)"
+          otherInformation: "\(otherInformation.value)"
         """
     }
 }
@@ -439,25 +451,25 @@ extension PJLink.Class2State: CustomStringConvertible {
 
     public var description: String {
         """
-        class: 2
-        power: \(power)
-        mute: \(mute)
-        error: \(error)
-        lamps: \(lamps)
-        inputSwitches: \(inputSwitches)
-        activeInputSwitch: \(activeInputSwitch)
-        projectorName: \(projectorName)
-        manufacturerName: \(manufacturerName)
-        productName: \(productName)
-        otherInformation: \(otherInformation)
-        serialNumber: \(serialNumber)
-        softwareVersion: \(softwareVersion)
-        inputResolution: \(inputResolution)
-        recommendedResolution: \(recommendedResolution)
-        filterUsageTime: \(filterUsageTime)
-        lampReplacementModelNumber: \(lampReplacementModelNumber)
-        filterReplacementModelNumber: \(filterReplacementModelNumber)
-        freeze: \(freeze)
+        Class 2 Projector
+          power: \(power.displayName)
+          mute: \(mute.displayName)
+          error: \(error.displayName)
+          lamps: \(lamps.displayName)
+          inputSwitches: \(inputSwitches.displayName)
+          activeInputSwitch: \(activeInputSwitch.displayName)
+          projectorName: "\(projectorName.value)"
+          manufacturerName: "\(manufacturerName.value)"
+          productName: "\(productName.value)"
+          otherInformation: "\(otherInformation.value)"
+          serialNumber: "\(serialNumber.value)"
+          softwareVersion: "\(softwareVersion.value)"
+          inputResolution: \(inputResolution)
+          recommendedResolution: \(recommendedResolution)
+          filterUsageTime: \(filterUsageTime)
+          lampReplacementModelNumber: "\(lampReplacementModelNumber.value)"
+          filterReplacementModelNumber: "\(filterReplacementModelNumber.value)"
+          freeze: \(freeze.displayName)
         """
     }
 }

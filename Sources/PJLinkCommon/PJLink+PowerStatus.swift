@@ -26,3 +26,15 @@ extension PJLink.PowerStatus: LosslessStringConvertibleThrowing {
 
     public var description: String { rawValue }
 }
+
+extension PJLink.PowerStatus {
+
+    public var displayName: String {
+        switch self {
+        case .standby: "Standby"
+        case .lampOn: "Lamp On"
+        case .cooling: "Cooling"
+        case .warmUp: "Warm Up"
+        }
+    }
+}

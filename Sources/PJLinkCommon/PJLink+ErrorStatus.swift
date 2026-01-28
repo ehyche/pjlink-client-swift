@@ -78,3 +78,21 @@ extension PJLink.ErrorStatus: CaseIterable {
         return statuses
     }
 }
+
+extension PJLink.ErrorStatus {
+
+    public var displayName: String {
+        "Fan: \(fan.displayName), Lamp: \(lamp.displayName), Temperature: \(temperature.displayName), Cover Open: \(coverOpen.displayName), Filter: \(filter.displayName), Other: \(other.displayName)"
+    }
+}
+
+extension PJLink.ComponentError {
+
+    public var displayName: String {
+        switch self {
+        case .none: "None"
+        case .warning: "Warning"
+        case .error: "Error"
+        }
+    }
+}
