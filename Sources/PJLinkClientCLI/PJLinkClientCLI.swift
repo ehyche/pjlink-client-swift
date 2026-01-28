@@ -61,7 +61,13 @@ struct PJLinkClientCLI: AsyncParsableCommand {
 
         // Do authentication
         print("Authenticating...")
-        let connectionState = try await PJLink.Client.authenticate(on: connection, password: password)
+        var connectionState = try await PJLink.Client.authenticate(on: connection, password: password)
+
+        // We do a first request so that we can successfully authenticate. If we are successful,
+        // then we do not have to send an authentication string after that.
+        if connectionState.auth.mustAuthenticate {
+            connectionState = try await PJLink.Client.updateAuthenticationState(from: connectionState)
+        }
 
         print("Fetching current state...")
         var state = try await PJLink.Client.fetchState(from: connectionState)

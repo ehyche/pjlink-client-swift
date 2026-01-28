@@ -91,6 +91,21 @@ extension PJLink.Client {
         return .init(connection: connection, auth: authState)
     }
 
+    public static func updateAuthenticationState(
+        from connectionState: PJLink.ConnectionState
+    ) async throws -> PJLink.ConnectionState {
+        let response = try await query(request: .projectorClass, from: connectionState)
+
+        switch response {
+        case .success:
+            // We successfully authenticated, so change AuthState to .authenticated
+            return .init(connection: connectionState.connection, auth: .authenticated)
+        case .failure:
+            // We failed, so we don't attempt to change the connectionState
+            return connectionState
+        }
+    }
+
     public static func fetchState(from connectionState: PJLink.ConnectionState) async throws -> PJLink.State {
         // Fetch the projector class
         let projectorClass = try await queryClass(from: connectionState)

@@ -40,17 +40,6 @@ extension PJLink {
         public var data: Data
     }
 
-    public enum ClientAuthState: Equatable, Sendable {
-        // We haven't sent or received anything yet.
-        case indeterminate
-        // We have received "PJLINK 0" indicating authentication is disabled
-        case disabled
-        // We have received something like "PJLINK 1 498e4a67" and then
-        // we need to send a "PJLINK 2" to determine the security level.
-        // We hold the 4-byte random number as an associated value.
-        case securityLevelRequestPending(random4: Buffer4, password: String)
-    }
-
     public enum AuthState: Equatable, Sendable {
         // Projector has disabled authentication
         case disabled
@@ -219,6 +208,10 @@ extension PJLink.AuthState {
 
     public static let level2ClientRandomCount = 32
     public static let level2ClientHashCount = 64
+
+    public var mustAuthenticate: Bool {
+        expectedAuthSize > 0
+    }
 
     public var expectedAuthSize: Int {
         switch self {
