@@ -20,58 +20,15 @@ struct PJLinkClientCLI: AsyncParsableCommand {
     var password: String?
 
     mutating func run() async throws {
-        let logger = Logger(sub: .client, cat: .connection)
-        let connection = NetworkConnection(to: .hostPort(host: .init(host), port: 4352)) {
-            TCP()
-        }
+        let client = PJLink.Client(host: host, password: password)
 
-        connection.onBetterPathUpdate { connection, newValue in
-            logger.debug("Connection[\(connection.id)] onBetterPathUpdate: \(newValue)")
-            print("Connection[\(connection.id)] onBetterPathUpdate: \(newValue)")
-        }
-        connection.onPathUpdate { connection, newPath in
-            logger.debug("Connection[\(connection.id)] onPathUpdate: \(newPath.debugDescription)")
-            print("Connection[\(connection.id)] onPathUpdate: \(newPath.debugDescription)")
-        }
-        connection.onViabilityUpdate { connection, newViable in
-            logger.debug("Connection[\(connection.id)] onViabilityUpdate: \(newViable)")
-            print("Connection[\(connection.id)] onViabilityUpdate: \(newViable)")
-        }
-        connection.onStateUpdate { connection, state in
-            let stateDesc: String
-            switch state {
-            case .setup:
-                stateDesc = "Setup"
-            case .waiting(let error):
-                stateDesc = "Waiting(\(error))"
-            case .preparing:
-                stateDesc = "Preparing"
-            case .ready:
-                stateDesc = "Ready"
-            case .failed(let error):
-                stateDesc = "Failed(\(error))"
-            case .cancelled:
-                stateDesc = "Cancelled"
-            @unknown default:
-                stateDesc = "Unknown"
-            }
-            logger.debug("Connection[\(connection.id)] onStateUpdate: \(stateDesc, privacy: .public)")
-            print("Connection[\(connection.id)] onStateUpdate: \(stateDesc)")
-        }
-
-        // Do authentication
-        print("Authenticating...")
-        var connectionState = try await PJLink.Client.authenticate(on: connection, password: password)
-
-        // We do a first request so that we can successfully authenticate. If we are successful,
-        // then we do not have to send an authentication string after that.
-        if connectionState.auth.mustAuthenticate {
-            connectionState = try await PJLink.Client.updateAuthenticationState(from: connectionState)
-        }
+        // Do setup
+        print("Setting Up...")
+        try await client.setup()
 
         print("Fetching current state...")
-        var state = try await PJLink.Client.fetchState(from: connectionState)
-        print("Current state: \n\(state)")
+        try await client.refreshState()
+        print("Current state: \n\(client.stateDescription)")
 
         while true {
             printMenu()
@@ -90,30 +47,24 @@ struct PJLinkClientCLI: AsyncParsableCommand {
                 print("Enter 0 for off, 1 for on, or Enter to return to main menu: ", terminator: "")
                 guard let powerLine = readLine(), let onOff = PJLink.OnOff(rawValue: powerLine) else { break }
                 // Make the API call
-                let updatedPowerStatus = try await PJLink.Client.setPower(to: onOff, from: connectionState)
-                // Update the state
-                state.power = updatedPowerStatus
-                print("Power Status updated to: \(updatedPowerStatus)")
-                print("Current state: \n\(state)")
+                try await client.setPower(to: onOff)
+                print("Current state: \n\(client.stateDescription)")
             case .setInput:
                 // Get the user input
-                printInputMenu(state: state)
+                let inputs = client.inputs
+                printInputMenu(inputs: inputs)
                 print("Enter index of input, or Enter to return to main menu: ", terminator: "")
                 guard let inputLine = readLine(), let inputIndex = Int(inputLine) else {
                     print("This is not a valid integer. Please re-enter.")
                     break
                 }
-                let inputs = state.inputs
                 guard inputIndex >= 0, inputIndex < inputs.count else {
                     print("\(inputIndex) is not in the range [0, \(inputs.count - 1)]. Please re-enter.")
                     break
                 }
                 // Make the API call
-                let newActiveInput = try await PJLink.Client.setInput(to: inputs[inputIndex], from: connectionState)
-                // Update the state
-                state.activeInput = newActiveInput
-                print("Active Input changed to: \(newActiveInput.displayName)")
-                print("Current state: \n\(state)")
+                try await client.setInput(to: inputs[inputIndex])
+                print("Current state: \n\(client.stateDescription)")
             case .setMuteStatus:
                 // Get the user input
                 printMuteMenu()
@@ -128,11 +79,8 @@ struct PJLinkClientCLI: AsyncParsableCommand {
                     break
                 }
                 // Make the API call
-                let newMuteState = try await PJLink.Client.setMuteState(to: allMuteStates[inputIndex], from: connectionState)
-                // Update the state
-                state.mute = newMuteState
-                print("Mute State set to: \(newMuteState)")
-                print("Current state: \n\(state)")
+                try await client.setMuteState(to: allMuteStates[inputIndex])
+                print("Current state: \n\(client.stateDescription)")
             case .setSpeakerVolume:
                 printSpeakerVolumeMenu()
                 print("Enter index, or Enter to return to main menu: ", terminator: "")
@@ -147,7 +95,7 @@ struct PJLinkClientCLI: AsyncParsableCommand {
                 }
                 // Make the API call
                 let volumeAdjustment = allVolumeAdjustments[inputIndex]
-                try await PJLink.Client.setSpeakerVolume(to: volumeAdjustment, from: connectionState)
+                try await client.setSpeakerVolume(to: volumeAdjustment)
                 print("Speaker Volume set to: \(volumeAdjustment.displayName)")
             case .setMicrophoneVolume:
                 printMicrophoneVolumeMenu()
@@ -163,7 +111,7 @@ struct PJLinkClientCLI: AsyncParsableCommand {
                 }
                 // Make the API call
                 let volumeAdjustment = allVolumeAdjustments[inputIndex]
-                try await PJLink.Client.setMicrophoneVolume(to: volumeAdjustment, from: connectionState)
+                try await client.setMicrophoneVolume(to: volumeAdjustment)
                 print("Microphone Volume set to: \(volumeAdjustment.displayName)")
             case .setFreeze:
                 printFreezeMenu()
@@ -178,10 +126,8 @@ struct PJLinkClientCLI: AsyncParsableCommand {
                     break
                 }
                 // Make the API call
-                let newFreeze = try await PJLink.Client.setFreeze(to: allFreeze[inputIndex], from: connectionState)
-                state.freeze = newFreeze
-                print("Freeze State set to: \(newFreeze.displayName)")
-                print("Current state: \n\(state)")
+                try await client.setFreeze(to: allFreeze[inputIndex])
+                print("Current state: \n\(client.stateDescription)")
             }
         }
 
@@ -201,9 +147,9 @@ struct PJLinkClientCLI: AsyncParsableCommand {
         }
     }
 
-    private func printInputMenu(state: PJLink.State) {
+    private func printInputMenu(inputs: [PJLink.Input]) {
         print("Set Input To:")
-        state.inputs.enumerated().forEach { index, input in
+        inputs.enumerated().forEach { index, input in
             print("\(index)) \(input.displayName)")
         }
     }

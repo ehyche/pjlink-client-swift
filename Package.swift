@@ -29,6 +29,7 @@ let package = Package(
             name: "PJLinkClient",
             dependencies: [
                 .target(name: "PJLinkCommon"),
+                .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
             ]
         ),
         .target(

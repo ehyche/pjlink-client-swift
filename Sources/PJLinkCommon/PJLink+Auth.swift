@@ -41,6 +41,8 @@ extension PJLink {
     }
 
     public enum AuthState: Equatable, Sendable {
+        // Authentication state has not yet been determined
+        case indeterminate
         // Projector has disabled authentication
         case disabled
         // Projector is using Class1 authentication
@@ -215,6 +217,7 @@ extension PJLink.AuthState {
 
     public var expectedAuthSize: Int {
         switch self {
+        case .indeterminate: 0
         case .disabled: 0
         case .level1: 32
         case .level2: 96
@@ -224,6 +227,8 @@ extension PJLink.AuthState {
 
     public var hash: String {
         switch self {
+        case .indeterminate:
+            return ""
         case .disabled:
             return ""
         case .level1(let projectorRandom, let password):
@@ -245,6 +250,7 @@ extension PJLink.AuthState {
 
     public var authString: String {
         switch self {
+        case .indeterminate: ""
         case .disabled: ""
         case .level1: self.hash
         case .level2(let clientRandom, _, _): clientRandom.data.hexEncodedString + self.hash

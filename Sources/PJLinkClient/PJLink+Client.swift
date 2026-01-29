@@ -5,6 +5,7 @@
 //  Created by Eric Hyche on 12/12/25.
 //
 
+import ConcurrencyExtras
 import Foundation
 import Network
 import os
@@ -17,16 +18,131 @@ extension PJLink {
         public var auth: AuthState
     }
 
-    public struct Client {
+    // A Client's job is to manage the state for a single projector.
+    public final class Client {
+        // The IP address of the projector.
+        private var host: String
+        // The password to authenticate with the projector.
+        private var password: String?
         // Each client manages a single connection.
         // We may try multiple connections in the future.
-        public var connectionState: ConnectionState
+        private var connectionState: ConnectionState
+        // Each client also mananges the state for single projector.
+        private let state = LockIsolated<PJLink.State?>(nil)
+
+        public init(host: String, password: String? = nil) {
+            self.host = host
+            self.password = password
+
+            let connection = NetworkConnection(to: .hostPort(host: .init(host), port: 4352)) {
+                TCP()
+            }
+
+            let logger = Logger(sub: .client, cat: .connection)
+            connection.onBetterPathUpdate { connection, newValue in
+                logger.debug("Connection[\(connection.id)] onBetterPathUpdate: \(newValue)")
+                print("Connection[\(connection.id)] onBetterPathUpdate: \(newValue)")
+            }
+            connection.onPathUpdate { connection, newPath in
+                logger.debug("Connection[\(connection.id)] onPathUpdate: \(newPath.debugDescription)")
+                print("Connection[\(connection.id)] onPathUpdate: \(newPath.debugDescription)")
+            }
+            connection.onViabilityUpdate { connection, newViable in
+                logger.debug("Connection[\(connection.id)] onViabilityUpdate: \(newViable)")
+                print("Connection[\(connection.id)] onViabilityUpdate: \(newViable)")
+            }
+            connection.onStateUpdate { connection, state in
+                let stateDesc: String
+                switch state {
+                case .setup:
+                    stateDesc = "Setup"
+                case .waiting(let error):
+                    stateDesc = "Waiting(\(error))"
+                case .preparing:
+                    stateDesc = "Preparing"
+                case .ready:
+                    stateDesc = "Ready"
+                case .failed(let error):
+                    stateDesc = "Failed(\(error))"
+                case .cancelled:
+                    stateDesc = "Cancelled"
+                @unknown default:
+                    stateDesc = "Unknown"
+                }
+                logger.debug("Connection[\(connection.id)] onStateUpdate: \(stateDesc, privacy: .public)")
+                print("Connection[\(connection.id)] onStateUpdate: \(stateDesc)")
+            }
+
+            self.connectionState = .init(connection: connection, auth: .indeterminate)
+        }
+
+        public func setup() async throws {
+            // This performs the handshake with the projector to determine how we authenticate.
+            connectionState = try await Self.authenticate(on: connectionState.connection, password: password)
+            // We do a first request so that we can successfully authenticate. If we are successful,
+            // then we do not have to send an authentication string after that.
+            if connectionState.auth.mustAuthenticate {
+                connectionState = try await Self.updateAuthenticationState(from: connectionState)
+            }
+        }
+
+        public func refreshState() async throws {
+            let newState = try await Self.fetchState(from: connectionState)
+            state.setValue(newState)
+        }
+
+        public func setPower(to onOff: PJLink.OnOff) async throws {
+            let powerStatus = try await Self.setPower(to: onOff, from: connectionState)
+            state.withValue {
+                $0?.power = powerStatus
+            }
+        }
+
+        public func setInput(to input: PJLink.Input) async throws {
+            let newInput = try await Self.setInput(to: input, from: connectionState)
+            state.withValue {
+                $0?.activeInput = newInput
+            }
+        }
+
+        public func setMuteState(to muteState: PJLink.MuteState) async throws {
+            let newMuteState = try await Self.setMuteState(to: muteState, from: connectionState)
+            state.withValue {
+                $0?.mute = newMuteState
+            }
+        }
+
+        public func setSpeakerVolume(to volume: PJLink.VolumeAdjustment) async throws {
+            try await Self.setSpeakerVolume(to: volume, from: connectionState)
+        }
+
+        public func setMicrophoneVolume(to volume: PJLink.VolumeAdjustment) async throws {
+            try await Self.setMicrophoneVolume(to: volume, from: connectionState)
+        }
+
+        public func setFreeze(to freeze: PJLink.Freeze) async throws {
+            let newFreeze = try await Self.setFreeze(to: freeze, from: connectionState)
+            state.withValue {
+                $0?.freeze = newFreeze
+            }
+        }
+
+        public var stateDescription: String {
+            guard let projectorState = state.value else {
+                return "Not Initialized"
+            }
+            return projectorState.description
+        }
+
+        public var inputs: [PJLink.Input] {
+            return state.value?.inputs ?? []
+        }
     }
 }
 
 extension PJLink.Client {
 
-    public static func authenticate(
+    private static func authenticate(
         on connection: NetworkConnection<TCP>,
         password: String?
     ) async throws -> PJLink.ConnectionState {
@@ -91,7 +207,7 @@ extension PJLink.Client {
         return .init(connection: connection, auth: authState)
     }
 
-    public static func updateAuthenticationState(
+    private static func updateAuthenticationState(
         from connectionState: PJLink.ConnectionState
     ) async throws -> PJLink.ConnectionState {
         let response = try await query(request: .projectorClass, from: connectionState)
@@ -106,7 +222,7 @@ extension PJLink.Client {
         }
     }
 
-    public static func fetchState(from connectionState: PJLink.ConnectionState) async throws -> PJLink.State {
+    private static func fetchState(from connectionState: PJLink.ConnectionState) async throws -> PJLink.State {
         // Fetch the projector class
         let projectorClass = try await queryClass(from: connectionState)
 
@@ -120,7 +236,7 @@ extension PJLink.Client {
         }
     }
 
-    public static func fetchClass1State(from connectionState: PJLink.ConnectionState) async throws -> PJLink.Class1State {
+    private static func fetchClass1State(from connectionState: PJLink.ConnectionState) async throws -> PJLink.Class1State {
         // Fetch the power status
         let powerStatus = try await queryPowerStatus(from: connectionState)
         // Fetch the input switch
@@ -156,7 +272,7 @@ extension PJLink.Client {
         )
     }
 
-    public static func fetchClass2State(from connectionState: PJLink.ConnectionState) async throws -> PJLink.Class2State {
+    private static func fetchClass2State(from connectionState: PJLink.ConnectionState) async throws -> PJLink.Class2State {
         // Fetch the power status
         let powerStatus = try await queryPowerStatus(from: connectionState)
         // Fetch the input switch
@@ -561,7 +677,7 @@ extension PJLink.Client {
         return response
     }
 
-    public static func setPower(
+    private static func setPower(
         to onOff: PJLink.OnOff,
         from connectionState: PJLink.ConnectionState
     ) async throws -> PJLink.PowerStatus {
@@ -571,7 +687,7 @@ extension PJLink.Client {
         return try await queryPowerStatus(from: connectionState)
     }
 
-    public static func setInput(
+    private static func setInput(
         to input: PJLink.Input,
         from connectionState: PJLink.ConnectionState
     ) async throws -> PJLink.Input {
@@ -583,7 +699,7 @@ extension PJLink.Client {
         }
     }
 
-    public static func setInputClass1(
+    private static func setInputClass1(
         to inputSwitch: PJLink.InputSwitchClass1,
         from connectionState: PJLink.ConnectionState
     ) async throws -> PJLink.InputSwitchClass1 {
@@ -593,7 +709,7 @@ extension PJLink.Client {
         return try await queryInputSwitchClass1(from: connectionState)
     }
 
-    public static func setInputClass2(
+    private static func setInputClass2(
         to inputSwitch: PJLink.InputSwitchClass2,
         from connectionState: PJLink.ConnectionState
     ) async throws -> PJLink.InputSwitchClass2 {
@@ -603,7 +719,7 @@ extension PJLink.Client {
         return try await queryInputSwitchClass2(from: connectionState)
     }
 
-    public static func setMuteState(
+    private static func setMuteState(
         to muteState: PJLink.MuteState,
         from connectionState: PJLink.ConnectionState
     ) async throws -> PJLink.MuteState {
@@ -613,21 +729,21 @@ extension PJLink.Client {
         return try await queryMuteState(from: connectionState)
     }
 
-    public static func setSpeakerVolume(
+    private static func setSpeakerVolume(
         to volume: PJLink.VolumeAdjustment,
         from connectionState: PJLink.ConnectionState
     ) async throws {
         try await setThrowing(request: .speakerVolume(volume), from: connectionState)
     }
 
-    public static func setMicrophoneVolume(
+    private static func setMicrophoneVolume(
         to volume: PJLink.VolumeAdjustment,
         from connectionState: PJLink.ConnectionState
     ) async throws {
         try await setThrowing(request: .microphoneVolume(volume), from: connectionState)
     }
 
-    public static func setFreeze(
+    private static func setFreeze(
         to freeze: PJLink.Freeze,
         from connectionState: PJLink.ConnectionState
     ) async throws -> PJLink.Freeze {
