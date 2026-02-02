@@ -68,5 +68,6 @@ extension PJLink {
         case authenticationFailure(expected: String, actual: String)
         case unexpectedAuthMessage(expected: AuthMessage, actual: AuthMessage)
         case unexpectedAuthValidationState(state: ServerAuthState, message: AuthMessage, password: String?)
+        case macAddressIllegalFormat(String)
     }
 }
