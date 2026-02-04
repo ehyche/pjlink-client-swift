@@ -40,3 +40,16 @@ extension PJLink.MacAddress: LosslessStringConvertibleThrowing {
         String(format: "%02X:%02X:%02X:%02X:%02X:%02X", address0, address1, address2, address3, address4, address5)
     }
 }
+
+extension PJLink.MacAddress {
+
+    // "DE:AD:BE:EF:FA:DE" -> "DEADBEEFFADE"
+    public static let mock = Self(
+        address0: 222,
+        address1: 173,
+        address2: 190,
+        address3: 239,
+        address4: 250,
+        address5: 222
+    )
+}

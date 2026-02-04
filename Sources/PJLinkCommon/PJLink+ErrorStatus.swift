@@ -81,6 +81,15 @@ extension PJLink.ErrorStatus: CaseIterable {
 
 extension PJLink.ErrorStatus {
 
+    public static let mock = Self(
+        fan: .none,
+        lamp: .error,
+        temperature: .none,
+        coverOpen: .none,
+        filter: .warning,
+        other: .none
+    )
+
     public var displayName: String {
         "Fan: \(fan.displayName), Lamp: \(lamp.displayName), Temperature: \(temperature.displayName), Cover Open: \(coverOpen.displayName), Filter: \(filter.displayName), Other: \(other.displayName)"
     }

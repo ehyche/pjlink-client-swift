@@ -23,7 +23,7 @@ extension PJLink {
             self.authConfig = config.auth
         }
 
-        public func run() async throws {
+        public func run() async throws -> Bool {
             let logger = Logger(cat: .listener)
             let listener = try NetworkListener(
                 using: .parameters {
@@ -74,6 +74,7 @@ extension PJLink {
                     logger.error("[Listener] Uncaught Error in ServerConnection.run(): \(error)")
                 }
             }
+            return true
         }
     }
 

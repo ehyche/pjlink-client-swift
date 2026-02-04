@@ -18,6 +18,7 @@ extension PJLink {
         case network = "Network"
         case listener = "Listener"
         case connection = "Connection"
+        case notification = "Notification"
     }
 }
 

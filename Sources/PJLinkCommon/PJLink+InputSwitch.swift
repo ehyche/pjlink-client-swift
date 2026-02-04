@@ -158,6 +158,8 @@ extension PJLink.InputSwitchClass2 {
     public var displayName: String {
         input.displayName + " " + channel.rawValue
     }
+
+    public static let mock = Self(input: .rgb, channel: .two)
 }
 
 extension PJLink.InputSwitchesClass2 {

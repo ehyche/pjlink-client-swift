@@ -128,6 +128,20 @@ struct PJLinkClientCLI: AsyncParsableCommand {
                 // Make the API call
                 try await client.setFreeze(to: allFreeze[inputIndex])
                 print("Current state: \n\(client.stateDescription)")
+            case .sendNotification:
+                printNotificationMenu()
+                print("Enter index of notification to send, or Enter to return to main menu: ", terminator: "")
+                guard let inputLine = readLine(), let inputIndex = Int(inputLine) else {
+                    print("This is not a valid integer. Please re-enter.")
+                    break
+                }
+                let allNotifications = PJLink.Notification.allCases
+                guard inputIndex >= 0, inputIndex < allNotifications.count else {
+                    print("\(inputIndex) is not in the range [0, \(allNotifications.count - 1)]. Please re-enter.")
+                    break
+                }
+                // Send the UDP notification
+                try await client.sendNotification(allNotifications[inputIndex])
             }
         }
 
@@ -184,6 +198,12 @@ struct PJLinkClientCLI: AsyncParsableCommand {
         }
     }
 
+    private func printNotificationMenu() {
+        PJLink.Notification.allCases.enumerated().forEach { index, notification in
+            print("\(index)) \(notification.displayName)")
+        }
+    }
+
     private enum MenuOption: Int, CaseIterable {
         case setPowerStatus = 1
         case setInput = 2
@@ -191,6 +211,7 @@ struct PJLinkClientCLI: AsyncParsableCommand {
         case setSpeakerVolume = 4
         case setMicrophoneVolume = 5
         case setFreeze = 6
+        case sendNotification = 7
 
         var title: String {
             switch self {
@@ -200,6 +221,7 @@ struct PJLinkClientCLI: AsyncParsableCommand {
             case .setSpeakerVolume: "Set Speaker Volume"
             case .setMicrophoneVolume: "Set Microphone Volume"
             case .setFreeze: "Set Freeze"
+            case .sendNotification: "Send Notification"
             }
         }
     }
