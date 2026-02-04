@@ -42,20 +42,7 @@ extension PJLink {
                 }
             }
             listener.onStateUpdate { listener, state in
-                switch state {
-                case .setup:
-                    logger.debug("[Listener] State Update: setup")
-                case .waiting(let error):
-                    logger.debug("[Listener] State Update: waiting(\(error)")
-                case .ready:
-                    logger.debug("[Listener] State Update: ready")
-                case .failed(let error):
-                    logger.error("[Listener] State Update: failed(\(error)")
-                case .cancelled:
-                    logger.debug("[Listener] State Update: cancelled")
-                @unknown default:
-                    break
-                }
+                logger.debug("[Listener] State Update: \(state.name, privacy: .public)")
             }
             try await listener.run { [serverConnections = self.serverConnections, state = self.state, authConfig = self.authConfig] connection in
                 logger.info("[Listener] New Connection: \(connection.id)")
@@ -96,4 +83,18 @@ extension PJLink.AuthConfig {
 extension PJLink.ServerConfig {
 
     public static let mock: Self = .init(initialState: .mockClass2, auth: .mock)
+}
+
+private extension NetworkListener.State {
+
+    var name: String {
+        switch self {
+        case .setup: "Setup"
+        case .waiting(let error): "Waiting(\(error))"
+        case .ready: "Ready"
+        case .failed(let error): "Failed(\(error))"
+        case .cancelled: "Cancelled"
+        @unknown default: "Unknown"
+        }
+    }
 }

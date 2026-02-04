@@ -71,6 +71,7 @@ private extension NWEndpoint {
         }
     }
 }
+
 private extension NetworkListener.State {
 
     var name: String {

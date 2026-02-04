@@ -21,7 +21,7 @@ extension PJLink {
     // A Client's job is to manage the state for a single projector.
     public final class Client {
         // The IP address of the projector.
-        private var host: String
+        private var host: NWEndpoint.Host
         // The password to authenticate with the projector.
         private var password: String?
         // Each client manages a single connection.
@@ -32,15 +32,15 @@ extension PJLink {
         // Each client also mananges the state for single projector.
         private let state = LockIsolated<PJLink.State?>(nil)
 
-        public init(host: String, password: String? = nil) {
+        public init(host: NWEndpoint.Host, password: String? = nil) {
             self.host = host
             self.password = password
 
-            self.udpConnection = NetworkConnection(to: .hostPort(host: .init(host), port: 4352)) {
+            self.udpConnection = NetworkConnection(to: .hostPort(host: host, port: 4352)) {
                 UDP()
             }
 
-            let connection = NetworkConnection(to: .hostPort(host: .init(host), port: 4352)) {
+            let connection = NetworkConnection(to: .hostPort(host: host, port: 4352)) {
                 TCP()
             }
 
