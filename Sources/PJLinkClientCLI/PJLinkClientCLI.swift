@@ -20,7 +20,7 @@ struct PJLinkClientCLI: AsyncParsableCommand {
     var password: String?
 
     mutating func run() async throws {
-        let client = PJLink.Client(host: host, password: password)
+        let client = PJLink.Client(host: .init(host), password: password)
 
         // Do setup
         print("Setting Up...")
