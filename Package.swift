@@ -9,6 +9,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.0"),
         .package(url: "https://github.com/pointfreeco/swift-concurrency-extras.git", from: "1.3.2"),
+        .package(url: "https://github.com/apple/swift-async-algorithms.git", from: "1.1.1"),
     ],
     targets: [
         .executableTarget(
@@ -37,6 +38,7 @@ let package = Package(
             dependencies: [
                 .target(name: "PJLinkCommon"),
                 .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
+                .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
             ]
         ),
         .target(

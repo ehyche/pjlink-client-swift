@@ -16,7 +16,8 @@ extension PJLink {
     public final class Server {
         private let state: LockIsolated<PJLink.State>
         private let authConfig: AuthConfig
-        private let serverConnections = LockIsolated<[ServerConnection]>([])
+        private let serverConnections = LockIsolated<[NWEndpoint.Host: [ServerConnection]]>([:])
+        private let connectedClients = LockIsolated<[NWEndpoint.Host: ConnectedClient]>([:])
 
         public init(config: ServerConfig) {
             self.state = .init(config.initialState)
@@ -24,7 +25,7 @@ extension PJLink {
         }
 
         public func run() async throws -> Bool {
-            let logger = Logger(cat: .listener)
+            let logger = Logger(sub: .server, cat: .listener)
             let listener = try NetworkListener(
                 using: .parameters {
                     TCP()
@@ -44,16 +45,57 @@ extension PJLink {
             listener.onStateUpdate { listener, state in
                 logger.debug("[Listener] State Update: \(state.name, privacy: .public)")
             }
-            try await listener.run { [serverConnections = self.serverConnections, state = self.state, authConfig = self.authConfig] connection in
-                logger.info("[Listener] New Connection: \(connection.id)")
-                let serverConnection = ServerConnection(connection: connection, state: state, authConfig: authConfig) { serverConn in
-                    logger.info("[Listener] Connection \(connection.id) Terminated")
-                    serverConnections.withValue {
-                        $0.removeAll(where: { $0 === serverConn })
-                    }
+            try await listener.run { [
+                hostMap = self.serverConnections,
+                connectedClientMap = self.connectedClients,
+                state = self.state,
+                authConfig = self.authConfig
+            ] connection in
+                logger.info("[Listener] New Connection \(connection.id) from \"\(String(describing: connection.remoteEndpoint))\"")
+                guard let host = connection.remoteEndpoint?.host else {
+                    logger.error("[Listener] Could not obtain host for \(connection.id) - early exit")
+                    return
                 }
-                serverConnections.withValue {
-                    $0.append(serverConnection)
+                let serverConnection = ServerConnection(
+                    connection: connection,
+                    state: state,
+                    authConfig: authConfig,
+                    onTerminated: { serverConn in
+                        logger.info("[Listener] Connection \(connection.id) onTerminated")
+                        hostMap.withValue { mutableHostMap in
+                            var connectionsForHost = mutableHostMap[host] ?? []
+                            connectionsForHost.removeAll(where: { $0 === serverConn })
+                            mutableHostMap[host] = connectionsForHost
+                        }
+                        // If we have no more connections for this host,
+                        // then remove the ConnectedClient from the map
+                        let connectionCountForHost = hostMap.value[host]?.count ?? 0
+                        if connectionCountForHost == 0 {
+                            connectedClientMap.withValue { mutableConnectedClientMap in
+                                mutableConnectedClientMap[host] = nil
+                            }
+                        }
+                    },
+                    onSendNotification: { [connectedClients = connectedClientMap.value.values] notification in
+                        logger.info("[Listener] Connection \(connection.id) onSendNotification(\(notification))")
+                        await withThrowingTaskGroup { group in
+                            connectedClients.forEach { connectedClient in
+                                group.addTask {
+                                    try await connectedClient.sendNotification(notification)
+                                }
+                            }
+                        }
+                    },
+                    onPowerStatusChange: { oldPowerStatus, newPowerStatus in
+
+                    }
+                )
+                hostMap.withValue {
+                    $0[host, default: []].append(serverConnection)
+                }
+                connectedClientMap.withValue {
+                    guard $0[host] == nil else { return }
+                    $0[host] = ConnectedClient(host: host)
                 }
                 do {
                     try await serverConnection.run()
@@ -83,6 +125,16 @@ extension PJLink.AuthConfig {
 extension PJLink.ServerConfig {
 
     public static let mock: Self = .init(initialState: .mockClass2, auth: .mock)
+}
+
+private extension NWEndpoint {
+
+    var host: NWEndpoint.Host? {
+        switch self {
+        case .hostPort(let host, _): host
+        default: nil
+        }
+    }
 }
 
 private extension NetworkListener.State {
