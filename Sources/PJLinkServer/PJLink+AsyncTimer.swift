@@ -11,7 +11,7 @@ import PJLinkCommon
 
 extension PJLink {
 
-    public struct AsyncTimer {
+    public struct AsyncTimer: Sendable {
         let timerTask: Task<Void, any Swift.Error>
 
         public init(

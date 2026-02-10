@@ -18,6 +18,7 @@ extension PJLink {
         private let authConfig: AuthConfig
         private let serverConnections = LockIsolated<[NWEndpoint.Host: [ServerConnection]]>([:])
         private let connectedClients = LockIsolated<[NWEndpoint.Host: ConnectedClient]>([:])
+        private let asyncTimerIsolated = LockIsolated<AsyncTimer?>(nil)
 
         public init(config: ServerConfig) {
             self.state = .init(config.initialState)
@@ -49,7 +50,8 @@ extension PJLink {
                 hostMap = self.serverConnections,
                 connectedClientMap = self.connectedClients,
                 state = self.state,
-                authConfig = self.authConfig
+                authConfig = self.authConfig,
+                asyncTimerIsolated = self.asyncTimerIsolated
             ] connection in
                 logger.info("[Listener] New Connection \(connection.id) from \"\(String(describing: connection.remoteEndpoint))\"")
                 guard let host = connection.remoteEndpoint?.host else {
@@ -87,7 +89,42 @@ extension PJLink {
                         }
                     },
                     onPowerStatusChange: { oldPowerStatus, newPowerStatus in
-
+                        let notificationOnOff: PJLink.OnOff?
+                        let powerStatusAfterTimer: PJLink.PowerStatus?
+                        switch (oldPowerStatus, newPowerStatus) {
+                        case (.standby, .warmUp):
+                            notificationOnOff = .on
+                            powerStatusAfterTimer = .lampOn
+                        case (.lampOn, .cooling):
+                            notificationOnOff = .off
+                            powerStatusAfterTimer = .standby
+                        default:
+                            notificationOnOff = nil
+                            powerStatusAfterTimer = nil
+                        }
+                        guard let notificationOnOff, let powerStatusAfterTimer else { return }
+                        // If there is already a timer, cancel it.
+                        if let existingTimer = asyncTimerIsolated.value {
+                            existingTimer.cancel()
+                            asyncTimerIsolated.setValue(nil)
+                        }
+                        let timer = AsyncTimer(every: 30.0, count: 1) {
+                            // Set the power status
+                            state.withValue { mutableState in
+                                mutableState.power = powerStatusAfterTimer
+                            }
+                            // Send a notification
+                            let notification: PJLink.Notification = .power(notificationOnOff)
+                            let connectedClients = connectedClientMap.value.values
+                            await withThrowingTaskGroup { group in
+                                connectedClients.forEach { connectedClient in
+                                    group.addTask {
+                                        try await connectedClient.sendNotification(notification)
+                                    }
+                                }
+                            }
+                        }
+                        asyncTimerIsolated.setValue(timer)
                     }
                 )
                 hostMap.withValue {
