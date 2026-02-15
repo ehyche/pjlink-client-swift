@@ -123,6 +123,8 @@ extension PJLink {
                                     }
                                 }
                             }
+                            // Clear the timer
+                            asyncTimerIsolated.setValue(nil)
                         }
                         asyncTimerIsolated.setValue(timer)
                     }
