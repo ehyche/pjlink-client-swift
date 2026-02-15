@@ -185,8 +185,8 @@ extension PJLink.Message.Request {
 
     public var parameterDescription: String {
         switch self {
-        case .get(let getRequest): getRequest.description
-        case .set(let setRequest): setRequest.description
+        case .get(let getRequest): getRequest.parameterDescription
+        case .set(let setRequest): setRequest.parameterDescription
         }
     }
 }
