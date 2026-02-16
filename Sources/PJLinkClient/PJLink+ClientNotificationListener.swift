@@ -42,7 +42,7 @@ extension PJLink {
             networkListener = listener
         }
 
-        public func run() async throws {
+        public func run() async throws -> Bool {
             let logger = Logger(sub: .client, cat: .listener)
             logger.debug("[NotificationListener] run() enter")
             try await networkListener.run { [onNotify = self.onNotification] connection in
@@ -58,6 +58,7 @@ extension PJLink {
                 }
             }
             logger.debug("[NotificationListener] run() exit")
+            return true
         }
     }
 }
