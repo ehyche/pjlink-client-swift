@@ -13,24 +13,24 @@ import PJLinkCommon
 
 extension PJLink {
 
-    public struct ConnectionState {
+    public struct ConnectionState: Sendable {
         public var connection: NetworkConnection<TCP>
         public var auth: AuthState
     }
 
     // A Client's job is to manage the state for a single projector.
-    public final class Client {
+    public struct Client: Sendable {
         // The IP address of the projector.
-        private var host: NWEndpoint.Host
+        private let host: NWEndpoint.Host
         // The password to authenticate with the projector.
-        private var password: String?
+        private let password: String?
         // Each client manages a single connection.
         // We may try multiple connections in the future.
         private var connectionState: ConnectionState
         // Hold our UDP connection
         private let udpConnection: NetworkConnection<UDP>
         // Each client also mananges the state for single projector.
-        private let state = LockIsolated<PJLink.State?>(nil)
+        public let state = LockIsolated<PJLink.State?>(nil)
 
         public init(host: NWEndpoint.Host, password: String? = nil) {
             self.host = host
@@ -82,7 +82,7 @@ extension PJLink {
             self.connectionState = .init(connection: connection, auth: .indeterminate)
         }
 
-        public func setup() async throws {
+        public mutating func setup() async throws {
             // This performs the handshake with the projector to determine how we authenticate.
             connectionState = try await Self.authenticate(on: connectionState.connection, password: password)
             // We do a first request so that we can successfully authenticate. If we are successful,
@@ -92,26 +92,26 @@ extension PJLink {
             }
         }
 
-        public func refreshState() async throws {
+        public mutating func refreshState() async throws {
             let newState = try await Self.fetchState(from: connectionState)
             state.setValue(newState)
         }
 
-        public func setPower(to onOff: PJLink.OnOff) async throws {
+        public mutating func setPower(to onOff: PJLink.OnOff) async throws {
             let powerStatus = try await Self.setPower(to: onOff, from: connectionState)
             state.withValue {
                 $0?.power = powerStatus
             }
         }
 
-        public func setInput(to input: PJLink.Input) async throws {
+        public mutating func setInput(to input: PJLink.Input) async throws {
             let newInput = try await Self.setInput(to: input, from: connectionState)
             state.withValue {
                 $0?.activeInput = newInput
             }
         }
 
-        public func setMuteState(to muteState: PJLink.MuteState) async throws {
+        public mutating func setMuteState(to muteState: PJLink.MuteState) async throws {
             let newMuteState = try await Self.setMuteState(to: muteState, from: connectionState)
             state.withValue {
                 $0?.mute = newMuteState
@@ -126,7 +126,7 @@ extension PJLink {
             try await Self.setMicrophoneVolume(to: volume, from: connectionState)
         }
 
-        public func setFreeze(to freeze: PJLink.Freeze) async throws {
+        public mutating func setFreeze(to freeze: PJLink.Freeze) async throws {
             let newFreeze = try await Self.setFreeze(to: freeze, from: connectionState)
             state.withValue {
                 $0?.freeze = newFreeze
@@ -142,6 +142,15 @@ extension PJLink {
 
         public var inputs: [PJLink.Input] {
             return state.value?.inputs ?? []
+        }
+
+        public func handleNotification(_ notification: PJLink.Notification) {
+            let logger = Logger(sub: .client, cat: .notification)
+            logger.debug("Handling notification: \(notification.description, privacy: .public)")
+            print("Handling notification: \(notification.description)")
+            state.withValue {
+                $0?.applyingNotification(notification)
+            }
         }
 
         public func sendNotification(_ notification: PJLink.Notification) async throws {
