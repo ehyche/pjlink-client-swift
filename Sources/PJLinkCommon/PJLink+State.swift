@@ -146,6 +146,12 @@ extension PJLink.Class1State {
         return mutableSelf
     }
 
+    public func withErrorStatus(_ errorStatus: PJLink.ErrorStatus) -> Self {
+        var mutableSelf = self
+        mutableSelf.error = errorStatus
+        return mutableSelf
+    }
+
     public static let mock = Self(
         power: .standby,
         mute: .init(mute: .audioVideo, state: .off),
@@ -183,6 +189,12 @@ extension PJLink.Class2State {
     public func withAVMute(_ muteState: PJLink.MuteState) -> Self {
         var mutableSelf = self
         mutableSelf.mute = muteState
+        return mutableSelf
+    }
+
+    public func withErrorStatus(_ errorStatus: PJLink.ErrorStatus) -> Self {
+        var mutableSelf = self
+        mutableSelf.error = errorStatus
         return mutableSelf
     }
 
@@ -280,6 +292,24 @@ extension PJLink.State {
         }
     }
 
+    public var inputSwitchClass2: PJLink.InputSwitchClass2? {
+        set {
+            guard let nonNilNewValue = newValue else { return }
+            switch self {
+            case .class1:
+                break
+            case .class2(let class2State):
+                self = .class2(class2State.withActiveInputSwitch(nonNilNewValue))
+            }
+        }
+        get {
+            switch self {
+            case .class1: nil
+            case .class2(let class2State): class2State.activeInputSwitch
+            }
+        }
+    }
+
     public var activeInputIndex: Int? {
         switch self {
         case .class1(let class1State): class1State.activeInputIndex
@@ -305,9 +335,19 @@ extension PJLink.State {
     }
 
     public var error: PJLink.ErrorStatus {
-        switch self {
-        case .class1(let class1State): class1State.error
-        case .class2(let class2State): class2State.error
+        set {
+            switch self {
+            case .class1(let class1State):
+                self = .class1(class1State.withErrorStatus(newValue))
+            case .class2(let class2State):
+                self = .class2(class2State.withErrorStatus(newValue))
+            }
+        }
+        get {
+            switch self {
+            case .class1(let class1State): class1State.error
+            case .class2(let class2State): class2State.error
+            }
         }
     }
 
@@ -412,6 +452,43 @@ extension PJLink.State {
             case .class2(let class2State): class2State.freeze
             }
         }
+    }
+
+    public mutating func applyingNotification(_ notification: PJLink.Notification) {
+        switch notification {
+        case .errorStatus(let errorStatus):
+            self = withErrorStatus(errorStatus)
+        case .power(let onOff):
+            self = applyingOnOff(onOff)
+        case .input(let inputSwitchClass2):
+            self = withInputSwitchClass2(inputSwitchClass2)
+        default:
+            break
+        }
+    }
+
+    public func withNotification(_ notification: PJLink.Notification) -> Self {
+        var mutableSelf = self
+        mutableSelf.applyingNotification(notification)
+        return mutableSelf
+    }
+
+    public func withErrorStatus(_ errorStatus: PJLink.ErrorStatus) -> Self {
+        var mutableSelf = self
+        mutableSelf.error = errorStatus
+        return mutableSelf
+    }
+
+    public func applyingOnOff(_ onOff: PJLink.OnOff) -> Self {
+        var mutableSelf = self
+        mutableSelf.power = mutableSelf.power.applyingOnOff(onOff)
+        return mutableSelf
+    }
+
+    public func withInputSwitchClass2(_ inputSwitchClass2: PJLink.InputSwitchClass2) -> Self {
+        var mutableSelf = self
+        mutableSelf.inputSwitchClass2 = inputSwitchClass2
+        return mutableSelf
     }
 
     public static let mockClass1: Self = .class1(.mock)
