@@ -20,7 +20,17 @@ struct PJLinkClientCLI: AsyncParsableCommand {
     var password: String?
 
     mutating func run() async throws {
-        let client = PJLink.Client(host: .init(host), password: password)
+        var client = PJLink.Client(host: .init(host), password: password)
+
+        let clientListener = try PJLink.ClientNotificationListener { [state = client.state] host, notification in
+            print("Client Received Notification \"\(notification)\" from \"\(String(describing: host))\"")
+            state.withValue { mutableState in
+                mutableState?.applyingNotification(notification)
+            }
+            if let currentState = state.value {
+                print("Current state: \n\(currentState)")
+            }
+        }
 
         // Do setup
         print("Setting Up...")
@@ -30,6 +40,16 @@ struct PJLinkClientCLI: AsyncParsableCommand {
         try await client.refreshState()
         print("Current state: \n\(client.stateDescription)")
 
+        async let runResult = self.runMenu(client: &client)
+        async let listenerResult = clientListener.run()
+        let _ = try await [runResult, listenerResult]
+
+        print("Client exiting.")
+    }
+
+    private func runMenu(
+        client: inout PJLink.Client
+    ) async throws -> Bool {
         while true {
             printMenu()
             print("Enter an option to perform (or just Enter to exit): ", terminator: "")
@@ -145,7 +165,7 @@ struct PJLinkClientCLI: AsyncParsableCommand {
             }
         }
 
-        print("Client exiting.")
+        return true
     }
 
     private func printMenu() {
