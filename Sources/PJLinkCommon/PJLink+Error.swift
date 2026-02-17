@@ -15,6 +15,7 @@ extension PJLink {
         case invalidClass(String)
         case invalidCommand(String)
         case invalidNotificationCommand(String)
+        case invalidSearchCommand(String)
         case invalidSeparator(String)
         case unexpectedSeparator(String)
         case unexpectedGetResponse(String)
