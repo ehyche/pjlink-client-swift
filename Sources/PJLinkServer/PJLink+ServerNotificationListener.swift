@@ -45,7 +45,7 @@ extension PJLink {
             try await networkListener.run { connection in
                 logger.info("[NotificationListener] New Connection: \(connection.id) remoteEndpoint=\(String(describing: connection.remoteEndpoint))")
                 let data = try await connection.receive().content
-                let notificationUTF8 = try data.toUTF8String()
+                let notificationUTF8 = try data.toUTF8String(requireCRorLF: false)
                 logger.info("[NotificationListener] RECV \"\(notificationUTF8, privacy: .public)\"")
             }
             return true
