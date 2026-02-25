@@ -26,17 +26,23 @@ extension Data {
         }
     }
 
-    public func toUTF8String() throws -> String {
+    public func toUTF8String(requireCRorLF: Bool = true) throws -> String {
         guard !isEmpty else {
             throw PJLink.Error.emptyDataBufferReceived
         }
         guard let utf8String = String(data: self, encoding: .utf8) else {
             throw PJLink.Error.couldNotConvertToUTF8(self)
         }
-        guard let crIndex = utf8String.firstIndex(of: "\r") else {
-            throw PJLink.Error.missingCarriageReturnSuffix(utf8String)
+        if let crIndex = utf8String.firstIndex(of: "\r") {
+            return String(utf8String.prefix(upTo: crIndex))
+        } else if let lfIndex = utf8String.firstIndex(of: "\n") {
+            return String(utf8String.prefix(upTo: lfIndex))
+        } else {
+            guard !requireCRorLF else {
+                throw PJLink.Error.missingCarriageReturnSuffix(utf8String)
+            }
+            return utf8String
         }
-        return String(utf8String.prefix(upTo: crIndex))
     }
 
     public static func random(count: Int) throws -> Data {
