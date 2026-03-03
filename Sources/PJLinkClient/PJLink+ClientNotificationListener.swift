@@ -62,27 +62,3 @@ extension PJLink {
         }
     }
 }
-
-private extension NWEndpoint {
-
-    var host: NWEndpoint.Host? {
-        switch self {
-        case .hostPort(let host, _): host
-        default: nil
-        }
-    }
-}
-
-private extension NetworkListener.State {
-
-    var name: String {
-        switch self {
-        case .setup: "Setup"
-        case .waiting(let error): "Waiting(\(error))"
-        case .ready: "Ready"
-        case .failed(let error): "Failed(\(error))"
-        case .cancelled: "Cancelled"
-        @unknown default: "Unknown"
-        }
-    }
-}

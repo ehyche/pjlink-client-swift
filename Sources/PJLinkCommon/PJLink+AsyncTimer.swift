@@ -7,7 +7,6 @@
 
 import AsyncAlgorithms
 import Foundation
-import PJLinkCommon
 
 extension PJLink {
 
@@ -15,15 +14,15 @@ extension PJLink {
         let timerTask: Task<Void, any Swift.Error>
 
         public init(
-            every duration: TimeInterval,
+            every duration: Duration,
             count: Int? = nil,
             work: @escaping @Sendable () -> Void
         ) {
             let asyncSequence: any AsyncSequence
             if let count {
-                asyncSequence = AsyncTimerSequence.repeating(every: .seconds(duration)).prefix(count)
+                asyncSequence = AsyncTimerSequence.repeating(every: duration).prefix(count)
             } else {
-                asyncSequence = AsyncTimerSequence.repeating(every: .seconds(duration))
+                asyncSequence = AsyncTimerSequence.repeating(every: duration)
             }
             timerTask = Task {
                 for try await _ in asyncSequence {
@@ -34,15 +33,15 @@ extension PJLink {
         }
 
         public init(
-            every duration: TimeInterval,
+            every duration: Duration,
             count: Int? = nil,
             work: @escaping @Sendable () async -> Void
         ) {
             let asyncSequence: any AsyncSequence
             if let count {
-                asyncSequence = AsyncTimerSequence.repeating(every: .seconds(duration)).prefix(count)
+                asyncSequence = AsyncTimerSequence.repeating(every: duration).prefix(count)
             } else {
-                asyncSequence = AsyncTimerSequence.repeating(every: .seconds(duration))
+                asyncSequence = AsyncTimerSequence.repeating(every: duration)
             }
             timerTask = Task {
                 for try await _ in asyncSequence {
@@ -53,15 +52,15 @@ extension PJLink {
         }
 
         public init(
-            every duration: TimeInterval,
+            every duration: Duration,
             count: Int? = nil,
             work: @escaping @Sendable () async throws -> Void
         ) {
             let asyncSequence: any AsyncSequence
             if let count {
-                asyncSequence = AsyncTimerSequence.repeating(every: .seconds(duration)).prefix(count)
+                asyncSequence = AsyncTimerSequence.repeating(every: duration).prefix(count)
             } else {
-                asyncSequence = AsyncTimerSequence.repeating(every: .seconds(duration))
+                asyncSequence = AsyncTimerSequence.repeating(every: duration)
             }
             timerTask = Task {
                 for try await _ in asyncSequence {

@@ -71,5 +71,10 @@ extension PJLink {
         case unexpectedAuthMessage(expected: AuthMessage, actual: AuthMessage)
         case unexpectedAuthValidationState(state: ServerAuthState, message: AuthMessage, password: String?)
         case macAddressIllegalFormat(String)
+        case broadcastUDPSocketAddress(String)
+        case broadcastUDPSocketBroadcastFlagCannotBeSet
+        case broadcastUDPSocketIO(Int32, String)
+        case broadcastUDPSocketWouldBlock
+        case broadcastUDPSocketGeneral(String)
     }
 }

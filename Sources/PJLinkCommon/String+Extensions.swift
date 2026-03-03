@@ -20,4 +20,12 @@ extension String {
     public var crTerminatedData: Data {
         Data(crTerminated.utf8)
     }
+
+    public var removingCRSuffix: String {
+        if let crIndex = self.firstIndex(of: "\r") {
+            return String(self.prefix(upTo: crIndex))
+        } else {
+            return self
+        }
+    }
 }

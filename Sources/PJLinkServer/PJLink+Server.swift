@@ -108,7 +108,7 @@ extension PJLink {
                             existingTimer.cancel()
                             asyncTimerIsolated.setValue(nil)
                         }
-                        let timer = AsyncTimer(every: 30.0, count: 1) {
+                        let timer = AsyncTimer(every: .seconds(30), count: 1) {
                             // Set the power status
                             state.withValue { mutableState in
                                 mutableState.power = powerStatusAfterTimer
@@ -164,28 +164,4 @@ extension PJLink.AuthConfig {
 extension PJLink.ServerConfig {
 
     public static let mock: Self = .init(initialState: .mockClass2, auth: .mock)
-}
-
-private extension NWEndpoint {
-
-    var host: NWEndpoint.Host? {
-        switch self {
-        case .hostPort(let host, _): host
-        default: nil
-        }
-    }
-}
-
-private extension NetworkListener.State {
-
-    var name: String {
-        switch self {
-        case .setup: "Setup"
-        case .waiting(let error): "Waiting(\(error))"
-        case .ready: "Ready"
-        case .failed(let error): "Failed(\(error))"
-        case .cancelled: "Cancelled"
-        @unknown default: "Unknown"
-        }
-    }
 }

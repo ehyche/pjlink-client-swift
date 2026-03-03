@@ -11,6 +11,7 @@ extension PJLink {
     public enum Subsystem: String {
         case server = "PJLinkServer"
         case client = "PJLinkClient"
+        case common = "PJLinkCommon"
     }
 
     public enum Category: String {
@@ -19,6 +20,9 @@ extension PJLink {
         case listener = "Listener"
         case connection = "Connection"
         case notification = "Notification"
+        case search = "Search"
+        case udpListener = "UDPListener"
+        case discovery = "Discovery"
     }
 }
 

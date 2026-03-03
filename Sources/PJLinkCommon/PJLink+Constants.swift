@@ -21,4 +21,6 @@ extension PJLink {
     public static let class2AuthRequestSize = 96
     public static let class2RandomNumberCount = 32
     public static let class2HashCount = 64
+    public static let searchBroadcastUDPPort = 4352
+    public static let searchListenUDPPort = 4352
 }

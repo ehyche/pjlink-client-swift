@@ -20,10 +20,11 @@ struct PJLinkServerCLI: AsyncParsableCommand {
         let configFileData = try Data(contentsOf: configFileURL)
         let config = try JSONDecoder().decode(PJLink.ServerConfig.self, from: configFileData)
         let server = PJLink.Server(config: config)
-//        let notificationListener = try PJLink.ServerNotificationListener()
+        let notificationListener = try PJLink.ServerNotificationListener()
 //        async let serverResult = server.run()
 //        async let notificationResult = notificationListener.run()
 //        let _ = try await [serverResult, notificationResult]
-        _ = try await server.run()
+//        _ = try await server.run()
+        _ = try await notificationListener.run()
     }
 }

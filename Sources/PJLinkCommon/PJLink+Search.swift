@@ -83,4 +83,11 @@ extension PJLink.Search {
         case .response(let macAddress): macAddress.description
         }
     }
+
+    public var isResponse: Bool {
+        switch self {
+        case .request: false
+        case .response: true
+        }
+    }
 }

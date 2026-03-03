@@ -15,7 +15,7 @@ extension Data {
         self.map { String(format: "%02x", $0) }.joined()
     }
 
-    var utf8StringWithCRStripped: String? {
+    public var utf8StringWithCRStripped: String? {
         guard let utf8String = String(data: self, encoding: .utf8) else {
             return nil
         }
