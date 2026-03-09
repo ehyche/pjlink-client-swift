@@ -21,6 +21,7 @@ extension PJLink {
         case connection = "Connection"
         case notification = "Notification"
         case search = "Search"
+        case searchListener = "SearchListener"
         case udpListener = "UDPListener"
         case discovery = "Discovery"
     }

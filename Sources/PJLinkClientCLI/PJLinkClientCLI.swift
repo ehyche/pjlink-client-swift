@@ -10,6 +10,7 @@ import Network
 import os
 import PJLinkCommon
 import PJLinkClient
+import PJLinkBroadcastUDP
 
 @main
 struct PJLinkClientCLI: AsyncParsableCommand {
@@ -162,6 +163,17 @@ struct PJLinkClientCLI: AsyncParsableCommand {
                 }
                 // Send the UDP notification
                 try await client.sendNotification(allNotifications[inputIndex])
+            case .projectorDiscovery:
+                guard let broadcastAddress = try PJLink.IPAddressDiscovery.getBroadcastAddress()?.host else {
+                    print("Could not get broadcast address.")
+                    break
+                }
+                print("Broadcast address = \(broadcastAddress)")
+                print("Discovering projectors...")
+                let projectorDiscovery = try PJLink.ProjectorDiscovery(broadcastHost: broadcastAddress, duration: .seconds(30))
+                for try await projector in projectorDiscovery.outputStream {
+                    print("Discovered projector: \(projector)")
+                }
             }
         }
 
@@ -232,6 +244,7 @@ struct PJLinkClientCLI: AsyncParsableCommand {
         case setMicrophoneVolume = 5
         case setFreeze = 6
         case sendNotification = 7
+        case projectorDiscovery = 8
 
         var title: String {
             switch self {
@@ -242,6 +255,7 @@ struct PJLinkClientCLI: AsyncParsableCommand {
             case .setMicrophoneVolume: "Set Microphone Volume"
             case .setFreeze: "Set Freeze"
             case .sendNotification: "Send Notification"
+            case .projectorDiscovery: "Projector Discovery"
             }
         }
     }
