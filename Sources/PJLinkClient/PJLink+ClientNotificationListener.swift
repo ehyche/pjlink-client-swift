@@ -5,60 +5,54 @@
 //  Created by Eric Hyche on 2/2/26.
 //
 
+import ConcurrencyExtras
 import Network
 import os
 import PJLinkCommon
 
 extension PJLink {
 
-    public final class ClientNotificationListener {
-        public typealias OnNotification = @Sendable (NWEndpoint.Host?, PJLink.Notification) -> Void
-
-        let onNotification: OnNotification
-        let networkListener: NetworkListener<UDP>
-
-        public init(onNotification: @escaping OnNotification) throws {
-            self.onNotification = onNotification
-            let logger = Logger(sub: .client, cat: .listener)
-            let listener = try NetworkListener(
-                using: .parameters {
-                    UDP()
-                }
-                .localPort(4352)
-            )
-            listener.onServiceRegistrationUpdate { listener, change in
-                switch change {
-                case .add(let endpoint):
-                    logger.debug("[Listener] Endpoint Added: \(endpoint.debugDescription, privacy: .public)")
-                case .remove(let endpoint):
-                    logger.debug("[Listener] Endpoint Removed: \(endpoint.debugDescription, privacy: .public)")
-                @unknown default:
-                    break
-                }
-            }
-            listener.onStateUpdate { listener, state in
-                logger.debug("[Listener] State Update: \(state.name, privacy: .public)")
-            }
-            networkListener = listener
+    public struct ClientNotificationListener {
+        public struct NotificationInfo: Equatable, Sendable {
+            public let host: NWEndpoint.Host
+            public let notification: PJLink.Notification
         }
 
-        public func run() async throws -> Bool {
+        private let udpListener: UDPListener
+        public let notificationStream: AsyncThrowingStream<NotificationInfo, Swift.Error>
+        private let logger: Logger
+
+        public init() throws {
+            logger = Logger(sub: .client, cat: .listener)
+            logger.debug("Create ClientNotificationListener")
+            udpListener = try UDPListener(port: .pjlink)
+            notificationStream = udpListener
+                .outputStream
+                .compactMap(Self.toNotificationInfo(_:))
+                .eraseToThrowingStream()
+        }
+
+        public func cancel() {
+            logger.debug("Cancel ClientNotificationListener")
+            udpListener.cancel()
+        }
+
+        private static func toNotificationInfo(_ output: PJLink.UDPListener.Output) -> NotificationInfo? {
             let logger = Logger(sub: .client, cat: .listener)
-            logger.debug("[NotificationListener] run() enter")
-            try await networkListener.run { [onNotify = self.onNotification] connection in
-                logger.debug("[NotificationListener] New Connection: \(connection.id) remoteEndpoint=\(String(describing: connection.remoteEndpoint))")
-                let data = try await connection.receive().content
-                do {
-                    let notificationUTF8 = try data.toUTF8String()
-                    let notification = try PJLink.Notification(notificationUTF8)
-                    logger.info("[NotificationListener] RECV \"\(notification)\" from \"\(String(describing: connection.remoteEndpoint?.host))\"")
-                    onNotify(connection.remoteEndpoint?.host, notification)
-                } catch {
-                    logger.error("[NotificationListener] Error parsing notification: \(error)")
-                }
+            guard let utf8String = String(data: output.data, encoding: .utf8) else {
+                logger.error("Could not convert data to UTF8 string.")
+                return nil
             }
-            logger.debug("[NotificationListener] run() exit")
-            return true
+            guard let host = output.host else {
+                logger.error("Client notification \"\(utf8String, privacy: .public)\" missing host.")
+                return nil
+            }
+            let utf8MinusCR = utf8String.removingCRSuffix
+            guard let notification = try? PJLink.Notification(utf8MinusCR) else {
+                logger.error("Could not parse \"\(utf8MinusCR)\" as notification")
+                return nil
+            }
+            return .init(host: host, notification: notification)
         }
     }
 }

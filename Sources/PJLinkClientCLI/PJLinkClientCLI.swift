@@ -14,6 +14,9 @@ import PJLinkBroadcastUDP
 
 @main
 struct PJLinkClientCLI: AsyncParsableCommand {
+    @Option(help: "Perform projector discovery instead of specifying host.")
+    var discovery: Bool = false
+
     @Option(help: "The IP address of the projector host.")
     var host: String
 
@@ -21,29 +24,35 @@ struct PJLinkClientCLI: AsyncParsableCommand {
     var password: String?
 
     mutating func run() async throws {
-        var client = PJLink.Client(host: .init(host), password: password)
+        var projectors = [PJLink.ProjectorDiscovery.Projector]()
+        if discovery {
+            let broadcastAddress = try PJLink.IPAddressDiscovery.getBroadcastAddress()
+            guard let broadcastAddress else {
+                print("Could not determine broadcast address. Exiting.")
+                return
+            }
+            print("Discovering projectors using broadcast address of \(broadcastAddress)")
+            let projectorDiscovery = try PJLink.ProjectorDiscovery(broadcastHost: broadcastAddress.host, duration: .seconds(30))
+            for try await projector in projectorDiscovery.outputStream {
+                print("Discovered projector at \(String(describing: projector.host))")
+                projectors.append(projector)
+            }
+        } else {
+            var client = PJLink.Client(host: .init(host), password: password)
 
-        let clientListener = try PJLink.ClientNotificationListener { [state = client.state] host, notification in
-            print("Client Received Notification \"\(notification)\" from \"\(String(describing: host))\"")
-            state.withValue { mutableState in
-                mutableState?.applyingNotification(notification)
-            }
-            if let currentState = state.value {
-                print("Current state: \n\(currentState)")
-            }
+            // Do setup
+            print("Setting Up...")
+            try await client.setup()
+
+            print("Fetching current state...")
+            try await client.refreshState()
+            print("Current state: \n\(client.stateDescription)")
+
+//            async let runResult = self.runMenu(client: &client)
+//            async let listenerResult = clientListener.run()
+//            let _ = try await [runResult, listenerResult]
+            _ = try await runMenu(client: &client)
         }
-
-        // Do setup
-        print("Setting Up...")
-        try await client.setup()
-
-        print("Fetching current state...")
-        try await client.refreshState()
-        print("Current state: \n\(client.stateDescription)")
-
-        async let runResult = self.runMenu(client: &client)
-        async let listenerResult = clientListener.run()
-        let _ = try await [runResult, listenerResult]
 
         print("Client exiting.")
     }

@@ -20,24 +20,33 @@ extension PJLink {
             public let host: NWEndpoint.Host
         }
 
-        public init(macAddress: MacAddress) throws {
+        public init(macAddress: MacAddress = .mock) throws {
             self.macAddress = macAddress
             self.logger = Logger(sub: .server, cat: .searchListener)
             udpListener = try UDPListener(port: .pjlink)
         }
 
-        public func run() async throws {
+        public func run() async throws -> Bool {
             let searchRequestStream = udpListener.outputStream.compactMap(Self.searchPacket(from:))
             for try await searchRequest in searchRequestStream {
                 logger.info("RECV: Search request from \(searchRequest.host.debugDescription, privacy: .public)")
+                // Make sure we have not already been cancelled
                 try Task.checkCancellation()
-                do {
-                    try await sendSearchAck(to: searchRequest.host)
-                    logger.info("SEND: Sent ACKN to \(searchRequest.host.debugDescription, privacy: .public)")
-                } catch {
-                    logger.error("Error sending ACKN to \(searchRequest.host.debugDescription, privacy: .public)")
+                // Compute a random number of seconds between 1 and 10
+                let delay = Int.random(in: 1...10)
+                Task {
+                    // Sleep for this number of seconds
+                    logger.info("Delaying for \(delay) seconds...")
+                    try await Task.sleep(for: .seconds(delay))
+                    do {
+                        try await sendSearchAck(to: searchRequest.host)
+                        logger.info("SENT: ACKN to \(searchRequest.host.debugDescription, privacy: .public)")
+                    } catch {
+                        logger.error("Error sending ACKN to \(searchRequest.host.debugDescription, privacy: .public)")
+                    }
                 }
             }
+            return true
         }
 
         public func cancel() {
