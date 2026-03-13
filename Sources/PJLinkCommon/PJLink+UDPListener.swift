@@ -13,6 +13,7 @@ extension PJLink {
     public struct UDPListener: Sendable {
         private let task: Task<Void, Swift.Error>
         public let outputStream: AsyncThrowingStream<Output, Swift.Error>
+        private let continuation: AsyncThrowingStream<Output, Swift.Error>.Continuation
 
         public struct Output: Sendable {
             public let host: NWEndpoint.Host?
@@ -57,11 +58,13 @@ extension PJLink {
                 }
             }
             self.outputStream = stream
+            self.continuation = continuation
         }
 
         public func cancel() {
             let logger = Logger(sub: .common, cat: .udpListener)
             logger.debug("cancel()")
+            continuation.finish()
             task.cancel()
         }
     }
@@ -78,7 +81,7 @@ extension AsyncThrowingStream.Continuation.Termination where Failure: Swift.Erro
 
     var displayName: String {
         switch self {
-        case .finished(let failure): ".finished(\(String(describing: failure))"
+        case .finished(let failure): ".finished(\(String(describing: failure)))"
         case .cancelled: ".cancelled"
         @unknown default: "Unknown"
         }
