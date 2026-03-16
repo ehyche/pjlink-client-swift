@@ -12,7 +12,7 @@ import PJLinkCommon
 
 extension PJLink {
 
-    public struct ClientNotificationListener {
+    public struct ClientNotificationListener: Sendable {
         public struct NotificationInfo: Equatable, Sendable {
             public let host: NWEndpoint.Host
             public let notification: PJLink.Notification

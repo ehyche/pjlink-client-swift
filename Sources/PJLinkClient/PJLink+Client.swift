@@ -21,7 +21,7 @@ extension PJLink {
     // A Client's job is to manage the state for a single projector.
     public struct Client: Sendable {
         // The IP address of the projector.
-        private let host: NWEndpoint.Host
+        public let host: NWEndpoint.Host
         // The password to authenticate with the projector.
         private let password: String?
         // Each client manages a single connection.
