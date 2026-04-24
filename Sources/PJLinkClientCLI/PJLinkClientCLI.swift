@@ -32,7 +32,7 @@ struct PJLinkClientCLI: AsyncParsableCommand {
                 return
             }
             print("Discovering projectors using broadcast address of \(broadcastAddress) for 30 seconds...")
-            let projectorDiscovery = try PJLink.ProjectorDiscovery(broadcastHost: broadcastAddress.host, duration: .seconds(30))
+            let projectorDiscovery = try PJLink.UDPProjectorDiscovery(broadcastHost: broadcastAddress.host, duration: .seconds(30))
             for try await projector in projectorDiscovery.outputStream {
                 print("Discovered projector at \(String(describing: projector.host))")
                 if let host = projector.host {

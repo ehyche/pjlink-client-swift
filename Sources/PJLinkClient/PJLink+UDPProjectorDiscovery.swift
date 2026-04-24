@@ -1,5 +1,5 @@
 //
-//  PJLink+ProjectorDiscovery.swift
+//  PJLink+UDPProjectorDiscovery.swift
 //  pjlink-client-swift
 //
 //  Created by Eric Hyche on 2/23/26.
@@ -14,7 +14,7 @@ import os
 
 extension PJLink {
 
-    public struct ProjectorDiscovery: Sendable {
+    public struct UDPProjectorDiscovery: Sendable {
         private let udpListener: UDPListener
         private let asyncTimer: AsyncTimer
         public let outputStream: AsyncThrowingStream<Projector, Swift.Error>
