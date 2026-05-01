@@ -160,6 +160,59 @@ extension PJLink {
             print("Sending notification: \(notification.description)")
             try await udpConnection.send(Data(notification.description.crTerminatedData))
         }
+
+        public static func isProjectorPresent(at host: NWEndpoint.Host) async -> Bool {
+            let connection = NetworkConnection(to: .hostPort(host: host, port: .pjlink)) {
+                TCP()
+            }
+
+            let logger = Logger(sub: .client, cat: .connection)
+            connection.onBetterPathUpdate { connection, newValue in
+                logger.debug("Connection[\(connection.id)] onBetterPathUpdate: \(newValue)")
+            }
+            connection.onPathUpdate { connection, newPath in
+                logger.debug("Connection[\(connection.id)] onPathUpdate: \(newPath.debugDescription)")
+            }
+            connection.onViabilityUpdate { connection, newViable in
+                logger.debug("Connection[\(connection.id)] onViabilityUpdate: \(newViable)")
+            }
+            connection.onStateUpdate { connection, state in
+                let stateDesc: String
+                switch state {
+                case .setup:
+                    stateDesc = "Setup"
+                case .waiting(let error):
+                    stateDesc = "Waiting(\(error))"
+                case .preparing:
+                    stateDesc = "Preparing"
+                case .ready:
+                    stateDesc = "Ready"
+                case .failed(let error):
+                    stateDesc = "Failed(\(error))"
+                case .cancelled:
+                    stateDesc = "Cancelled"
+                @unknown default:
+                    stateDesc = "Unknown"
+                }
+                logger.debug("Connection[\(connection.id)] onStateUpdate: \(stateDesc, privacy: .public)")
+            }
+            do {
+                // Upon connection, we should receive either:
+                // "PJLINK 0" (Authentication disabled); OR
+                // "PJLINK 1 498e4a67" (Authentication enabled with 4-byte random number)
+                let connectionResponse = try await connection.receive(atLeast: 9, atMost: 18).content
+                let connectionResponseUTF8 = try connectionResponse.toUTF8String()
+                logger.debug("RECV: \(connectionResponseUTF8)")
+                print("RECV: \(connectionResponseUTF8)")
+                _ = try PJLink.AuthResponse(connectionResponseUTF8)
+                // If we received any sort of AuthResponse and were able to parse it,
+                // then we know we are talking to a projector.
+                return true
+            } catch {
+                logger.debug("Connection[\(connection.id)] to host \"\(host.debugDescription, privacy: .public)\" returned error: \(error)")
+                return false
+            }
+        }
     }
 }
 

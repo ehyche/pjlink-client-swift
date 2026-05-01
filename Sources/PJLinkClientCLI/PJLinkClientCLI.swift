@@ -24,6 +24,7 @@ struct PJLinkClientCLI: AsyncParsableCommand {
     var password: String?
 
     mutating func run() async throws {
+        try printInterfaces()
         var projectors = [NWEndpoint.Host]()
         if discovery {
             let broadcastAddress = try PJLink.IPAddressDiscovery.getBroadcastAddress()
@@ -103,6 +104,14 @@ struct PJLinkClientCLI: AsyncParsableCommand {
         _ = try await listenerTask.value
 
         print("PJLinkClientCLI exiting.")
+    }
+
+    private func printInterfaces() throws {
+        if let inf = try PJLink.IPAddressDiscovery.enumerateInterfaces().compactMap(\.v4Triple).first {
+            print("inf.address=\(inf.address), inf.address.rawValue=\(inf.address.rawValue.hexEncodedString)")
+            print("inf.netmask=\(inf.netmask), inf.netmask.rawValue=\(inf.netmask.rawValue.hexEncodedString)")
+            print("inf.broadcast=\(inf.broadcast), inf.broadcast.rawValue=\(inf.broadcast.rawValue.hexEncodedString)")
+        }
     }
 
     private func runMenuOnce(
