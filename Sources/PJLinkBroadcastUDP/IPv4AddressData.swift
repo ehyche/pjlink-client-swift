@@ -58,7 +58,7 @@ public struct IPv4AddressData {
         let maskedRange = try netmask.asUInt32.maskedRange
         let netmaskUInt32 = netmask.asUInt32
         let lowerBoundUInt32 = address.asUInt32 & netmaskUInt32
-        let upperBoundUInt32 = (lowerBoundUInt32 + maskedRange.upperBound) & netmaskUInt32
+        let upperBoundUInt32 = lowerBoundUInt32 + maskedRange.upperBound
         return Self(lowerBoundUInt32)...Self(upperBoundUInt32)
     }
 }
@@ -88,12 +88,12 @@ extension IPv4AddressData: Strideable {
     public typealias Stride = Int32
 
     public func advanced(by n: Stride) -> IPv4AddressData {
-        .init(UInt32(Stride(address) + n))
+        .init(UInt32(Int64(address) + Int64(n)))
     }
 
 
     public func distance(to other: IPv4AddressData) -> Stride {
-        Stride(other.address) - Stride(address)
+        Int32(Int64(other.address) - Int64(address))
     }
 }
 

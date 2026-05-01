@@ -164,6 +164,8 @@ extension PJLink {
         public static func isProjectorPresent(at host: NWEndpoint.Host) async -> Bool {
             let connection = NetworkConnection(to: .hostPort(host: host, port: .pjlink)) {
                 TCP()
+                    .connectionTimeout(1)
+                    .persistTimeout(1)
             }
 
             let logger = Logger(sub: .client, cat: .connection)

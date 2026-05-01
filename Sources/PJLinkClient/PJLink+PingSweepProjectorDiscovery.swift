@@ -14,7 +14,7 @@ import os
 
 extension PJLink {
 
-    struct PingSweepProjectorDiscovery: Sendable {
+    public struct PingSweepProjectorDiscovery: Sendable {
 
         public enum Error: Swift.Error {
             case noHostsToSweep
@@ -35,16 +35,18 @@ extension PJLink {
         private let task: Task<Void, Swift.Error>
 
         public init(hosts: [NWEndpoint.Host]) throws {
+            let logger = Logger(sub: .client, cat: .discovery)
+            logger.info("PingSweepProjectorDiscovery(hosts: \(hosts.count) hosts)")
             guard !hosts.isEmpty else {
                 throw Error.noHostsToSweep
             }
             let hostCount = Double(hosts.count)
             let checkedCount: LockIsolated<Int> = .init(0)
-            let logger = Logger(sub: .client, cat: .discovery)
             let (stream, cont) = AsyncThrowingStream.makeStream(of: DiscoveryEvent.self)
             self.outputStream = stream
             self.continuation = cont
             let hostGroups = Self.subdivideHosts(hosts)
+            logger.info("Divided hosts into \(hostGroups.count) groups")
             self.task = Task {
                 try Task.checkCancellation()
                 await withTaskGroup { group in
@@ -53,6 +55,7 @@ extension PJLink {
                             guard !Task.isCancelled else { return }
                             for host in hostGroup {
                                 guard !Task.isCancelled else { return }
+                                logger.debug("Pinging host at \(host.debugDescription)")
                                 let isPresent = await PJLink.Client.isProjectorPresent(at: host)
                                 if isPresent {
                                     logger.info("Found projector at \(host.debugDescription, privacy: .public)")
@@ -75,12 +78,12 @@ extension PJLink {
             task.cancel()
         }
 
-        public static func subnetAddressesToPing(
+        public static func hostsToPing(
             address: Network.IPv4Address,
             netmask: Network.IPv4Address,
             broadcast: Network.IPv4Address? = nil,
             gateway: Network.IPv4Address? = nil
-        ) throws -> [Network.IPv4Address] {
+        ) throws -> [NWEndpoint.Host] {
             let subnetAddresses = try IPv4AddressData.subnetRange(
                 address: .init(address),
                 netmask: .init(netmask)
@@ -89,15 +92,20 @@ extension PJLink {
             for address in subnetAddresses {
                 addresses.insert(address)
             }
-            // Remove the broadcast address
+            // Remove our own address
+            addresses.remove(address.asAddressData)
+            // Remove the broadcast address (if provided)
             if let broadcast {
                 addresses.remove(broadcast.asAddressData)
             }
-            // Remove the gateway address
+            // Remove the gateway address (if provided)
             if let gateway {
                 addresses.remove(gateway.asAddressData)
             }
-            return addresses.sorted().compactMap(\.asIPv4Address)
+            return addresses
+                .sorted()
+                .compactMap(\.asIPv4Address)
+                .map { NWEndpoint.Host.ipv4($0) }
         }
 
         private static func subdivideHosts(_ hosts: [NWEndpoint.Host]) -> [[NWEndpoint.Host]] {

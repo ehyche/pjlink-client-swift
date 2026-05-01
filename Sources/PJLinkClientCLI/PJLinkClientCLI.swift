@@ -14,8 +14,13 @@ import PJLinkBroadcastUDP
 
 @main
 struct PJLinkClientCLI: AsyncParsableCommand {
-    @Flag(help: "Perform projector discovery instead of specifying host.")
-    var discovery = false
+    enum Discovery: String, ExpressibleByArgument {
+        case broadcast
+        case pingSweep
+    }
+
+    @Option(help: "Perform projector discovery instead of specifying host.")
+    var discovery: Discovery?
 
     @Option(help: "The IP address of the projector host.")
     var host: String?
@@ -24,24 +29,16 @@ struct PJLinkClientCLI: AsyncParsableCommand {
     var password: String?
 
     mutating func run() async throws {
-        try printInterfaces()
         var projectors = [NWEndpoint.Host]()
-        if discovery {
-            let broadcastAddress = try PJLink.IPAddressDiscovery.getBroadcastAddress()
-            guard let broadcastAddress else {
-                print("Could not determine broadcast address. Exiting.")
-                return
-            }
-            print("Discovering projectors using broadcast address of \(broadcastAddress) for 30 seconds...")
-            let projectorDiscovery = try PJLink.UDPProjectorDiscovery(broadcastHost: broadcastAddress.host, duration: .seconds(30))
-            for try await projector in projectorDiscovery.outputStream {
-                print("Discovered projector at \(String(describing: projector.host))")
-                if let host = projector.host {
-                    projectors.append(host)
-                }
+        if let discovery {
+            switch discovery {
+            case .broadcast:
+                projectors = try await discoverByBroadcast()
+            case .pingSweep:
+                projectors = try await discoverByPingSweep()
             }
             guard !projectors.isEmpty else {
-                print("No projectors discovered. Exiting.")
+                print("No projectors found. Exiting.")
                 return
             }
         } else if let host {
@@ -106,12 +103,48 @@ struct PJLinkClientCLI: AsyncParsableCommand {
         print("PJLinkClientCLI exiting.")
     }
 
-    private func printInterfaces() throws {
-        if let inf = try PJLink.IPAddressDiscovery.enumerateInterfaces().compactMap(\.v4Triple).first {
-            print("inf.address=\(inf.address), inf.address.rawValue=\(inf.address.rawValue.hexEncodedString)")
-            print("inf.netmask=\(inf.netmask), inf.netmask.rawValue=\(inf.netmask.rawValue.hexEncodedString)")
-            print("inf.broadcast=\(inf.broadcast), inf.broadcast.rawValue=\(inf.broadcast.rawValue.hexEncodedString)")
+    private func discoverByBroadcast() async throws -> [NWEndpoint.Host] {
+        var projectors = [NWEndpoint.Host]()
+        let broadcastAddress = try PJLink.IPAddressDiscovery.getBroadcastAddress()
+        guard let broadcastAddress else {
+            print("Could not determine broadcast address. Exiting.")
+            return []
         }
+        print("Discovering projectors using broadcast address of \(broadcastAddress) for 30 seconds...")
+        let projectorDiscovery = try PJLink.UDPProjectorDiscovery(broadcastHost: broadcastAddress.host, duration: .seconds(30))
+        for try await projector in projectorDiscovery.outputStream {
+            print("Discovered projector at \(String(describing: projector.host))")
+            if let host = projector.host {
+                projectors.append(host)
+            }
+        }
+        return projectors
+    }
+
+    private func discoverByPingSweep() async throws -> [NWEndpoint.Host] {
+        guard let v4 = try PJLink.IPAddressDiscovery.enumerateInterfaces().compactMap(\.v4Triple).first else {
+            print("Could not get an IPv4 interface. Exiting.")
+            return []
+        }
+        // Compute the hosts to try
+        let hosts = try PJLink.PingSweepProjectorDiscovery.hostsToPing(
+            address: v4.address,
+            netmask: v4.netmask,
+            broadcast: v4.broadcast
+        )
+        let pingSweep = try PJLink.PingSweepProjectorDiscovery(hosts: hosts)
+        var projectors = [NWEndpoint.Host]()
+        for try await pingEvent in pingSweep.outputStream {
+            switch pingEvent {
+            case .progressUpdate(let progress):
+                print("Ping Sweep Progress: \(progress * 100.0)")
+                break
+            case .projectorFound(let projector):
+                print("Discovered projector at \(projector.host)")
+                projectors.append(projector.host)
+            }
+        }
+        return projectors
     }
 
     private func runMenuOnce(
