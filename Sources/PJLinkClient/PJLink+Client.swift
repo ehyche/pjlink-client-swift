@@ -18,6 +18,33 @@ extension PJLink {
         public var auth: AuthState
     }
 
+    public enum RetryState: Sendable {
+        case notTried
+        case success
+        case recoverableFailure(count: Int)
+        case unrecoverableFailure
+
+        private static let maxAttempts = 3
+
+        var shouldRetry: Bool {
+            switch self {
+            case .notTried: true
+            case .success: false
+            case .recoverableFailure(let count): count < Self.maxAttempts
+            case .unrecoverableFailure: false
+            }
+        }
+
+        var uponRecoverableFailure: Self {
+            switch self {
+            case .notTried: .recoverableFailure(count: 1)
+            case .success: .success
+            case .recoverableFailure(let count): .recoverableFailure(count: count + 1)
+            case .unrecoverableFailure: .unrecoverableFailure
+            }
+        }
+    }
+
     // A Client's job is to manage the state for a single projector.
     public struct Client: Sendable {
         // The IP address of the projector.
@@ -40,46 +67,11 @@ extension PJLink {
                 UDP()
             }
 
-            let connection = NetworkConnection(to: .hostPort(host: host, port: 4352)) {
-                TCP()
-            }
+            self.connectionState = Self.createConnectionState(host: host)
+        }
 
-            let logger = Logger(sub: .client, cat: .connection)
-            connection.onBetterPathUpdate { connection, newValue in
-                logger.debug("Connection[\(connection.id)] onBetterPathUpdate: \(newValue)")
-                print("Connection[\(connection.id)] onBetterPathUpdate: \(newValue)")
-            }
-            connection.onPathUpdate { connection, newPath in
-                logger.debug("Connection[\(connection.id)] onPathUpdate: \(newPath.debugDescription)")
-                print("Connection[\(connection.id)] onPathUpdate: \(newPath.debugDescription)")
-            }
-            connection.onViabilityUpdate { connection, newViable in
-                logger.debug("Connection[\(connection.id)] onViabilityUpdate: \(newViable)")
-                print("Connection[\(connection.id)] onViabilityUpdate: \(newViable)")
-            }
-            connection.onStateUpdate { connection, state in
-                let stateDesc: String
-                switch state {
-                case .setup:
-                    stateDesc = "Setup"
-                case .waiting(let error):
-                    stateDesc = "Waiting(\(error))"
-                case .preparing:
-                    stateDesc = "Preparing"
-                case .ready:
-                    stateDesc = "Ready"
-                case .failed(let error):
-                    stateDesc = "Failed(\(error))"
-                case .cancelled:
-                    stateDesc = "Cancelled"
-                @unknown default:
-                    stateDesc = "Unknown"
-                }
-                logger.debug("Connection[\(connection.id)] onStateUpdate: \(stateDesc, privacy: .public)")
-                print("Connection[\(connection.id)] onStateUpdate: \(stateDesc)")
-            }
-
-            self.connectionState = .init(connection: connection, auth: .indeterminate)
+        public mutating func resetConnectionState() {
+            self.connectionState = Self.createConnectionState(host: host)
         }
 
         public mutating func setup() async throws {
@@ -92,44 +84,94 @@ extension PJLink {
             }
         }
 
+        private mutating func withRetry(_ work: @Sendable (ConnectionState, LockIsolated<PJLink.State?>) async throws -> Void) async throws {
+            let retryState = LockIsolated(RetryState.notTried)
+            while retryState.value.shouldRetry {
+                do {
+                    print("withRetry attempting work()")
+                    try await work(connectionState, state)
+                    print("withRetry work() successful")
+                    retryState.withValue { $0 = .success }
+                } catch {
+                    print("withRetry work() threw \(error)")
+                    Self.logError(error, prefix: "withRetry Connection[\(self.connectionState.connection.id)] ")
+                    let shouldReconnect: Bool
+                    if let nwError = error as? NWError {
+                        shouldReconnect = nwError.shouldReconnect
+                    } else if let pjlinkError = error as? PJLink.Error {
+                        shouldReconnect = pjlinkError.shouldReconnect
+                    } else {
+                        shouldReconnect = false
+                    }
+                    if shouldReconnect {
+                        retryState.withValue { $0 = $0.uponRecoverableFailure }
+                        if retryState.value.shouldRetry {
+                            resetConnectionState()
+                            try await setup()
+                        } else {
+                            print("shouldRetry = false, throwing \(error)")
+                            throw error
+                        }
+                    } else {
+                        print("shouldReconnect = false, throwing \(error)")
+                        throw error
+                    }
+                }
+            }
+        }
+
         public mutating func refreshState() async throws {
-            let newState = try await Self.fetchState(from: connectionState)
-            state.setValue(newState)
+            try await withRetry { connState, lockState in
+                let newState = try await Self.fetchState(from: connState)
+                lockState.setValue(newState)
+            }
         }
 
         public mutating func setPower(to onOff: PJLink.OnOff) async throws {
-            let powerStatus = try await Self.setPower(to: onOff, from: connectionState)
-            state.withValue {
-                $0?.power = powerStatus
+            try await withRetry { connState, lockState in
+                let powerStatus = try await Self.setPower(to: onOff, from: connState)
+                lockState.withValue {
+                    $0?.power = powerStatus
+                }
             }
         }
 
         public mutating func setInput(to input: PJLink.Input) async throws {
-            let newInput = try await Self.setInput(to: input, from: connectionState)
-            state.withValue {
-                $0?.activeInput = newInput
+            try await withRetry { connState, lockState in
+                let newInput = try await Self.setInput(to: input, from: connState)
+                lockState.withValue {
+                    $0?.activeInput = newInput
+                }
             }
         }
 
         public mutating func setMuteState(to muteState: PJLink.MuteState) async throws {
-            let newMuteState = try await Self.setMuteState(to: muteState, from: connectionState)
-            state.withValue {
-                $0?.mute = newMuteState
+            try await withRetry { connState, lockState in
+                let newMuteState = try await Self.setMuteState(to: muteState, from: connState)
+                lockState.withValue {
+                    $0?.mute = newMuteState
+                }
             }
         }
 
-        public func setSpeakerVolume(to volume: PJLink.VolumeAdjustment) async throws {
-            try await Self.setSpeakerVolume(to: volume, from: connectionState)
+        public mutating func setSpeakerVolume(to volume: PJLink.VolumeAdjustment) async throws {
+            try await withRetry { connState, _ in
+                try await Self.setSpeakerVolume(to: volume, from: connState)
+            }
         }
 
-        public func setMicrophoneVolume(to volume: PJLink.VolumeAdjustment) async throws {
-            try await Self.setMicrophoneVolume(to: volume, from: connectionState)
+        public mutating func setMicrophoneVolume(to volume: PJLink.VolumeAdjustment) async throws {
+            try await withRetry { connState, _ in
+                try await Self.setMicrophoneVolume(to: volume, from: connState)
+            }
         }
 
         public mutating func setFreeze(to freeze: PJLink.Freeze) async throws {
-            let newFreeze = try await Self.setFreeze(to: freeze, from: connectionState)
-            state.withValue {
-                $0?.freeze = newFreeze
+            try await withRetry { connState, lockState in
+                let newFreeze = try await Self.setFreeze(to: freeze, from: connState)
+                lockState.withValue {
+                    $0?.freeze = newFreeze
+                }
             }
         }
 
@@ -219,6 +261,49 @@ extension PJLink {
 }
 
 extension PJLink.Client {
+
+    private static func createConnectionState(host: NWEndpoint.Host) -> PJLink.ConnectionState {
+        let connection = NetworkConnection(to: .hostPort(host: host, port: .pjlink)) {
+            TCP()
+        }
+
+        let logger = Logger(sub: .client, cat: .connection)
+        connection.onBetterPathUpdate { connection, newValue in
+            logger.debug("Connection[\(connection.id)] onBetterPathUpdate: \(newValue)")
+            print("Connection[\(connection.id)] onBetterPathUpdate: \(newValue)")
+        }
+        connection.onPathUpdate { connection, newPath in
+            logger.debug("Connection[\(connection.id)] onPathUpdate: \(newPath.debugDescription)")
+            print("Connection[\(connection.id)] onPathUpdate: \(newPath.debugDescription)")
+        }
+        connection.onViabilityUpdate { connection, newViable in
+            logger.debug("Connection[\(connection.id)] onViabilityUpdate: \(newViable)")
+            print("Connection[\(connection.id)] onViabilityUpdate: \(newViable)")
+        }
+        connection.onStateUpdate { connection, state in
+            let stateDesc: String
+            switch state {
+            case .setup:
+                stateDesc = "Setup"
+            case .waiting(let error):
+                stateDesc = "Waiting(\(error))"
+            case .preparing:
+                stateDesc = "Preparing"
+            case .ready:
+                stateDesc = "Ready"
+            case .failed(let error):
+                stateDesc = "Failed(\(error))"
+            case .cancelled:
+                stateDesc = "Cancelled"
+            @unknown default:
+                stateDesc = "Unknown"
+            }
+            logger.debug("Connection[\(connection.id)] onStateUpdate: \(stateDesc, privacy: .public)")
+            print("Connection[\(connection.id)] onStateUpdate: \(stateDesc)")
+        }
+
+        return .init(connection: connection, auth: .indeterminate)
+    }
 
     private static func authenticate(
         on connection: NetworkConnection<TCP>,
@@ -871,5 +956,30 @@ extension PJLink.Client {
         }
 
         return response
+    }
+
+    private static func logError(_ error: Swift.Error, prefix: String = "") {
+        let logger = Logger(sub: .client, cat: .connection)
+        if let nwError = error as? NWError {
+            switch nwError {
+            case .posix(let posixErrorCode):
+                print("\(prefix)NWError.posix(\(posixErrorCode)): \(nwError)")
+            case .dns(let dnsServiceErrorType):
+                print("\(prefix)NWError.dns(\(dnsServiceErrorType)): \(nwError)")
+            case .tls(let osStatus):
+                print("\(prefix)NWError.tls(\(osStatus)): \(nwError)")
+            case .wifiAware(let errorCode):
+                print("\(prefix)NWError.wifiAware(\(errorCode)): \(nwError)")
+            @unknown default:
+                print("\(prefix)NWError: \(nwError)")
+            }
+            logger.error("\(prefix, privacy: .public)NWError: \(nwError)")
+        } else if let pjlinkError = error as? PJLink.Error {
+            print("\(prefix)PJLink.Error: \(pjlinkError)")
+            logger.error("\(prefix, privacy: .public)PJLink.Error: \(pjlinkError)")
+        } else {
+            print("\(prefix)General Error: \(error)")
+            logger.error("\(prefix, privacy: .public)General Error: \(error)")
+        }
     }
 }

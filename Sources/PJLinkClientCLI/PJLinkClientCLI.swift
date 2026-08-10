@@ -110,8 +110,8 @@ struct PJLinkClientCLI: AsyncParsableCommand {
             print("Could not determine broadcast address. Exiting.")
             return []
         }
-        print("Discovering projectors using broadcast address of \(broadcastAddress) for 30 seconds...")
-        let projectorDiscovery = try PJLink.UDPProjectorDiscovery(broadcastHost: broadcastAddress.host, duration: .seconds(30))
+        print("Discovering projectors using broadcast address of \(broadcastAddress) for 15 seconds...")
+        let projectorDiscovery = try PJLink.UDPProjectorDiscovery(broadcastHost: broadcastAddress.host, duration: .seconds(15))
         for try await projector in projectorDiscovery.outputStream {
             print("Discovered projector at \(String(describing: projector.host))")
             if let host = projector.host {
