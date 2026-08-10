@@ -54,18 +54,12 @@ extension PJLink {
         // Each client manages a single connection.
         // We may try multiple connections in the future.
         private var connectionState: ConnectionState
-        // Hold our UDP connection
-        private let udpConnection: NetworkConnection<UDP>
         // Each client also mananges the state for single projector.
         public let state = LockIsolated<PJLink.State?>(nil)
 
         public init(host: NWEndpoint.Host, password: String? = nil) {
             self.host = host
             self.password = password
-
-            self.udpConnection = NetworkConnection(to: .hostPort(host: host, port: 4352)) {
-                UDP()
-            }
 
             self.connectionState = Self.createConnectionState(host: host)
         }
@@ -193,14 +187,6 @@ extension PJLink {
             state.withValue {
                 $0?.applyingNotification(notification)
             }
-        }
-
-        public func sendNotification(_ notification: PJLink.Notification) async throws {
-            let logger = Logger(sub: .client, cat: .notification)
-
-            logger.debug("Sending notification: \(notification.description, privacy: .public)")
-            print("Sending notification: \(notification.description)")
-            try await udpConnection.send(Data(notification.description.crTerminatedData))
         }
 
         public static func isProjectorPresent(at host: NWEndpoint.Host) async -> Bool {
