@@ -20,7 +20,7 @@ extension PJLink {
         public init(host: NWEndpoint.Host) {
             logger.debug("[ConnectedClient(\(host.debugDescription, privacy: .public))] init")
             self.host = host
-            self.udpConnection = NetworkConnection(to: .hostPort(host: host, port: 4352)) {
+            self.udpConnection = NetworkConnection(to: .hostPort(host: host, port: .pjlink)) {
                 UDP()
             }
         }

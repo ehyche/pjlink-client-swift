@@ -31,7 +31,7 @@ extension PJLink {
                 using: .parameters {
                     TCP()
                 }
-                .localPort(4352)
+                .localPort(.pjlink)
             )
             listener.onServiceRegistrationUpdate { listener, change in
                 switch change {
