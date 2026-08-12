@@ -93,7 +93,7 @@ struct PJLinkClientCLI: AsyncParsableCommand {
                 }
                 clientIndex = index
             }
-            result = try await runMenuOnce(client: &clients[clientIndex])
+            result = await runMenuOnce(client: &clients[clientIndex])
         }
 
         print("Cancelling ClientNotificationListener.")
@@ -149,7 +149,7 @@ struct PJLinkClientCLI: AsyncParsableCommand {
 
     private func runMenuOnce(
         client: inout PJLink.Client
-    ) async throws -> Bool {
+    ) async -> Bool {
         printMenu()
         print("Enter an option to perform (or just Enter to exit): ", terminator: "")
         guard let line = readLine(), !line.isEmpty else { return false }
@@ -162,14 +162,25 @@ struct PJLinkClientCLI: AsyncParsableCommand {
         switch menuOption {
         case .showState:
             print("Current state: \n\(client.stateDescription)")
+        case .refreshState:
+            do {
+                try await client.refreshState()
+                print("Refreshed state: \n\(client.stateDescription)")
+            } catch {
+                print("Error refreshing state: \(error)")
+            }
         case .setPowerStatus:
             // Get the user input
             printPowerStatusMenu()
             print("Enter 0 for Off, 1 for On (or Enter to return to main menu): ", terminator: "")
             guard let powerLine = readLine(), let onOff = PJLink.OnOff(rawValue: powerLine) else { break }
-            // Make the API call
-            try await client.setPower(to: onOff)
-            print("Current state: \n\(client.stateDescription)")
+            do {
+                // Make the API call
+                try await client.setPower(to: onOff)
+                print("Current state: \n\(client.stateDescription)")
+            } catch {
+                print("Error setting power status: \(error)")
+            }
         case .setInput:
             // Get the user input
             let inputs = client.inputs
@@ -183,9 +194,13 @@ struct PJLinkClientCLI: AsyncParsableCommand {
                 print("\(inputIndex) is not in the range [0, \(inputs.count - 1)]. Please re-enter.")
                 break
             }
-            // Make the API call
-            try await client.setInput(to: inputs[inputIndex])
-            print("Current state: \n\(client.stateDescription)")
+            do {
+                // Make the API call
+                try await client.setInput(to: inputs[inputIndex])
+                print("Current state: \n\(client.stateDescription)")
+            } catch {
+                print("Error setting input: \(error)")
+            }
         case .setMuteStatus:
             // Get the user input
             printMuteMenu()
@@ -199,9 +214,13 @@ struct PJLinkClientCLI: AsyncParsableCommand {
                 print("\(inputIndex) is not in the range [0, \(allMuteStates.count - 1)]. Please re-enter.")
                 break
             }
-            // Make the API call
-            try await client.setMuteState(to: allMuteStates[inputIndex])
-            print("Current state: \n\(client.stateDescription)")
+            do {
+                // Make the API call
+                try await client.setMuteState(to: allMuteStates[inputIndex])
+                print("Current state: \n\(client.stateDescription)")
+            } catch {
+                print("Error setting mute: \(error)")
+            }
         case .setSpeakerVolume:
             printSpeakerVolumeMenu()
             print("Enter index, or Enter to return to main menu: ", terminator: "")
@@ -214,10 +233,14 @@ struct PJLinkClientCLI: AsyncParsableCommand {
                 print("\(inputIndex) is not in the range [0, \(allVolumeAdjustments.count - 1)]. Please re-enter.")
                 break
             }
-            // Make the API call
-            let volumeAdjustment = allVolumeAdjustments[inputIndex]
-            try await client.setSpeakerVolume(to: volumeAdjustment)
-            print("Speaker Volume set to: \(volumeAdjustment.displayName)")
+            do {
+                // Make the API call
+                let volumeAdjustment = allVolumeAdjustments[inputIndex]
+                try await client.setSpeakerVolume(to: volumeAdjustment)
+                print("Speaker Volume set to: \(volumeAdjustment.displayName)")
+            } catch {
+                print("Error setting speaker volume: \(error)")
+            }
         case .setMicrophoneVolume:
             printMicrophoneVolumeMenu()
             print("Enter index, or Enter to return to main menu: ", terminator: "")
@@ -230,10 +253,14 @@ struct PJLinkClientCLI: AsyncParsableCommand {
                 print("\(inputIndex) is not in the range [0, \(allVolumeAdjustments.count - 1)]. Please re-enter.")
                 break
             }
-            // Make the API call
-            let volumeAdjustment = allVolumeAdjustments[inputIndex]
-            try await client.setMicrophoneVolume(to: volumeAdjustment)
-            print("Microphone Volume set to: \(volumeAdjustment.displayName)")
+            do {
+                // Make the API call
+                let volumeAdjustment = allVolumeAdjustments[inputIndex]
+                try await client.setMicrophoneVolume(to: volumeAdjustment)
+                print("Microphone Volume set to: \(volumeAdjustment.displayName)")
+            } catch {
+                print("Error setting microphone volume: \(error)")
+            }
         case .setFreeze:
             printFreezeMenu()
             print("Enter index, or Enter to return to main menu: ", terminator: "")
@@ -246,9 +273,13 @@ struct PJLinkClientCLI: AsyncParsableCommand {
                 print("\(inputIndex) is not in the range [0, \(allFreeze.count - 1)]. Please re-enter.")
                 break
             }
-            // Make the API call
-            try await client.setFreeze(to: allFreeze[inputIndex])
-            print("Current state: \n\(client.stateDescription)")
+            do {
+                // Make the API call
+                try await client.setFreeze(to: allFreeze[inputIndex])
+                print("Current state: \n\(client.stateDescription)")
+            } catch {
+                print("Error setting freeze: \(error)")
+            }
         }
 
         return true
@@ -318,16 +349,18 @@ struct PJLinkClientCLI: AsyncParsableCommand {
 
     private enum MenuOption: Int, CaseIterable {
         case showState = 1
-        case setPowerStatus = 2
-        case setInput = 3
-        case setMuteStatus = 4
-        case setSpeakerVolume = 5
-        case setMicrophoneVolume = 6
-        case setFreeze = 7
+        case refreshState = 2
+        case setPowerStatus = 3
+        case setInput = 4
+        case setMuteStatus = 5
+        case setSpeakerVolume = 6
+        case setMicrophoneVolume = 7
+        case setFreeze = 8
 
         var title: String {
             switch self {
             case .showState: "Show State"
+            case .refreshState: "Refresh State"
             case .setPowerStatus: "Set Power Status"
             case .setInput: "Set Input"
             case .setMuteStatus: "Set Mute Status"

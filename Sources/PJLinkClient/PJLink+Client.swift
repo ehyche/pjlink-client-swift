@@ -82,12 +82,9 @@ extension PJLink {
             let retryState = LockIsolated(RetryState.notTried)
             while retryState.value.shouldRetry {
                 do {
-                    print("withRetry attempting work()")
                     try await work(connectionState, state)
-                    print("withRetry work() successful")
                     retryState.withValue { $0 = .success }
                 } catch {
-                    print("withRetry work() threw \(error)")
                     Self.logError(error, prefix: "withRetry Connection[\(self.connectionState.connection.id)] ")
                     let shouldReconnect: Bool
                     if let nwError = error as? NWError {
@@ -103,11 +100,9 @@ extension PJLink {
                             resetConnectionState()
                             try await setup()
                         } else {
-                            print("shouldRetry = false, throwing \(error)")
                             throw error
                         }
                     } else {
-                        print("shouldReconnect = false, throwing \(error)")
                         throw error
                     }
                 }
@@ -183,7 +178,6 @@ extension PJLink {
         public func handleNotification(_ notification: PJLink.Notification) {
             let logger = Logger(sub: .client, cat: .notification)
             logger.debug("Handling notification: \(notification.description, privacy: .public)")
-            print("Handling notification: \(notification.description)")
             state.withValue {
                 $0?.applyingNotification(notification)
             }
@@ -233,7 +227,6 @@ extension PJLink {
                 let connectionResponse = try await connection.receive(atLeast: 9, atMost: 18).content
                 let connectionResponseUTF8 = try connectionResponse.toUTF8String()
                 logger.debug("RECV: \(connectionResponseUTF8)")
-                print("RECV: \(connectionResponseUTF8)")
                 _ = try PJLink.AuthResponse(connectionResponseUTF8)
                 // If we received any sort of AuthResponse and were able to parse it,
                 // then we know we are talking to a projector.
@@ -256,15 +249,12 @@ extension PJLink.Client {
         let logger = Logger(sub: .client, cat: .connection)
         connection.onBetterPathUpdate { connection, newValue in
             logger.debug("Connection[\(connection.id)] onBetterPathUpdate: \(newValue)")
-            print("Connection[\(connection.id)] onBetterPathUpdate: \(newValue)")
         }
         connection.onPathUpdate { connection, newPath in
             logger.debug("Connection[\(connection.id)] onPathUpdate: \(newPath.debugDescription)")
-            print("Connection[\(connection.id)] onPathUpdate: \(newPath.debugDescription)")
         }
         connection.onViabilityUpdate { connection, newViable in
             logger.debug("Connection[\(connection.id)] onViabilityUpdate: \(newViable)")
-            print("Connection[\(connection.id)] onViabilityUpdate: \(newViable)")
         }
         connection.onStateUpdate { connection, state in
             let stateDesc: String
@@ -285,7 +275,6 @@ extension PJLink.Client {
                 stateDesc = "Unknown"
             }
             logger.debug("Connection[\(connection.id)] onStateUpdate: \(stateDesc, privacy: .public)")
-            print("Connection[\(connection.id)] onStateUpdate: \(stateDesc)")
         }
 
         return .init(connection: connection, auth: .indeterminate)
@@ -302,7 +291,6 @@ extension PJLink.Client {
         let connectionResponse = try await connection.receive(atLeast: 9, atMost: 18).content
         let connectionResponseUTF8 = try connectionResponse.toUTF8String()
         logger.debug("RECV: \(connectionResponseUTF8)")
-        print("RECV: \(connectionResponseUTF8)")
         let authResponse = try PJLink.AuthResponse(connectionResponseUTF8)
 
         guard authResponse != .authDisabled else {
@@ -318,13 +306,11 @@ extension PJLink.Client {
         let requestStringTerminatedData = requestString.crTerminatedData
         try await connection.send(requestStringTerminatedData)
         logger.debug("SEND: \(requestString)")
-        print("SEND: \(requestString)")
 
         // The projector should respond with "PJLINK 2 <hex-encoded-16-byte-random-number>\r"
         let securityLevelResponseData = try await connection.receive(atMost: 42).content
         let securityLevelUTF8 = try securityLevelResponseData.toUTF8String()
         logger.debug("RECV: \(securityLevelUTF8)")
-        print("RECV: \(securityLevelUTF8)")
         let securityLevelResponse: PJLink.AuthResponse
         do {
             securityLevelResponse = try PJLink.AuthResponse(securityLevelUTF8)
@@ -521,12 +507,10 @@ extension PJLink.Client {
 
         try await connectionState.connection.send(Data(requestStringTerminated.utf8))
         logger.debug("SEND: \(requestString)")
-        print("SEND: \(requestString)")
 
         let responseData = try await connectionState.connection.receive(atMost: PJLink.maxResponseSize).content
         let responseUTF8 = try responseData.toUTF8String()
         logger.debug("RECV: \(responseUTF8)")
-        print("RECV: \(responseUTF8)")
 
         // As we are parsing, we give the PJLink.Message parser a hint
         // whether or not we are expecting a response to a set request.
@@ -803,12 +787,10 @@ extension PJLink.Client {
 
         try await connectionState.connection.send(Data(requestStringTerminated.utf8))
         logger.debug("SEND \(requestString)")
-        print("SEND \(requestString)")
 
         let responseData = try await connectionState.connection.receive(atMost: PJLink.maxResponseSize).content
         let responseUTF8 = try responseData.toUTF8String()
         logger.debug("RECV: \(responseUTF8)")
-        print("RECV: \(responseUTF8)")
 
         // As we are parsing, we give the PJLink.Message parser a hint
         // whether or not we are expecting a response to a set request.
@@ -925,12 +907,10 @@ extension PJLink.Client {
 
         try await connectionState.connection.send(Data(requestStringTerminated.utf8))
         logger.debug("SEND \(requestString)")
-        print("SEND \(requestString)")
 
         let responseData = try await connectionState.connection.receive(atMost: PJLink.maxResponseSize).content
         let responseUTF8 = try responseData.toUTF8String()
         logger.debug("RECV: \(responseUTF8)")
-        print("RECV: \(responseUTF8)")
         let response = try PJLink.SetResponse(responseUTF8)
 
         // Do some error-checking.
@@ -949,22 +929,19 @@ extension PJLink.Client {
         if let nwError = error as? NWError {
             switch nwError {
             case .posix(let posixErrorCode):
-                print("\(prefix)NWError.posix(\(posixErrorCode)): \(nwError)")
+                logger.error("\(prefix, privacy: .public)NWError.posix(\(posixErrorCode.rawValue)): \(nwError)")
             case .dns(let dnsServiceErrorType):
-                print("\(prefix)NWError.dns(\(dnsServiceErrorType)): \(nwError)")
+                logger.error("\(prefix, privacy: .public)NWError.dns(\(dnsServiceErrorType))")
             case .tls(let osStatus):
-                print("\(prefix)NWError.tls(\(osStatus)): \(nwError)")
+                logger.error("\(prefix, privacy: .public)NWError.tls(\(osStatus))")
             case .wifiAware(let errorCode):
-                print("\(prefix)NWError.wifiAware(\(errorCode)): \(nwError)")
+                logger.error("\(prefix, privacy: .public)NWError.wifiAware(\(errorCode))")
             @unknown default:
-                print("\(prefix)NWError: \(nwError)")
+                logger.error("\(prefix, privacy: .public)NWError.unknownDefault: \(nwError)")
             }
-            logger.error("\(prefix, privacy: .public)NWError: \(nwError)")
         } else if let pjlinkError = error as? PJLink.Error {
-            print("\(prefix)PJLink.Error: \(pjlinkError)")
             logger.error("\(prefix, privacy: .public)PJLink.Error: \(pjlinkError)")
         } else {
-            print("\(prefix)General Error: \(error)")
             logger.error("\(prefix, privacy: .public)General Error: \(error)")
         }
     }
