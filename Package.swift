@@ -5,7 +5,13 @@ import PackageDescription
 
 let package = Package(
     name: "pjlink-client-swift",
-    platforms: [.macOS(.v26)],
+    platforms: [
+        .iOS(.v26),
+        .macOS(.v26)
+    ],
+    products: [
+        .library(name: "PJLinkClient", targets: ["PJLinkClient"]),
+    ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.0"),
         .package(url: "https://github.com/pointfreeco/swift-concurrency-extras.git", from: "1.3.2"),
