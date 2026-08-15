@@ -5,6 +5,7 @@
 //  Created by Eric Hyche on 2/23/26.
 //
 
+import AsyncAlgorithms
 import ConcurrencyExtras
 import Foundation
 import Network
@@ -16,29 +17,46 @@ extension PJLink {
 
     public struct UDPProjectorDiscovery: Sendable {
         private let udpListener: UDPListener
-        private let asyncTimer: AsyncTimer
-        public let outputStream: AsyncThrowingStream<Projector, Swift.Error>
+        public let outputStream: AsyncThrowingStream<DiscoveryEvent, Swift.Error>
+
+        public enum DiscoveryEvent: Equatable, Sendable {
+            case progressUpdate(Double)
+            case projectorDiscovered(Projector)
+        }
 
         public struct Projector: Equatable, Sendable {
             public let host: NWEndpoint.Host?
             public let macAddress: MacAddress
         }
 
-        public init(broadcastHost: String, duration: Duration) throws {
+        public init(broadcastHost: String, duration: Duration, progressUpdateCount: Int = 100) throws {
             let logger = Logger(sub: .client, cat: .discovery)
             let listener = try UDPListener(port: .pjlink)
-            self.asyncTimer = AsyncTimer(every: duration, count: 1) {
-                logger.debug("Timer expired, cancelling discovery")
-                listener.cancel()
-            }
-            self.udpListener = listener
-            self.outputStream = udpListener
+            let startingInstant = SuspendingClock.Instant.now
+            let indexStream = Array(1...progressUpdateCount).async
+            let timerStream = AsyncTimerSequence
+                .repeating(every: duration / Double(progressUpdateCount))
+                .prefix(progressUpdateCount)
+            let progressStream = zip(indexStream, timerStream)
+                .map {
+                    if $0.0 >= progressUpdateCount {
+                        logger.debug("UDPProjectorDiscovery: Duration of \(duration) expired, cancelling discovery")
+                        listener.cancel()
+                    }
+                    let progress = ($0.1 - startingInstant) / duration
+                    let progressClamped = min(max(progress, 0.0), 1.0)
+                    return DiscoveryEvent.progressUpdate(progressClamped)
+                }
+            let projectorStream = listener
                 .outputStream
                 .compactMap(Self.outputToProjector)
+                .map(DiscoveryEvent.projectorDiscovered)
+            self.outputStream = merge(progressStream, projectorStream)
                 .eraseToThrowingStream()
+            self.udpListener = listener
             // Send the broadcast packet
             let dataString = PJLink.Search.request.description
-            logger.debug("Sending broadcast UDP packet: \(dataString, privacy: .public)")
+            logger.debug("UDPProjectorDiscovery: Sending broadcast UDP packet: \(dataString, privacy: .public)")
             _ = try PJLink.BroadcastUDP.sendBroadcastUDP(
                 data: dataString.crTerminated,
                 broadcastHost: broadcastHost,
@@ -48,9 +66,8 @@ extension PJLink {
 
         public func cancel() {
             let logger = Logger(sub: .client, cat: .discovery)
-            logger.debug("cancel()")
+            logger.debug("UDPProjectorDiscovery.cancel()")
             udpListener.cancel()
-            asyncTimer.cancel()
         }
 
         private static func outputToProjector(_ output: PJLink.UDPListener.Output) -> Projector? {

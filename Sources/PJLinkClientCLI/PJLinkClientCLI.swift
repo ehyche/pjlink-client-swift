@@ -111,11 +111,20 @@ struct PJLinkClientCLI: AsyncParsableCommand {
             return []
         }
         print("Discovering projectors using broadcast address of \(broadcastAddress) for 15 seconds...")
-        let projectorDiscovery = try PJLink.UDPProjectorDiscovery(broadcastHost: broadcastAddress.host, duration: .seconds(15))
-        for try await projector in projectorDiscovery.outputStream {
-            print("Discovered projector at \(String(describing: projector.host))")
-            if let host = projector.host {
-                projectors.append(host)
+        let projectorDiscovery = try PJLink.UDPProjectorDiscovery(
+            broadcastHost: broadcastAddress.host,
+            duration: .seconds(15),
+            progressUpdateCount: 15
+        )
+        for try await discoveryEvent in projectorDiscovery.outputStream {
+            switch discoveryEvent {
+            case .progressUpdate(let progress):
+                print("\(progress.formatted(.percent.precision(.fractionLength(1))))...", terminator: "")
+            case .projectorDiscovered(let projector):
+                print("Discovered projector at \(String(describing: projector.host))")
+                if let host = projector.host {
+                    projectors.append(host)
+                }
             }
         }
         return projectors
