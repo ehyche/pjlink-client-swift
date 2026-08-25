@@ -10,16 +10,16 @@ extension PJLink {
     public struct SetResponse: Equatable, Sendable {
         public var `class`: PJLink.Class
         public var command: PJLink.Command
-        public var code: SetResponseCode
+        public var code: ResponseCode
 
-        public init(pjlinkClass: PJLink.Class, command: PJLink.Command, code: SetResponseCode) {
+        public init(pjlinkClass: PJLink.Class, command: PJLink.Command, code: ResponseCode) {
             self.class = pjlinkClass
             self.command = command
             self.code = code
         }
     }
 
-    public enum SetResponseCode: String, CaseIterable, Sendable {
+    public enum ResponseCode: String, CaseIterable, Sendable {
         case ok = "OK"
         case undefinedCommand = "ERR1"
         case outOfParameter = "ERR2"
@@ -28,10 +28,10 @@ extension PJLink {
     }
 }
 
-extension PJLink.SetResponseCode: LosslessStringConvertibleThrowing {
+extension PJLink.ResponseCode: LosslessStringConvertibleThrowing {
 
     public init(_ description: String) throws {
-        guard let setResponseCode = PJLink.SetResponseCode(rawValue: description) else {
+        guard let setResponseCode = PJLink.ResponseCode(rawValue: description) else {
             throw PJLink.Error.invalidSetResponseCode(description)
         }
         self = setResponseCode
@@ -40,7 +40,7 @@ extension PJLink.SetResponseCode: LosslessStringConvertibleThrowing {
     public var description: String { rawValue }
 }
 
-extension PJLink.SetResponseCode {
+extension PJLink.ResponseCode {
 
     public var isOK: Bool {
         switch self {
@@ -89,7 +89,7 @@ extension PJLink.SetResponse: LosslessStringConvertibleThrowing {
         self = .init(
             pjlinkClass: pjlinkClass,
             command: pjlinkCommand,
-            code: try PJLink.SetResponseCode(mutableDesc)
+            code: try PJLink.ResponseCode(mutableDesc)
         )
     }
 

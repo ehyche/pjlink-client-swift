@@ -237,7 +237,7 @@ extension PJLink.Message.Request: LosslessStringConvertibleThrowing {
 extension PJLink.Message.Response {
 
     public init(pjlinkClass: PJLink.Class, command: PJLink.Command, parameters: String) throws {
-        if let setResponseCode = PJLink.SetResponseCode(rawValue: parameters) {
+        if let setResponseCode = PJLink.ResponseCode(rawValue: parameters) {
             self = .set(.init(pjlinkClass: pjlinkClass, command: command, code: setResponseCode))
         } else {
             self = .get(try .init(pjlinkClass: pjlinkClass, command: command, parameters: parameters))
