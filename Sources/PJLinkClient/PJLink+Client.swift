@@ -759,7 +759,7 @@ extension PJLink.Client {
     private static func queryThrowing(
         request: PJLink.GetRequest,
         from connectionState: PJLink.ConnectionState
-    ) async throws -> PJLink.GetResponseSuccess {
+    ) async throws -> PJLink.GetResponse {
         let response = try await query(request: request, from: connectionState)
 
         switch response {

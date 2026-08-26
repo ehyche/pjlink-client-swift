@@ -1,5 +1,5 @@
 //
-//  PJLink+GetResponseSuccess.swift
+//  PJLink+GetResponse.swift
 //  pjlink-client-swift
 //
 //  Created by Eric Hyche on 11/6/25.
@@ -7,7 +7,7 @@
 
 extension PJLink {
 
-    public enum GetResponseSuccess: Equatable, Sendable {
+    public enum GetResponse: Equatable, Sendable {
         case power(PowerStatus)
         case inputSwitchClass1(InputSwitchClass1)
         case inputSwitchClass2(InputSwitchClass2)
@@ -33,7 +33,7 @@ extension PJLink {
     }
 }
 
-extension PJLink.GetResponseSuccess {
+extension PJLink.GetResponse {
 
     init(pjlinkClass: PJLink.Class, command: PJLink.Command, parameters: String) throws {
         switch (pjlinkClass, command) {

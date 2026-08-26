@@ -20,7 +20,7 @@ extension PJLink {
     }
 
     public enum Response: Equatable {
-        case get(GetResponseSuccess)
+        case get(GetResponse)
         case status(StatusResponse)
     }
 }
