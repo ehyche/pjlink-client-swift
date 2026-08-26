@@ -7,7 +7,7 @@
 
 extension PJLink {
 
-    public enum SetRequest: Equatable {
+    public enum SetRequest: Equatable, Sendable {
         case power(PJLink.OnOff)
         case inputSwitchClass1(PJLink.InputSwitchClass1)
         case inputSwitchClass2(PJLink.InputSwitchClass2)

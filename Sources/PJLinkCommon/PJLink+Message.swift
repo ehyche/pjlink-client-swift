@@ -9,17 +9,17 @@ import Foundation
 
 extension PJLink {
 
-    public enum Message: Equatable {
+    public enum Message: Equatable, Sendable {
         case request(Request)
         case response(Response)
     }
 
-    public enum Request: Equatable {
+    public enum Request: Equatable, Sendable {
         case get(GetRequest)
         case set(SetRequest)
     }
 
-    public enum Response: Equatable {
+    public enum Response: Equatable, Sendable {
         case get(GetResponse)
         case status(StatusResponse)
     }

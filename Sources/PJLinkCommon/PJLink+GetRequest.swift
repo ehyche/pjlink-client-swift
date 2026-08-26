@@ -7,7 +7,7 @@
 
 extension PJLink {
 
-    public enum GetRequest: Equatable {
+    public enum GetRequest: Equatable, Sendable {
         case power
         case inputSwitchClass1
         case inputSwitchClass2

@@ -348,10 +348,10 @@ extension PJLink.Client {
         let response = try await query(request: .projectorClass, from: connectionState)
 
         switch response {
-        case .success:
+        case .get:
             // We successfully authenticated, so change AuthState to .authenticated
             return .init(connection: connectionState.connection, auth: .authenticated)
-        case .failure:
+        case .status:
             // We failed, so we don't attempt to change the connectionState
             return connectionState
         }
