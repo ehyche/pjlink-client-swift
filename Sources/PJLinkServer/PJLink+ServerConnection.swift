@@ -93,7 +93,7 @@ extension PJLink {
             // Loop through, receiving a request and processing it.
             while !connection.state.isFinished {
                 let authMessage: AuthMessage
-                let request: Message.Request?
+                let request: Request?
                 do {
                     (authMessage, request) = try await receiveRequest()
                 } catch let pjlinkError as PJLink.Error  {
@@ -122,18 +122,18 @@ extension PJLink {
             logger.debug("Connection[\(self.connection.id)] run() finished")
         }
 
-        private func receiveRequest() async throws -> (AuthMessage, Message.Request?) {
+        private func receiveRequest() async throws -> (AuthMessage, Request?) {
             let maxRequestSize = PJLink.maxAuthRequestSize + PJLink.maxRequestSize
             let requestData = try await connection.receive(atMost: maxRequestSize).content
             let requestUTF8 = try requestData.toUTF8String()
             logger.info("Connection[\(self.connection.id)] RECV: \"\(requestUTF8, privacy: .public)\"")
 
             // We look for the "%" which marks the beginning of the request.
-            var request: Message.Request?
+            var request: Request?
             var authString = requestUTF8
             if let percentIndex = requestUTF8.firstIndex(of: PJLink.identifierCharacter) {
                 authString = String(requestUTF8[requestUTF8.startIndex..<percentIndex])
-                request = try Message.Request(String(requestUTF8[percentIndex..<requestUTF8.endIndex]))
+                request = try Request(String(requestUTF8[percentIndex..<requestUTF8.endIndex]))
             }
             let authMessage = try PJLink.AuthMessage(authString)
 
@@ -142,7 +142,7 @@ extension PJLink {
 
         private func processRequest(
             authMessage: AuthMessage,
-            request: Message.Request?
+            request: Request?
         ) async throws -> PJLink.Notification? {
             if authMessage == .securityLevel {
                 // We received a "PJLINK 2" request, so respond with "PJLINK 2 3db2...97eo".
@@ -218,7 +218,7 @@ extension PJLink {
             }
         }
 
-        private func generateResponse(request: Message.Request) throws -> (Message.Response, PJLink.Notification?) {
+        private func generateResponse(request: Request) throws -> (Response, PJLink.Notification?) {
             switch request {
             case .get(let getRequest):
                 return (.get(getResponse(for: getRequest)), nil)

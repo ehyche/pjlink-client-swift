@@ -8,19 +8,20 @@
 import Foundation
 
 extension PJLink {
+
     public enum Message: Equatable {
         case request(Request)
         case response(Response)
+    }
 
-        public enum Request: Equatable {
-            case get(GetRequest)
-            case set(SetRequest)
-        }
+    public enum Request: Equatable {
+        case get(GetRequest)
+        case set(SetRequest)
+    }
 
-        public enum Response: Equatable {
-            case get(GetResponse)
-            case set(SetResponse)
-        }
+    public enum Response: Equatable {
+        case get(GetResponse)
+        case set(SetResponse)
     }
 }
 
@@ -160,7 +161,7 @@ extension PJLink.Message {
     }
 }
 
-extension PJLink.Message.Request {
+extension PJLink.Request {
 
     public var isSet: Bool {
         switch self {
@@ -191,7 +192,7 @@ extension PJLink.Message.Request {
     }
 }
 
-extension PJLink.Message.Request: LosslessStringConvertibleThrowing {
+extension PJLink.Request: LosslessStringConvertibleThrowing {
 
     public init(_ description: String) throws {
         var mutableDesc = description
@@ -234,7 +235,7 @@ extension PJLink.Message.Request: LosslessStringConvertibleThrowing {
     }
 }
 
-extension PJLink.Message.Response {
+extension PJLink.Response {
 
     public init(pjlinkClass: PJLink.Class, command: PJLink.Command, parameters: String) throws {
         if let setResponseCode = PJLink.ResponseCode(rawValue: parameters) {
@@ -273,7 +274,7 @@ extension PJLink.Message.Response {
     }
 }
 
-extension PJLink.Message.Response: CustomStringConvertible {
+extension PJLink.Response: CustomStringConvertible {
 
     public var description: String {
         switch self {
