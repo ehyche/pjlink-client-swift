@@ -193,7 +193,7 @@ extension PJLink.GetResponseSuccess {
     }
 
     public var description: String {
-        switch self {
+        let parameters = switch self {
         case .power(let powerStatus): powerStatus.rawValue
         case .inputSwitchClass1(let inputSwitch): inputSwitch.description
         case .inputSwitchClass2(let inputSwitch): inputSwitch.description
@@ -217,6 +217,7 @@ extension PJLink.GetResponseSuccess {
         case .filterReplacementModelNumber(let modelNumber): modelNumber.value
         case .freeze(let freeze): freeze.rawValue
         }
+        return PJLink.identifier + self.class.rawValue + self.command.rawValue + PJLink.separatorResponse + parameters
     }
 
     public var `class`: PJLink.Class {

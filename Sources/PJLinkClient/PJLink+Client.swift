@@ -511,7 +511,7 @@ extension PJLink.Client {
         // As we are parsing, we give the PJLink.Message parser a hint
         // whether or not we are expecting a response to a set request.
         // If the request is a Set request, then we expect a Set response.
-        let response = try PJLink.Response(responseUTF8, isSetResponseHint: request.isSet)
+        let response = try PJLink.Response(responseUTF8)
 
         // Do some error-checking.
         //

@@ -30,12 +30,7 @@ extension PJLink.Message {
     /// Initializer
     /// - Parameters:
     ///   - description: The string to parse
-    ///   - isSetResponseHint: This optional boolean is a hint which indicates this is a response to a Set command.
-    ///   Why is this needed? If the response is either "ERR1",  "ERR3" or "ERR4", then there is no
-    ///   way to distinguish just from the parsed text if this is a response to a set command or a get command.
-    ///   But in practice, we will know what we are expecting. So if we know we should be parsing the
-    ///   response to a Set command, then we can provide this hint.
-    public init(_ description: String, isSetResponseHint: Bool? = nil) throws {
+    public init(_ description: String) throws {
         var mutableDesc = description
         let pjlinkId = String(mutableDesc.prefix(1))
         guard pjlinkId == PJLink.identifier else {
@@ -228,12 +223,7 @@ extension PJLink.Response {
     /// Initializer
     /// - Parameters:
     ///   - description: The string to parse
-    ///   - isSetResponseHint: This optional boolean is a hint which indicates this is a response to a Set command.
-    ///   Why is this needed? If the response is either "ERR1",  "ERR3" or "ERR4", then there is no
-    ///   way to distinguish just from the parsed text if this is a response to a set command or a get command.
-    ///   But in practice, we will know what we are expecting. So if we know we should be parsing the
-    ///   response to a Set command, then we can provide this hint.
-    public init(_ description: String, isSetResponseHint: Bool? = nil) throws {
+    public init(_ description: String) throws {
         var mutableDesc = description
         let pjlinkId = String(mutableDesc.prefix(1))
         guard pjlinkId == PJLink.identifier else {
