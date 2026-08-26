@@ -763,7 +763,7 @@ extension PJLink.Client {
         let response = try await query(request: request, from: connectionState)
 
         switch response {
-        case .getSuccess(let getSuccess):
+        case .get(let getSuccess):
             return getSuccess
         case .status(let statusResponse):
             throw PJLink.Error.queryFailed(request: request.description, code: statusResponse.code.rawValue)

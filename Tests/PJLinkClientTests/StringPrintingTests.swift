@@ -39,10 +39,10 @@ struct StringPrintingTests {
             .init(.response(.status(.init(pjlinkClass: .one, command: .power, code: .outOfParameter))), "%1POWR=ERR2"),
             .init(.response(.status(.init(pjlinkClass: .one, command: .power, code: .unavailableTime))), "%1POWR=ERR3"),
             .init(.response(.status(.init(pjlinkClass: .one, command: .power, code: .projectorFailure))), "%1POWR=ERR4"),
-            .init(.response(.getSuccess(.power(.standby))), "%1POWR=0"),
-            .init(.response(.getSuccess(.power(.lampOn))), "%1POWR=1"),
-            .init(.response(.getSuccess(.power(.cooling))), "%1POWR=2"),
-            .init(.response(.getSuccess(.power(.warmUp))), "%1POWR=3"),
+            .init(.response(.get(.power(.standby))), "%1POWR=0"),
+            .init(.response(.get(.power(.lampOn))), "%1POWR=1"),
+            .init(.response(.get(.power(.cooling))), "%1POWR=2"),
+            .init(.response(.get(.power(.warmUp))), "%1POWR=3"),
         ]
         try run(testCases)
     }
@@ -89,7 +89,7 @@ struct StringPrintingTests {
         PJLink.InputSwitchClass1.allCases.forEach { inputSwitch in
             testCases.append(
                 .init(
-                    .response(.getSuccess(.inputSwitchClass1(inputSwitch))),
+                    .response(.get(.inputSwitchClass1(inputSwitch))),
                     "%1INPT=\(inputSwitch.input.rawValue)\(inputSwitch.channel.rawValue)"
                 )
             )
@@ -97,7 +97,7 @@ struct StringPrintingTests {
         PJLink.InputSwitchClass2.allCases.forEach { inputSwitch in
             testCases.append(
                 .init(
-                    .response(.getSuccess(.inputSwitchClass2(inputSwitch))),
+                    .response(.get(.inputSwitchClass2(inputSwitch))),
                     "%2INPT=\(inputSwitch.input.rawValue)\(inputSwitch.channel.rawValue)"
                 )
             )
@@ -133,7 +133,7 @@ struct StringPrintingTests {
         PJLink.MuteState.allCases.forEach { muteState in
             testCases.append(
                 .init(
-                    .response(.getSuccess(.avMute(muteState))),
+                    .response(.get(.avMute(muteState))),
                     "%1AVMT=\(muteState.mute.rawValue)\(muteState.state.rawValue)"
                 )
             )
@@ -160,7 +160,7 @@ struct StringPrintingTests {
         PJLink.ErrorStatus.allCases.forEach { st in
             testCases.append(
                 .init(
-                    .response(.getSuccess(.errorStatus(st))),
+                    .response(.get(.errorStatus(st))),
                     "%1ERST=\(st.fan.rawValue)\(st.lamp.rawValue)\(st.temperature.rawValue)\(st.coverOpen.rawValue)\(st.filter.rawValue)\(st.other.rawValue)"
                 )
             )
@@ -185,7 +185,7 @@ struct StringPrintingTests {
             .init(.response(.status(.init(pjlinkClass: .one, command: .lamp, code: .projectorFailure))), "%1LAMP=ERR4"),
             .init(
                 .response(
-                    .getSuccess(
+                    .get(
                         .lamp(
                             .init(lampStatus: [.mock1, .mock2, .mock3])
                         )
@@ -225,28 +225,28 @@ struct StringPrintingTests {
         PJLink.InputSwitchClass1.allCases.forEach { inputSwitch in
             testCases.append(
                 .init(
-                    .response(.getSuccess(.inputListClass1(.init(switches: [inputSwitch])))),
+                    .response(.get(.inputListClass1(.init(switches: [inputSwitch])))),
                     "%1INST=\(inputSwitch.input.rawValue)\(inputSwitch.channel.rawValue)"
                 )
             )
         }
         testCases.append(
             .init(
-                .response(.getSuccess(.inputListClass1(.mock))),
+                .response(.get(.inputListClass1(.mock))),
                 "%1INST=\(PJLink.InputSwitchClass1.allCases.map({ "\($0.input.rawValue)\($0.channel.rawValue)" }).joined(separator: " "))"
             )
         )
         PJLink.InputSwitchClass2.allCases.forEach { inputSwitch in
             testCases.append(
                 .init(
-                    .response(.getSuccess(.inputListClass2(.init(switches: [inputSwitch])))),
+                    .response(.get(.inputListClass2(.init(switches: [inputSwitch])))),
                     "%2INST=\(inputSwitch.input.rawValue)\(inputSwitch.channel.rawValue)"
                 )
             )
         }
         testCases.append(
             .init(
-                .response(.getSuccess(.inputListClass2(.mock))),
+                .response(.get(.inputListClass2(.mock))),
                 "%2INST=\(PJLink.InputSwitchClass2.allCases.map({ "\($0.input.rawValue)\($0.channel.rawValue)" }).joined(separator: " "))"
             )
         )
@@ -281,7 +281,7 @@ struct StringPrintingTests {
                 "%1NAME=ERR4"
             ),
             .init(
-                .response(.getSuccess(.projectorName(.mock))),
+                .response(.get(.projectorName(.mock))),
                 "%1NAME=\(PJLink.ProjectorName.mock.value)"
             )
         ]
@@ -316,7 +316,7 @@ struct StringPrintingTests {
                 "%1INF1=ERR4"
             ),
             .init(
-                .response(.getSuccess(.manufacturerName(.mock))),
+                .response(.get(.manufacturerName(.mock))),
                 "%1INF1=\(PJLink.ManufacturerName.mock.value)"
             )
         ]
@@ -351,7 +351,7 @@ struct StringPrintingTests {
                 "%1INF2=ERR4"
             ),
             .init(
-                .response(.getSuccess(.productName(.mock))),
+                .response(.get(.productName(.mock))),
                 "%1INF2=\(PJLink.ProductName.mock.value)"
             )
         ]
@@ -386,7 +386,7 @@ struct StringPrintingTests {
                 "%1INFO=ERR4"
             ),
             .init(
-                .response(.getSuccess(.otherInformation(.mock))),
+                .response(.get(.otherInformation(.mock))),
                 "%1INFO=\(PJLink.OtherInformation.mock.value)"
             )
         ]
@@ -421,11 +421,11 @@ struct StringPrintingTests {
                 "%1CLSS=ERR4"
             ),
             .init(
-                .response(.getSuccess(.projectorClass(.one))),
+                .response(.get(.projectorClass(.one))),
                 "%1CLSS=1"
             ),
             .init(
-                .response(.getSuccess(.projectorClass(.two))),
+                .response(.get(.projectorClass(.two))),
                 "%1CLSS=2"
             ),
         ]
@@ -460,7 +460,7 @@ struct StringPrintingTests {
                 "%2SNUM=ERR4"
             ),
             .init(
-                .response(.getSuccess(.serialNumber(.mock))),
+                .response(.get(.serialNumber(.mock))),
                 "%2SNUM=\(PJLink.SerialNumber.mock.value)"
             ),
         ]
@@ -496,7 +496,7 @@ struct StringPrintingTests {
                 "%2SVER=ERR4"
             ),
             .init(
-                .response(.getSuccess(.softwareVersion(.mock))),
+                .response(.get(.softwareVersion(.mock))),
                 "%2SVER=\(PJLink.SoftwareVersion.mock.value)"
             ),
         ]
@@ -537,7 +537,7 @@ struct StringPrintingTests {
                 "%2INNM=ERR4"
             ),
             .init(
-                .response(.getSuccess(.inputTerminalName(.mock))),
+                .response(.get(.inputTerminalName(.mock))),
                 "%2INNM=\(PJLink.InputTerminalName.mock.value)"
             ),
         ]
@@ -572,15 +572,15 @@ struct StringPrintingTests {
                 "%2IRES=ERR4"
             ),
             .init(
-                .response(.getSuccess(.inputResolution(.noSignal))),
+                .response(.get(.inputResolution(.noSignal))),
                 "%2IRES=-"
             ),
             .init(
-                .response(.getSuccess(.inputResolution(.unknownSignal))),
+                .response(.get(.inputResolution(.unknownSignal))),
                 "%2IRES=*"
             ),
             .init(
-                .response(.getSuccess(.inputResolution(.ok(.mock)))),
+                .response(.get(.inputResolution(.ok(.mock)))),
                 "%2IRES=1920x1080"
             ),
         ]
@@ -616,7 +616,7 @@ struct StringPrintingTests {
                 "%2RRES=ERR4"
             ),
             .init(
-                .response(.getSuccess(.recommendedResolution(.mock))),
+                .response(.get(.recommendedResolution(.mock))),
                 "%2RRES=1920x1080"
             ),
         ]
@@ -651,7 +651,7 @@ struct StringPrintingTests {
                 "%2FILT=ERR4"
             ),
             .init(
-                .response(.getSuccess(.filterUsageTime(.mock))),
+                .response(.get(.filterUsageTime(.mock))),
                 "%2FILT=\(PJLink.FilterUsageTime.mock.value)"
             ),
         ]
@@ -686,7 +686,7 @@ struct StringPrintingTests {
                 "%2RLMP=ERR4"
             ),
             .init(
-                .response(.getSuccess(.lampReplacementModelNumber(.mock))),
+                .response(.get(.lampReplacementModelNumber(.mock))),
                 "%2RLMP=\(PJLink.ModelNumber.mock.value)"
             ),
         ]
@@ -721,7 +721,7 @@ struct StringPrintingTests {
                 "%2RFIL=ERR4"
             ),
             .init(
-                .response(.getSuccess(.filterReplacementModelNumber(.mock))),
+                .response(.get(.filterReplacementModelNumber(.mock))),
                 "%2RFIL=\(PJLink.ModelNumber.mock.value)"
             ),
         ]
@@ -846,11 +846,11 @@ struct StringPrintingTests {
                 "%2FREZ=ERR3"
             ),
             .init(
-                .response(.getSuccess(.freeze(.stop))),
+                .response(.get(.freeze(.stop))),
                 "%2FREZ=0"
             ),
             .init(
-                .response(.getSuccess(.freeze(.start))),
+                .response(.get(.freeze(.start))),
                 "%2FREZ=1"
             ),
         ]

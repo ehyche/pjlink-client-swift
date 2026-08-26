@@ -38,10 +38,10 @@ struct StringParsingTests {
     @Test
     func powerResponse() throws {
         let testCases: [TestCase] = [
-            .init("%1POWR=0", .success(.response(.getSuccess(.power(.standby))))),
-            .init("%1POWR=1", .success(.response(.getSuccess(.power(.lampOn))))),
-            .init("%1POWR=2", .success(.response(.getSuccess(.power(.cooling))))),
-            .init("%1POWR=3", .success(.response(.getSuccess(.power(.warmUp))))),
+            .init("%1POWR=0", .success(.response(.get(.power(.standby))))),
+            .init("%1POWR=1", .success(.response(.get(.power(.lampOn))))),
+            .init("%1POWR=2", .success(.response(.get(.power(.cooling))))),
+            .init("%1POWR=3", .success(.response(.get(.power(.warmUp))))),
             .init("%2POWR=0", .failure(.unexpectedGetResponse(.two, .power))),
             .init("%1POWR=FOO", .failure(.invalidPowerStatus("FOO"))),
             .init("%1POWR=OK", .success(.response(.status(.init(pjlinkClass: .one, command: .power, code: .ok))))),
@@ -141,7 +141,7 @@ struct StringParsingTests {
             testCases.append(
                 .init(
                     "%1INPT=\(inputStr)",
-                    .success(.response(.getSuccess(.inputSwitchClass1(inputSwitch))))
+                    .success(.response(.get(.inputSwitchClass1(inputSwitch))))
                 )
             )
         }
@@ -150,7 +150,7 @@ struct StringParsingTests {
             testCases.append(
                 .init(
                     "%2INPT=\(inputStr)",
-                    .success(.response(.getSuccess(.inputSwitchClass2(inputSwitch))))
+                    .success(.response(.get(.inputSwitchClass2(inputSwitch))))
                 )
             )
         }
@@ -214,7 +214,7 @@ struct StringParsingTests {
             testCases.append(
                 .init(
                     "%1AVMT=\(muteState.description)",
-                    .success(.response(.getSuccess(.avMute(muteState))))
+                    .success(.response(.get(.avMute(muteState))))
                 )
             )
         }
@@ -268,7 +268,7 @@ struct StringParsingTests {
             testCases.append(
                 .init(
                     "%1ERST=\(errorStatus.description)",
-                    .success(.response(.getSuccess(.errorStatus(errorStatus))))
+                    .success(.response(.get(.errorStatus(errorStatus))))
                 )
             )
         }
@@ -294,8 +294,8 @@ struct StringParsingTests {
             .init("%1LAMP=-1 0", .failure(.lampUsageTimeOutOfRange(-1))),
             .init("%1LAMP=100000 0", .failure(.lampUsageTimeOutOfRange(100000))),
             .init("%1LAMP=0 2", .failure(.invalidLampOnOff("2"))),
-            .init("%1LAMP=1 0", .success(.response(.getSuccess(.lamp(.init(lampStatus: [.init(usageTime: 1, state: .off)])))))),
-            .init("%1LAMP=1 1", .success(.response(.getSuccess(.lamp(.init(lampStatus: [.init(usageTime: 1, state: .on)])))))),
+            .init("%1LAMP=1 0", .success(.response(.get(.lamp(.init(lampStatus: [.init(usageTime: 1, state: .off)])))))),
+            .init("%1LAMP=1 1", .success(.response(.get(.lamp(.init(lampStatus: [.init(usageTime: 1, state: .on)])))))),
             .init("%2LAMP=1 0", .failure(.unexpectedGetResponse(.two, .lamp))),
             .init(
                 "%1LAMP=ERR1",
@@ -357,7 +357,7 @@ struct StringParsingTests {
             testCases.append(
                 .init(
                     "%1INST=\(inputSwitch.description)",
-                    .success(.response(.getSuccess(.inputListClass1(.init(switches: [inputSwitch])))))
+                    .success(.response(.get(.inputListClass1(.init(switches: [inputSwitch])))))
                 )
             )
         }
@@ -365,20 +365,20 @@ struct StringParsingTests {
             testCases.append(
                 .init(
                     "%2INST=\(inputSwitch.description)",
-                    .success(.response(.getSuccess(.inputListClass2(.init(switches: [inputSwitch])))))
+                    .success(.response(.get(.inputListClass2(.init(switches: [inputSwitch])))))
                 )
             )
         }
         testCases.append(
             .init(
                 "%1INST=\(PJLink.InputSwitchesClass1(switches: PJLink.InputSwitchClass1.allCases).description)",
-                .success(.response(.getSuccess(.inputListClass1(.init(switches: PJLink.InputSwitchClass1.allCases)))))
+                .success(.response(.get(.inputListClass1(.init(switches: PJLink.InputSwitchClass1.allCases)))))
             )
         )
         testCases.append(
             .init(
                 "%2INST=\(PJLink.InputSwitchesClass2(switches: PJLink.InputSwitchClass2.allCases).description)",
-                .success(.response(.getSuccess(.inputListClass2(.init(switches: PJLink.InputSwitchClass2.allCases)))))
+                .success(.response(.get(.inputListClass2(.init(switches: PJLink.InputSwitchClass2.allCases)))))
             )
         )
         try run(testCases)
@@ -401,7 +401,7 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%1NAME=foo",
-                .success(.response(.getSuccess(.projectorName(.init(value: "foo")))))
+                .success(.response(.get(.projectorName(.init(value: "foo")))))
             ),
             .init(
                 "%2NAME=foo",
@@ -455,7 +455,7 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%1INF1=foo",
-                .success(.response(.getSuccess(.manufacturerName(.init(value: "foo")))))
+                .success(.response(.get(.manufacturerName(.init(value: "foo")))))
             ),
             .init(
                 "%2INF1=foo",
@@ -513,7 +513,7 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%1INF2=foo",
-                .success(.response(.getSuccess(.productName(.init(value: "foo")))))
+                .success(.response(.get(.productName(.init(value: "foo")))))
             ),
             .init(
                 "%2INF2=foo",
@@ -571,7 +571,7 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%1INFO=foo",
-                .success(.response(.getSuccess(.otherInformation(.init(value: "foo")))))
+                .success(.response(.get(.otherInformation(.init(value: "foo")))))
             ),
             .init(
                 "%2INFO=foo",
@@ -629,11 +629,11 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%1CLSS=1",
-                .success(.response(.getSuccess(.projectorClass(.one))))
+                .success(.response(.get(.projectorClass(.one))))
             ),
             .init(
                 "%1CLSS=2",
-                .success(.response(.getSuccess(.projectorClass(.two))))
+                .success(.response(.get(.projectorClass(.two))))
             ),
             .init(
                 "%2CLSS=1",
@@ -679,7 +679,7 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%2SNUM=foo",
-                .success(.response(.getSuccess(.serialNumber(.init(value: "foo")))))
+                .success(.response(.get(.serialNumber(.init(value: "foo")))))
             ),
             .init(
                 "%1SNUM=foo",
@@ -737,7 +737,7 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%2SVER=foo",
-                .success(.response(.getSuccess(.softwareVersion(.init(value: "foo")))))
+                .success(.response(.get(.softwareVersion(.init(value: "foo")))))
             ),
             .init(
                 "%1SVER=foo",
@@ -803,7 +803,7 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%2INNM=foo",
-                .success(.response(.getSuccess(.inputTerminalName(.init(value: "foo")))))
+                .success(.response(.get(.inputTerminalName(.init(value: "foo")))))
             ),
             .init(
                 "%1INNM=foo",
@@ -857,15 +857,15 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%2IRES=1920x1080",
-                .success(.response(.getSuccess(.inputResolution(.ok(.init(horizontal: 1920, vertical: 1080))))))
+                .success(.response(.get(.inputResolution(.ok(.init(horizontal: 1920, vertical: 1080))))))
             ),
             .init(
                 "%2IRES=-",
-                .success(.response(.getSuccess(.inputResolution(.noSignal))))
+                .success(.response(.get(.inputResolution(.noSignal))))
             ),
             .init(
                 "%2IRES=*",
-                .success(.response(.getSuccess(.inputResolution(.unknownSignal))))
+                .success(.response(.get(.inputResolution(.unknownSignal))))
             ),
             .init(
                 "%1IRES=1920x1080",
@@ -919,7 +919,7 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%2RRES=1920x1080",
-                .success(.response(.getSuccess(.recommendedResolution(.init(horizontal: 1920, vertical: 1080)))))
+                .success(.response(.get(.recommendedResolution(.init(horizontal: 1920, vertical: 1080)))))
             ),
             .init(
                 "%1RRES=1920x1080",
@@ -973,7 +973,7 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%2FILT=12345",
-                .success(.response(.getSuccess(.filterUsageTime(.init(value: 12345)))))
+                .success(.response(.get(.filterUsageTime(.init(value: 12345)))))
             ),
             .init(
                 "%1FILT=12345",
@@ -1027,11 +1027,11 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%2RLMP=foo",
-                .success(.response(.getSuccess(.lampReplacementModelNumber(.init(value: "foo")))))
+                .success(.response(.get(.lampReplacementModelNumber(.init(value: "foo")))))
             ),
             .init(
                 "%2RLMP=",
-                .success(.response(.getSuccess(.lampReplacementModelNumber(.init(value: "")))))
+                .success(.response(.get(.lampReplacementModelNumber(.init(value: "")))))
             ),
             .init(
                 "%1RLMP=foo",
@@ -1089,11 +1089,11 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%2RFIL=foo",
-                .success(.response(.getSuccess(.filterReplacementModelNumber(.init(value: "foo")))))
+                .success(.response(.get(.filterReplacementModelNumber(.init(value: "foo")))))
             ),
             .init(
                 "%2RFIL=",
-                .success(.response(.getSuccess(.filterReplacementModelNumber(.init(value: "")))))
+                .success(.response(.get(.filterReplacementModelNumber(.init(value: "")))))
             ),
             .init(
                 "%1RFIL=foo",
@@ -1230,8 +1230,8 @@ struct StringParsingTests {
     @Test
     func freezeResponse() throws {
         let testCases: [TestCase] = [
-            .init("%2FREZ=0", .success(.response(.getSuccess(.freeze(.stop))))),
-            .init("%2FREZ=1", .success(.response(.getSuccess(.freeze(.start))))),
+            .init("%2FREZ=0", .success(.response(.get(.freeze(.stop))))),
+            .init("%2FREZ=1", .success(.response(.get(.freeze(.start))))),
             .init("%2FREZ=2", .failure(.invalidFreeze("2"))),
             .init("%1FREZ=0", .failure(.unexpectedGetResponse(.one, .freeze))),
             .init("%2FREZ=OK", .success(.response(.status(.init(pjlinkClass: .two, command: .freeze, code: .ok))))),

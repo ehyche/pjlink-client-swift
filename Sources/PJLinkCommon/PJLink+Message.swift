@@ -20,7 +20,7 @@ extension PJLink {
     }
 
     public enum Response: Equatable {
-        case getSuccess(GetResponseSuccess)
+        case get(GetResponseSuccess)
         case status(StatusResponse)
     }
 }
@@ -137,7 +137,7 @@ extension PJLink.Message {
             }
         case .response(let response):
             switch response {
-            case .getSuccess(let getSuccess): getSuccess.description
+            case .get(let getSuccess): getSuccess.description
             case .status(let statusResponse): statusResponse.code.description
             }
         }
@@ -257,34 +257,34 @@ extension PJLink.Response {
         if let statusCode = PJLink.ResponseCode(rawValue: parameters) {
             self = .status(.init(pjlinkClass: pjlinkClass, command: command, code: statusCode))
         } else {
-            self = .getSuccess(try .init(pjlinkClass: pjlinkClass, command: command, parameters: parameters))
+            self = .get(try .init(pjlinkClass: pjlinkClass, command: command, parameters: parameters))
         }
     }
 
     public var `class`: PJLink.Class {
         switch self {
-        case .getSuccess(let getSuccess): getSuccess.class
+        case .get(let getSuccess): getSuccess.class
         case .status(let statusResponse): statusResponse.class
         }
     }
 
     public var command: PJLink.Command {
         switch self {
-        case .getSuccess(let getSuccess): getSuccess.command
+        case .get(let getSuccess): getSuccess.command
         case .status(let statusResponse): statusResponse.command
         }
     }
 
     public var isStatus: Bool {
         switch self {
-        case .getSuccess: false
+        case .get: false
         case .status: true
         }
     }
 
     public var isSuccess: Bool {
         switch self {
-        case .getSuccess: true
+        case .get: true
         case .status(let statusResponse): statusResponse.isOK
         }
     }
@@ -294,7 +294,7 @@ extension PJLink.Response: CustomStringConvertible {
 
     public var description: String {
         switch self {
-        case .getSuccess(let getSuccess): getSuccess.description
+        case .get(let getSuccess): getSuccess.description
         case .status(let statusResponse): statusResponse.description
         }
     }
