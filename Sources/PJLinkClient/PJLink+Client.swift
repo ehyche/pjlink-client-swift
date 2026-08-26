@@ -348,12 +348,21 @@ extension PJLink.Client {
         let response = try await query(request: .projectorClass, from: connectionState)
 
         switch response {
+        case .auth:
+            // This is an AuthResponse, so don't change connectionState
+            return connectionState
         case .get:
             // We successfully authenticated, so change AuthState to .authenticated
             return .init(connection: connectionState.connection, auth: .authenticated)
-        case .status:
-            // We failed, so we don't attempt to change the connectionState
-            return connectionState
+        case .status(let statusResponse):
+            switch statusResponse.code {
+            case .ok:
+                // We successfully authenticated, so change AuthState to .authenticated
+                return .init(connection: connectionState.connection, auth: .authenticated)
+            default:
+                // We failed, so we don't attempt to change the connectionState
+                return connectionState
+            }
         }
     }
 
@@ -517,8 +526,8 @@ extension PJLink.Client {
         //
         // We expect that the associated command in the response should
         // be the same as the command in the request.
-        guard request.command == response.command else {
-            throw PJLink.Error.unexpectedResponseCommand(request: request.command, response: response.command)
+        if let requestCommand = request.command, let responseCommand = response.command, requestCommand != responseCommand {
+            throw PJLink.Error.unexpectedResponseCommand(request: requestCommand, response: responseCommand)
         }
         // We expect that if we had a set request, then we should have a set response.
         // Likewise, if we had a get request, then we should have a get response.
@@ -763,6 +772,8 @@ extension PJLink.Client {
         let response = try await query(request: request, from: connectionState)
 
         switch response {
+        case .auth:
+            throw PJLink.Error.unexpectedGetResponse(response.description)
         case .get(let getSuccess):
             return getSuccess
         case .status(let statusResponse):
@@ -794,8 +805,8 @@ extension PJLink.Client {
         //
         // We expect that the associated command in the response should
         // be the same as the command in the request.
-        guard request.command == response.command else {
-            throw PJLink.Error.unexpectedResponseCommand(request: request.command, response: response.command)
+        if let responseCommand = response.command, request.command != responseCommand {
+            throw PJLink.Error.unexpectedResponseCommand(request: request.command, response: responseCommand)
         }
 
         return response

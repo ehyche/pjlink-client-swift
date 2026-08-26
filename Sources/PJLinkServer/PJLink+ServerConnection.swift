@@ -220,6 +220,8 @@ extension PJLink {
 
         private func generateResponse(request: Request) throws -> (Response, PJLink.Notification?) {
             switch request {
+            case .auth:
+                throw PJLink.Error.unexpectedAuthRequest(request.description)
             case .get(let getRequest):
                 return (getResponse(for: getRequest), nil)
             case .set(let setRequest):

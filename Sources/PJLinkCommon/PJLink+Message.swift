@@ -15,11 +15,13 @@ extension PJLink {
     }
 
     public enum Request: Equatable, Sendable {
+        case auth(AuthRequest)
         case get(GetRequest)
         case set(SetRequest)
     }
 
     public enum Response: Equatable, Sendable {
+        case auth(AuthResponse)
         case get(GetResponse)
         case status(StatusResponse)
     }
@@ -31,6 +33,16 @@ extension PJLink.Message {
     /// - Parameters:
     ///   - description: The string to parse
     public init(_ description: String) throws {
+        // Check for AuthRequest ("PJLINK 2")
+        guard description != PJLink.AuthRequest.securityLevel.description else {
+            self = .request(.auth(.securityLevel))
+            return
+        }
+        // Check for AuthResponse
+        guard !description.hasPrefix(PJLink.pjlink) else {
+            self = .response(.auth(try .init(description)))
+            return
+        }
         var mutableDesc = description
         let pjlinkId = String(mutableDesc.prefix(1))
         guard pjlinkId == PJLink.identifier else {
@@ -79,20 +91,6 @@ extension PJLink.Message {
         }
     }
 
-    public var `class`: PJLink.Class {
-        switch self {
-        case .request(let request): request.class
-        case .response(let response): response.class
-        }
-    }
-
-    public var command: PJLink.Command {
-        switch self {
-        case .request(let request): request.command
-        case .response(let response): response.command
-        }
-    }
-
     public var isRequest: Bool {
         switch self {
         case .request: true
@@ -127,50 +125,30 @@ extension PJLink.Message {
         case .response: PJLink.separatorResponse
         }
     }
-
-    public var parameterDescription: String {
-        switch self {
-        case .request(let request):
-            switch request {
-            case .get(let getRequest): getRequest.description
-            case .set(let setRequest): setRequest.description
-            }
-        case .response(let response):
-            switch response {
-            case .get(let getSuccess): getSuccess.description
-            case .status(let statusResponse): statusResponse.code.description
-            }
-        }
-    }
 }
 
 extension PJLink.Request {
 
     public var isSet: Bool {
         switch self {
-        case .get: false
         case .set: true
+        default: false
         }
     }
 
-    public var `class`: PJLink.Class {
+    public var `class`: PJLink.Class? {
         switch self {
+        case .auth: nil
         case .get(let getRequest): getRequest.class
         case .set(let setRequest): setRequest.class
         }
     }
 
-    public var command: PJLink.Command {
+    public var command: PJLink.Command? {
         switch self {
+        case .auth: nil
         case .get(let getRequest): getRequest.command
         case .set(let setRequest): setRequest.command
-        }
-    }
-
-    public var parameterDescription: String {
-        switch self {
-        case .get(let getRequest): getRequest.parameterDescription
-        case .set(let setRequest): setRequest.parameterDescription
         }
     }
 }
@@ -214,7 +192,11 @@ extension PJLink.Request: LosslessStringConvertibleThrowing {
     }
 
     public var description: String {
-        PJLink.identifier + self.class.rawValue + self.command.rawValue + PJLink.separatorRequest + parameterDescription
+        switch self {
+        case .auth(let authRequest): authRequest.description
+        case .get(let getRequest): getRequest.description
+        case .set(let setRequest): setRequest.description
+        }
     }
 }
 
@@ -261,15 +243,17 @@ extension PJLink.Response {
         }
     }
 
-    public var `class`: PJLink.Class {
+    public var `class`: PJLink.Class? {
         switch self {
+        case .auth: nil
         case .get(let getSuccess): getSuccess.class
         case .status(let statusResponse): statusResponse.class
         }
     }
 
-    public var command: PJLink.Command {
+    public var command: PJLink.Command? {
         switch self {
+        case .auth: nil
         case .get(let getSuccess): getSuccess.command
         case .status(let statusResponse): statusResponse.command
         }
@@ -277,13 +261,14 @@ extension PJLink.Response {
 
     public var isStatus: Bool {
         switch self {
-        case .get: false
         case .status: true
+        default: false
         }
     }
 
     public var isSuccess: Bool {
         switch self {
+        case .auth: false
         case .get: true
         case .status(let statusResponse): statusResponse.isOK
         }
@@ -294,6 +279,7 @@ extension PJLink.Response: CustomStringConvertible {
 
     public var description: String {
         switch self {
+        case .auth(let authResponse): authResponse.description
         case .get(let getSuccess): getSuccess.description
         case .status(let statusResponse): statusResponse.description
         }
