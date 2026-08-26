@@ -14,5 +14,3 @@
 ## Common Library
 
 1. Eliminate illegal combinations of class/command in SetResponse and GetResponseFailure
-2. Eliminate PJLink.Message and promote PJLink.Message.Request -> PJLink.Request
-   and PJLink.Message.Response -> PJLink.Response.
