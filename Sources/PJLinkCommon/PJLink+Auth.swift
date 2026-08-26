@@ -159,19 +159,19 @@ extension PJLink.AuthRequest: LosslessStringConvertibleThrowing {
 extension PJLink.AuthResponse: LosslessStringConvertibleThrowing {
 
     public init(_ description: String) throws {
-        let components = description.split(separator: " ")
+        let components = description.split(separator: " ").map { String($0) }
         guard components.count >= 2 else {
             throw PJLink.Error.invalidAuthResponseFieldCount(description)
         }
         guard components[0] == PJLink.pjlink else {
-            throw PJLink.Error.invalidAuthResponseHeader(String(components[0]))
+            throw PJLink.Error.invalidAuthResponseHeader(components[0])
         }
         guard components[1] != "ERRA" else {
             self = .authError
             return
         }
-        guard let authLevel = PJLink.SecurityLevel(rawValue: String(components[1])) else {
-            throw PJLink.Error.invalidSecurityLevel(String(components[1]))
+        guard let authLevel = PJLink.SecurityLevel(rawValue: components[1]) else {
+            throw PJLink.Error.invalidSecurityLevel(components[1])
         }
         switch authLevel {
         case .disabled:
@@ -183,12 +183,12 @@ extension PJLink.AuthResponse: LosslessStringConvertibleThrowing {
             guard components.count == 3 else {
                 throw PJLink.Error.invalidAuthResponseFieldCount(description)
             }
-            self = .securityLevel1(try .init(try Data(hex: String(components[2]))))
+            self = .securityLevel1(try .init(try Data(hex: components[2])))
         case .level2:
             guard components.count == 3 else {
                 throw PJLink.Error.invalidAuthResponseFieldCount(description)
             }
-            self = .securityLevel2(try .init(try Data(hex: String(components[2]))))
+            self = .securityLevel2(try .init(try Data(hex: components[2])))
         }
     }
 
