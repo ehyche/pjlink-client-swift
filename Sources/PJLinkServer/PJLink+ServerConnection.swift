@@ -319,7 +319,7 @@ extension PJLink {
             }
         }
 
-        private func setResponse(for setRequest: PJLink.SetRequest) -> (PJLink.SetResponse, PJLink.Notification?) {
+        private func setResponse(for setRequest: PJLink.SetRequest) -> (PJLink.StatusResponse, PJLink.Notification?) {
             let stateUnwrapped = state.value
             switch (setRequest, stateUnwrapped) {
             case (.power(let onOff), _):

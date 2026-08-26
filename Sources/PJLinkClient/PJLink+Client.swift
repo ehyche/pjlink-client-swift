@@ -896,7 +896,7 @@ extension PJLink.Client {
     private static func set(
         request: PJLink.SetRequest,
         from connectionState: PJLink.ConnectionState
-    ) async throws -> PJLink.SetResponse {
+    ) async throws -> PJLink.StatusResponse {
         let logger = Logger(sub: .client, cat: .connection)
         let requestString = connectionState.auth.authString + request.description
         let requestStringTerminated = requestString.crTerminated
@@ -907,7 +907,7 @@ extension PJLink.Client {
         let responseData = try await connectionState.connection.receive(atMost: PJLink.maxResponseSize).content
         let responseUTF8 = try responseData.toUTF8String()
         logger.debug("RECV: \(responseUTF8)")
-        let response = try PJLink.SetResponse(responseUTF8)
+        let response = try PJLink.StatusResponse(responseUTF8)
 
         // Do some error-checking.
         //

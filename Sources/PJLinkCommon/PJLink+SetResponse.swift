@@ -1,5 +1,5 @@
 //
-//  PJLink+SetResponse.swift
+//  PJLink+StatusResponse.swift
 //  pjlink-client-swift
 //
 //  Created by Eric Hyche on 10/23/25.
@@ -7,7 +7,7 @@
 
 extension PJLink {
 
-    public struct SetResponse: Equatable, Sendable {
+    public struct StatusResponse: Equatable, Sendable {
         public var `class`: PJLink.Class
         public var command: PJLink.Command
         public var code: ResponseCode
@@ -50,12 +50,12 @@ extension PJLink.ResponseCode {
     }
 }
 
-extension PJLink.SetResponse {
+extension PJLink.StatusResponse {
 
     public var isOK: Bool { code.isOK }
 }
 
-extension PJLink.SetResponse: LosslessStringConvertibleThrowing {
+extension PJLink.StatusResponse: LosslessStringConvertibleThrowing {
 
     public init(_ description: String) throws {
         var mutableDesc = description

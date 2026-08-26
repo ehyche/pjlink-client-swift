@@ -21,7 +21,7 @@ extension PJLink {
 
     public enum Response: Equatable {
         case get(GetResponse)
-        case set(SetResponse)
+        case set(StatusResponse)
     }
 }
 
@@ -81,7 +81,7 @@ extension PJLink.Message {
                 }
             } else {
                 // We don't have a hint, so we have to try and infer
-                // GetResponse vs SetResponse from the parameters.
+                // GetResponse vs StatusResponse from the parameters.
                 // In this case, we assume that a standard response code
                 // (OK, ERR1, ERR2, ERR3, or ERR4) is a Set Response.
                 self = .response(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc))
@@ -280,7 +280,7 @@ extension PJLink.Response {
             }
         } else {
             // We don't have a hint, so we have to try and infer
-            // GetResponse vs SetResponse from the parameters.
+            // GetResponse vs StatusResponse from the parameters.
             // In this case, we assume that a standard response code
             // (OK, ERR1, ERR2, ERR3, or ERR4) is a Set Response.
             self = try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc)
