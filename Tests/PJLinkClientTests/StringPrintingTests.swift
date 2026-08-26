@@ -34,19 +34,15 @@ struct StringPrintingTests {
     @Test
     func powerResponse() throws {
         let testCases: [TestCase] = [
-            .init(.response(.set(.init(pjlinkClass: .one, command: .power, code: .ok))), "%1POWR=OK"),
-            .init(.response(.set(.init(pjlinkClass: .one, command: .power, code: .undefinedCommand))), "%1POWR=ERR1"),
-            .init(.response(.set(.init(pjlinkClass: .one, command: .power, code: .outOfParameter))), "%1POWR=ERR2"),
-            .init(.response(.set(.init(pjlinkClass: .one, command: .power, code: .unavailableTime))), "%1POWR=ERR3"),
-            .init(.response(.set(.init(pjlinkClass: .one, command: .power, code: .projectorFailure))), "%1POWR=ERR4"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .power, code: .undefinedCommand)))), "%1POWR=ERR1"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .power, code: .outOfParameter)))), "%1POWR=ERR2"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .power, code: .unavailableTime)))), "%1POWR=ERR3"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .power, code: .projectorFailure)))), "%1POWR=ERR4"),
-            .init(.response(.get(.success(.power(.standby)))), "%1POWR=0"),
-            .init(.response(.get(.success(.power(.lampOn)))), "%1POWR=1"),
-            .init(.response(.get(.success(.power(.cooling)))), "%1POWR=2"),
-            .init(.response(.get(.success(.power(.warmUp)))), "%1POWR=3"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .power, code: .ok))), "%1POWR=OK"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .power, code: .undefinedCommand))), "%1POWR=ERR1"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .power, code: .outOfParameter))), "%1POWR=ERR2"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .power, code: .unavailableTime))), "%1POWR=ERR3"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .power, code: .projectorFailure))), "%1POWR=ERR4"),
+            .init(.response(.getSuccess(.power(.standby))), "%1POWR=0"),
+            .init(.response(.getSuccess(.power(.lampOn))), "%1POWR=1"),
+            .init(.response(.getSuccess(.power(.cooling))), "%1POWR=2"),
+            .init(.response(.getSuccess(.power(.warmUp))), "%1POWR=3"),
         ]
         try run(testCases)
     }
@@ -79,29 +75,21 @@ struct StringPrintingTests {
     @Test
     func inputSwitchResponse() throws {
         var testCases: [TestCase] = [
-            .init(.response(.set(.init(pjlinkClass: .one, command: .inputSwitch, code: .ok))), "%1INPT=OK"),
-            .init(.response(.set(.init(pjlinkClass: .one, command: .inputSwitch, code: .undefinedCommand))), "%1INPT=ERR1"),
-            .init(.response(.set(.init(pjlinkClass: .one, command: .inputSwitch, code: .outOfParameter))), "%1INPT=ERR2"),
-            .init(.response(.set(.init(pjlinkClass: .one, command: .inputSwitch, code: .unavailableTime))), "%1INPT=ERR3"),
-            .init(.response(.set(.init(pjlinkClass: .one, command: .inputSwitch, code: .projectorFailure))), "%1INPT=ERR4"),
-            .init(.response(.set(.init(pjlinkClass: .two, command: .inputSwitch, code: .ok))), "%2INPT=OK"),
-            .init(.response(.set(.init(pjlinkClass: .two, command: .inputSwitch, code: .undefinedCommand))), "%2INPT=ERR1"),
-            .init(.response(.set(.init(pjlinkClass: .two, command: .inputSwitch, code: .outOfParameter))), "%2INPT=ERR2"),
-            .init(.response(.set(.init(pjlinkClass: .two, command: .inputSwitch, code: .unavailableTime))), "%2INPT=ERR3"),
-            .init(.response(.set(.init(pjlinkClass: .two, command: .inputSwitch, code: .projectorFailure))), "%2INPT=ERR4"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .inputSwitch, code: .undefinedCommand)))), "%1INPT=ERR1"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .inputSwitch, code: .outOfParameter)))), "%1INPT=ERR2"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .inputSwitch, code: .unavailableTime)))), "%1INPT=ERR3"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .inputSwitch, code: .projectorFailure)))), "%1INPT=ERR4"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .two, command: .inputSwitch, code: .undefinedCommand)))), "%2INPT=ERR1"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .two, command: .inputSwitch, code: .outOfParameter)))), "%2INPT=ERR2"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .two, command: .inputSwitch, code: .unavailableTime)))), "%2INPT=ERR3"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .two, command: .inputSwitch, code: .projectorFailure)))), "%2INPT=ERR4"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .inputSwitch, code: .ok))), "%1INPT=OK"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .inputSwitch, code: .undefinedCommand))), "%1INPT=ERR1"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .inputSwitch, code: .outOfParameter))), "%1INPT=ERR2"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .inputSwitch, code: .unavailableTime))), "%1INPT=ERR3"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .inputSwitch, code: .projectorFailure))), "%1INPT=ERR4"),
+            .init(.response(.status(.init(pjlinkClass: .two, command: .inputSwitch, code: .ok))), "%2INPT=OK"),
+            .init(.response(.status(.init(pjlinkClass: .two, command: .inputSwitch, code: .undefinedCommand))), "%2INPT=ERR1"),
+            .init(.response(.status(.init(pjlinkClass: .two, command: .inputSwitch, code: .outOfParameter))), "%2INPT=ERR2"),
+            .init(.response(.status(.init(pjlinkClass: .two, command: .inputSwitch, code: .unavailableTime))), "%2INPT=ERR3"),
+            .init(.response(.status(.init(pjlinkClass: .two, command: .inputSwitch, code: .projectorFailure))), "%2INPT=ERR4"),
         ]
         PJLink.InputSwitchClass1.allCases.forEach { inputSwitch in
             testCases.append(
                 .init(
-                    .response(.get(.success(.inputSwitchClass1(inputSwitch)))),
+                    .response(.getSuccess(.inputSwitchClass1(inputSwitch))),
                     "%1INPT=\(inputSwitch.input.rawValue)\(inputSwitch.channel.rawValue)"
                 )
             )
@@ -109,7 +97,7 @@ struct StringPrintingTests {
         PJLink.InputSwitchClass2.allCases.forEach { inputSwitch in
             testCases.append(
                 .init(
-                    .response(.get(.success(.inputSwitchClass2(inputSwitch)))),
+                    .response(.getSuccess(.inputSwitchClass2(inputSwitch))),
                     "%2INPT=\(inputSwitch.input.rawValue)\(inputSwitch.channel.rawValue)"
                 )
             )
@@ -136,20 +124,16 @@ struct StringPrintingTests {
     @Test
     func muteResponse() throws {
         var testCases: [TestCase] = [
-            .init(.response(.set(.init(pjlinkClass: .one, command: .avMute, code: .ok))), "%1AVMT=OK"),
-            .init(.response(.set(.init(pjlinkClass: .one, command: .avMute, code: .undefinedCommand))), "%1AVMT=ERR1"),
-            .init(.response(.set(.init(pjlinkClass: .one, command: .avMute, code: .outOfParameter))), "%1AVMT=ERR2"),
-            .init(.response(.set(.init(pjlinkClass: .one, command: .avMute, code: .unavailableTime))), "%1AVMT=ERR3"),
-            .init(.response(.set(.init(pjlinkClass: .one, command: .avMute, code: .projectorFailure))), "%1AVMT=ERR4"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .avMute, code: .undefinedCommand)))), "%1AVMT=ERR1"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .avMute, code: .outOfParameter)))), "%1AVMT=ERR2"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .avMute, code: .unavailableTime)))), "%1AVMT=ERR3"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .avMute, code: .projectorFailure)))), "%1AVMT=ERR4"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .avMute, code: .ok))), "%1AVMT=OK"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .avMute, code: .undefinedCommand))), "%1AVMT=ERR1"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .avMute, code: .outOfParameter))), "%1AVMT=ERR2"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .avMute, code: .unavailableTime))), "%1AVMT=ERR3"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .avMute, code: .projectorFailure))), "%1AVMT=ERR4"),
         ]
         PJLink.MuteState.allCases.forEach { muteState in
             testCases.append(
                 .init(
-                    .response(.get(.success(.avMute(muteState)))),
+                    .response(.getSuccess(.avMute(muteState))),
                     "%1AVMT=\(muteState.mute.rawValue)\(muteState.state.rawValue)"
                 )
             )
@@ -168,15 +152,15 @@ struct StringPrintingTests {
     @Test
     func errorStatusResponse() throws {
         var testCases: [TestCase] = [
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .errorStatus, code: .undefinedCommand)))), "%1ERST=ERR1"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .errorStatus, code: .outOfParameter)))), "%1ERST=ERR2"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .errorStatus, code: .unavailableTime)))), "%1ERST=ERR3"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .errorStatus, code: .projectorFailure)))), "%1ERST=ERR4"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .errorStatus, code: .undefinedCommand))), "%1ERST=ERR1"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .errorStatus, code: .outOfParameter))), "%1ERST=ERR2"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .errorStatus, code: .unavailableTime))), "%1ERST=ERR3"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .errorStatus, code: .projectorFailure))), "%1ERST=ERR4"),
         ]
         PJLink.ErrorStatus.allCases.forEach { st in
             testCases.append(
                 .init(
-                    .response(.get(.success(.errorStatus(st)))),
+                    .response(.getSuccess(.errorStatus(st))),
                     "%1ERST=\(st.fan.rawValue)\(st.lamp.rawValue)\(st.temperature.rawValue)\(st.coverOpen.rawValue)\(st.filter.rawValue)\(st.other.rawValue)"
                 )
             )
@@ -195,17 +179,15 @@ struct StringPrintingTests {
     @Test
     func lampResponse() throws {
         let testCases: [TestCase] = [
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .lamp, code: .undefinedCommand)))), "%1LAMP=ERR1"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .lamp, code: .outOfParameter)))), "%1LAMP=ERR2"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .lamp, code: .unavailableTime)))), "%1LAMP=ERR3"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .lamp, code: .projectorFailure)))), "%1LAMP=ERR4"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .lamp, code: .undefinedCommand))), "%1LAMP=ERR1"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .lamp, code: .outOfParameter))), "%1LAMP=ERR2"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .lamp, code: .unavailableTime))), "%1LAMP=ERR3"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .lamp, code: .projectorFailure))), "%1LAMP=ERR4"),
             .init(
                 .response(
-                    .get(
-                        .success(
-                            .lamp(
-                                .init(lampStatus: [.mock1, .mock2, .mock3])
-                            )
+                    .getSuccess(
+                        .lamp(
+                            .init(lampStatus: [.mock1, .mock2, .mock3])
                         )
                     )
                 ),
@@ -231,40 +213,40 @@ struct StringPrintingTests {
     @Test
     func inputListResponse() throws {
         var testCases: [TestCase] = [
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .inputList, code: .undefinedCommand)))), "%1INST=ERR1"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .inputList, code: .outOfParameter)))), "%1INST=ERR2"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .inputList, code: .unavailableTime)))), "%1INST=ERR3"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .one, command: .inputList, code: .projectorFailure)))), "%1INST=ERR4"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .two, command: .inputList, code: .undefinedCommand)))), "%2INST=ERR1"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .two, command: .inputList, code: .outOfParameter)))), "%2INST=ERR2"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .two, command: .inputList, code: .unavailableTime)))), "%2INST=ERR3"),
-            .init(.response(.get(.failure(.init(pjLinkClass: .two, command: .inputList, code: .projectorFailure)))), "%2INST=ERR4"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .inputList, code: .undefinedCommand))), "%1INST=ERR1"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .inputList, code: .outOfParameter))), "%1INST=ERR2"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .inputList, code: .unavailableTime))), "%1INST=ERR3"),
+            .init(.response(.status(.init(pjlinkClass: .one, command: .inputList, code: .projectorFailure))), "%1INST=ERR4"),
+            .init(.response(.status(.init(pjlinkClass: .two, command: .inputList, code: .undefinedCommand))), "%2INST=ERR1"),
+            .init(.response(.status(.init(pjlinkClass: .two, command: .inputList, code: .outOfParameter))), "%2INST=ERR2"),
+            .init(.response(.status(.init(pjlinkClass: .two, command: .inputList, code: .unavailableTime))), "%2INST=ERR3"),
+            .init(.response(.status(.init(pjlinkClass: .two, command: .inputList, code: .projectorFailure))), "%2INST=ERR4"),
         ]
         PJLink.InputSwitchClass1.allCases.forEach { inputSwitch in
             testCases.append(
                 .init(
-                    .response(.get(.success(.inputListClass1(.init(switches: [inputSwitch]))))),
+                    .response(.getSuccess(.inputListClass1(.init(switches: [inputSwitch])))),
                     "%1INST=\(inputSwitch.input.rawValue)\(inputSwitch.channel.rawValue)"
                 )
             )
         }
         testCases.append(
             .init(
-                .response(.get(.success(.inputListClass1(.mock)))),
+                .response(.getSuccess(.inputListClass1(.mock))),
                 "%1INST=\(PJLink.InputSwitchClass1.allCases.map({ "\($0.input.rawValue)\($0.channel.rawValue)" }).joined(separator: " "))"
             )
         )
         PJLink.InputSwitchClass2.allCases.forEach { inputSwitch in
             testCases.append(
                 .init(
-                    .response(.get(.success(.inputListClass2(.init(switches: [inputSwitch]))))),
+                    .response(.getSuccess(.inputListClass2(.init(switches: [inputSwitch])))),
                     "%2INST=\(inputSwitch.input.rawValue)\(inputSwitch.channel.rawValue)"
                 )
             )
         }
         testCases.append(
             .init(
-                .response(.get(.success(.inputListClass2(.mock)))),
+                .response(.getSuccess(.inputListClass2(.mock))),
                 "%2INST=\(PJLink.InputSwitchClass2.allCases.map({ "\($0.input.rawValue)\($0.channel.rawValue)" }).joined(separator: " "))"
             )
         )
@@ -283,23 +265,23 @@ struct StringPrintingTests {
     func projectorNameResponse() throws {
         let testCases: [TestCase] = [
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .one, command: .projectorName, code: .undefinedCommand)))),
+                .response(.status(.init(pjlinkClass: .one, command: .projectorName, code: .undefinedCommand))),
                 "%1NAME=ERR1"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .one, command: .projectorName, code: .outOfParameter)))),
+                .response(.status(.init(pjlinkClass: .one, command: .projectorName, code: .outOfParameter))),
                 "%1NAME=ERR2"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .one, command: .projectorName, code: .unavailableTime)))),
+                .response(.status(.init(pjlinkClass: .one, command: .projectorName, code: .unavailableTime))),
                 "%1NAME=ERR3"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .one, command: .projectorName, code: .projectorFailure)))),
+                .response(.status(.init(pjlinkClass: .one, command: .projectorName, code: .projectorFailure))),
                 "%1NAME=ERR4"
             ),
             .init(
-                .response(.get(.success(.projectorName(.mock)))),
+                .response(.getSuccess(.projectorName(.mock))),
                 "%1NAME=\(PJLink.ProjectorName.mock.value)"
             )
         ]
@@ -318,23 +300,23 @@ struct StringPrintingTests {
     func manufacturerNameResponse() throws {
         let testCases: [TestCase] = [
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .one, command: .manufacturerName, code: .undefinedCommand)))),
+                .response(.status(.init(pjlinkClass: .one, command: .manufacturerName, code: .undefinedCommand))),
                 "%1INF1=ERR1"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .one, command: .manufacturerName, code: .outOfParameter)))),
+                .response(.status(.init(pjlinkClass: .one, command: .manufacturerName, code: .outOfParameter))),
                 "%1INF1=ERR2"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .one, command: .manufacturerName, code: .unavailableTime)))),
+                .response(.status(.init(pjlinkClass: .one, command: .manufacturerName, code: .unavailableTime))),
                 "%1INF1=ERR3"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .one, command: .manufacturerName, code: .projectorFailure)))),
+                .response(.status(.init(pjlinkClass: .one, command: .manufacturerName, code: .projectorFailure))),
                 "%1INF1=ERR4"
             ),
             .init(
-                .response(.get(.success(.manufacturerName(.mock)))),
+                .response(.getSuccess(.manufacturerName(.mock))),
                 "%1INF1=\(PJLink.ManufacturerName.mock.value)"
             )
         ]
@@ -353,23 +335,23 @@ struct StringPrintingTests {
     func productNameResponse() throws {
         let testCases: [TestCase] = [
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .one, command: .productName, code: .undefinedCommand)))),
+                .response(.status(.init(pjlinkClass: .one, command: .productName, code: .undefinedCommand))),
                 "%1INF2=ERR1"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .one, command: .productName, code: .outOfParameter)))),
+                .response(.status(.init(pjlinkClass: .one, command: .productName, code: .outOfParameter))),
                 "%1INF2=ERR2"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .one, command: .productName, code: .unavailableTime)))),
+                .response(.status(.init(pjlinkClass: .one, command: .productName, code: .unavailableTime))),
                 "%1INF2=ERR3"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .one, command: .productName, code: .projectorFailure)))),
+                .response(.status(.init(pjlinkClass: .one, command: .productName, code: .projectorFailure))),
                 "%1INF2=ERR4"
             ),
             .init(
-                .response(.get(.success(.productName(.mock)))),
+                .response(.getSuccess(.productName(.mock))),
                 "%1INF2=\(PJLink.ProductName.mock.value)"
             )
         ]
@@ -388,23 +370,23 @@ struct StringPrintingTests {
     func otherInformationResponse() throws {
         let testCases: [TestCase] = [
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .one, command: .otherInformation, code: .undefinedCommand)))),
+                .response(.status(.init(pjlinkClass: .one, command: .otherInformation, code: .undefinedCommand))),
                 "%1INFO=ERR1"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .one, command: .otherInformation, code: .outOfParameter)))),
+                .response(.status(.init(pjlinkClass: .one, command: .otherInformation, code: .outOfParameter))),
                 "%1INFO=ERR2"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .one, command: .otherInformation, code: .unavailableTime)))),
+                .response(.status(.init(pjlinkClass: .one, command: .otherInformation, code: .unavailableTime))),
                 "%1INFO=ERR3"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .one, command: .otherInformation, code: .projectorFailure)))),
+                .response(.status(.init(pjlinkClass: .one, command: .otherInformation, code: .projectorFailure))),
                 "%1INFO=ERR4"
             ),
             .init(
-                .response(.get(.success(.otherInformation(.mock)))),
+                .response(.getSuccess(.otherInformation(.mock))),
                 "%1INFO=\(PJLink.OtherInformation.mock.value)"
             )
         ]
@@ -423,27 +405,27 @@ struct StringPrintingTests {
     func classResponse() throws {
         let testCases: [TestCase] = [
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .one, command: .projectorClass, code: .undefinedCommand)))),
+                .response(.status(.init(pjlinkClass: .one, command: .projectorClass, code: .undefinedCommand))),
                 "%1CLSS=ERR1"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .one, command: .projectorClass, code: .outOfParameter)))),
+                .response(.status(.init(pjlinkClass: .one, command: .projectorClass, code: .outOfParameter))),
                 "%1CLSS=ERR2"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .one, command: .projectorClass, code: .unavailableTime)))),
+                .response(.status(.init(pjlinkClass: .one, command: .projectorClass, code: .unavailableTime))),
                 "%1CLSS=ERR3"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .one, command: .projectorClass, code: .projectorFailure)))),
+                .response(.status(.init(pjlinkClass: .one, command: .projectorClass, code: .projectorFailure))),
                 "%1CLSS=ERR4"
             ),
             .init(
-                .response(.get(.success(.projectorClass(.one)))),
+                .response(.getSuccess(.projectorClass(.one))),
                 "%1CLSS=1"
             ),
             .init(
-                .response(.get(.success(.projectorClass(.two)))),
+                .response(.getSuccess(.projectorClass(.two))),
                 "%1CLSS=2"
             ),
         ]
@@ -462,23 +444,23 @@ struct StringPrintingTests {
     func serialNumberResponse() throws {
         let testCases: [TestCase] = [
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .serialNumber, code: .undefinedCommand)))),
+                .response(.status(.init(pjlinkClass: .two, command: .serialNumber, code: .undefinedCommand))),
                 "%2SNUM=ERR1"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .serialNumber, code: .outOfParameter)))),
+                .response(.status(.init(pjlinkClass: .two, command: .serialNumber, code: .outOfParameter))),
                 "%2SNUM=ERR2"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .serialNumber, code: .unavailableTime)))),
+                .response(.status(.init(pjlinkClass: .two, command: .serialNumber, code: .unavailableTime))),
                 "%2SNUM=ERR3"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .serialNumber, code: .projectorFailure)))),
+                .response(.status(.init(pjlinkClass: .two, command: .serialNumber, code: .projectorFailure))),
                 "%2SNUM=ERR4"
             ),
             .init(
-                .response(.get(.success(.serialNumber(.mock)))),
+                .response(.getSuccess(.serialNumber(.mock))),
                 "%2SNUM=\(PJLink.SerialNumber.mock.value)"
             ),
         ]
@@ -498,23 +480,23 @@ struct StringPrintingTests {
     func softwareVersionResponse() throws {
         let testCases: [TestCase] = [
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .softwareVersion, code: .undefinedCommand)))),
+                .response(.status(.init(pjlinkClass: .two, command: .softwareVersion, code: .undefinedCommand))),
                 "%2SVER=ERR1"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .softwareVersion, code: .outOfParameter)))),
+                .response(.status(.init(pjlinkClass: .two, command: .softwareVersion, code: .outOfParameter))),
                 "%2SVER=ERR2"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .softwareVersion, code: .unavailableTime)))),
+                .response(.status(.init(pjlinkClass: .two, command: .softwareVersion, code: .unavailableTime))),
                 "%2SVER=ERR3"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .softwareVersion, code: .projectorFailure)))),
+                .response(.status(.init(pjlinkClass: .two, command: .softwareVersion, code: .projectorFailure))),
                 "%2SVER=ERR4"
             ),
             .init(
-                .response(.get(.success(.softwareVersion(.mock)))),
+                .response(.getSuccess(.softwareVersion(.mock))),
                 "%2SVER=\(PJLink.SoftwareVersion.mock.value)"
             ),
         ]
@@ -539,23 +521,23 @@ struct StringPrintingTests {
     func inputTerminalNameResponse() throws {
         let testCases: [TestCase] = [
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .inputTerminalName, code: .undefinedCommand)))),
+                .response(.status(.init(pjlinkClass: .two, command: .inputTerminalName, code: .undefinedCommand))),
                 "%2INNM=ERR1"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .inputTerminalName, code: .outOfParameter)))),
+                .response(.status(.init(pjlinkClass: .two, command: .inputTerminalName, code: .outOfParameter))),
                 "%2INNM=ERR2"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .inputTerminalName, code: .unavailableTime)))),
+                .response(.status(.init(pjlinkClass: .two, command: .inputTerminalName, code: .unavailableTime))),
                 "%2INNM=ERR3"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .inputTerminalName, code: .projectorFailure)))),
+                .response(.status(.init(pjlinkClass: .two, command: .inputTerminalName, code: .projectorFailure))),
                 "%2INNM=ERR4"
             ),
             .init(
-                .response(.get(.success(.inputTerminalName(.mock)))),
+                .response(.getSuccess(.inputTerminalName(.mock))),
                 "%2INNM=\(PJLink.InputTerminalName.mock.value)"
             ),
         ]
@@ -574,31 +556,31 @@ struct StringPrintingTests {
     func inputResolutionResponse() throws {
         let testCases: [TestCase] = [
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .inputResolution, code: .undefinedCommand)))),
+                .response(.status(.init(pjlinkClass: .two, command: .inputResolution, code: .undefinedCommand))),
                 "%2IRES=ERR1"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .inputResolution, code: .outOfParameter)))),
+                .response(.status(.init(pjlinkClass: .two, command: .inputResolution, code: .outOfParameter))),
                 "%2IRES=ERR2"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .inputResolution, code: .unavailableTime)))),
+                .response(.status(.init(pjlinkClass: .two, command: .inputResolution, code: .unavailableTime))),
                 "%2IRES=ERR3"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .inputResolution, code: .projectorFailure)))),
+                .response(.status(.init(pjlinkClass: .two, command: .inputResolution, code: .projectorFailure))),
                 "%2IRES=ERR4"
             ),
             .init(
-                .response(.get(.success(.inputResolution(.noSignal)))),
+                .response(.getSuccess(.inputResolution(.noSignal))),
                 "%2IRES=-"
             ),
             .init(
-                .response(.get(.success(.inputResolution(.unknownSignal)))),
+                .response(.getSuccess(.inputResolution(.unknownSignal))),
                 "%2IRES=*"
             ),
             .init(
-                .response(.get(.success(.inputResolution(.ok(.mock))))),
+                .response(.getSuccess(.inputResolution(.ok(.mock)))),
                 "%2IRES=1920x1080"
             ),
         ]
@@ -618,23 +600,23 @@ struct StringPrintingTests {
     func recommendedResolutionResponse() throws {
         let testCases: [TestCase] = [
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .recommendedResolution, code: .undefinedCommand)))),
+                .response(.status(.init(pjlinkClass: .two, command: .recommendedResolution, code: .undefinedCommand))),
                 "%2RRES=ERR1"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .recommendedResolution, code: .outOfParameter)))),
+                .response(.status(.init(pjlinkClass: .two, command: .recommendedResolution, code: .outOfParameter))),
                 "%2RRES=ERR2"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .recommendedResolution, code: .unavailableTime)))),
+                .response(.status(.init(pjlinkClass: .two, command: .recommendedResolution, code: .unavailableTime))),
                 "%2RRES=ERR3"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .recommendedResolution, code: .projectorFailure)))),
+                .response(.status(.init(pjlinkClass: .two, command: .recommendedResolution, code: .projectorFailure))),
                 "%2RRES=ERR4"
             ),
             .init(
-                .response(.get(.success(.recommendedResolution(.mock)))),
+                .response(.getSuccess(.recommendedResolution(.mock))),
                 "%2RRES=1920x1080"
             ),
         ]
@@ -653,23 +635,23 @@ struct StringPrintingTests {
     func filterUsageTimeResponse() throws {
         let testCases: [TestCase] = [
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .filterUsageTime, code: .undefinedCommand)))),
+                .response(.status(.init(pjlinkClass: .two, command: .filterUsageTime, code: .undefinedCommand))),
                 "%2FILT=ERR1"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .filterUsageTime, code: .outOfParameter)))),
+                .response(.status(.init(pjlinkClass: .two, command: .filterUsageTime, code: .outOfParameter))),
                 "%2FILT=ERR2"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .filterUsageTime, code: .unavailableTime)))),
+                .response(.status(.init(pjlinkClass: .two, command: .filterUsageTime, code: .unavailableTime))),
                 "%2FILT=ERR3"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .filterUsageTime, code: .projectorFailure)))),
+                .response(.status(.init(pjlinkClass: .two, command: .filterUsageTime, code: .projectorFailure))),
                 "%2FILT=ERR4"
             ),
             .init(
-                .response(.get(.success(.filterUsageTime(.mock)))),
+                .response(.getSuccess(.filterUsageTime(.mock))),
                 "%2FILT=\(PJLink.FilterUsageTime.mock.value)"
             ),
         ]
@@ -688,23 +670,23 @@ struct StringPrintingTests {
     func lampReplacementModelNumberResponse() throws {
         let testCases: [TestCase] = [
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .lampReplacementModelNumber, code: .undefinedCommand)))),
+                .response(.status(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .undefinedCommand))),
                 "%2RLMP=ERR1"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .lampReplacementModelNumber, code: .outOfParameter)))),
+                .response(.status(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .outOfParameter))),
                 "%2RLMP=ERR2"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .lampReplacementModelNumber, code: .unavailableTime)))),
+                .response(.status(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .unavailableTime))),
                 "%2RLMP=ERR3"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .lampReplacementModelNumber, code: .projectorFailure)))),
+                .response(.status(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .projectorFailure))),
                 "%2RLMP=ERR4"
             ),
             .init(
-                .response(.get(.success(.lampReplacementModelNumber(.mock)))),
+                .response(.getSuccess(.lampReplacementModelNumber(.mock))),
                 "%2RLMP=\(PJLink.ModelNumber.mock.value)"
             ),
         ]
@@ -723,23 +705,23 @@ struct StringPrintingTests {
     func filterReplacementModelNumberResponse() throws {
         let testCases: [TestCase] = [
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .filterReplacementModelNumber, code: .undefinedCommand)))),
+                .response(.status(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .undefinedCommand))),
                 "%2RFIL=ERR1"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .filterReplacementModelNumber, code: .outOfParameter)))),
+                .response(.status(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .outOfParameter))),
                 "%2RFIL=ERR2"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .filterReplacementModelNumber, code: .unavailableTime)))),
+                .response(.status(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .unavailableTime))),
                 "%2RFIL=ERR3"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .filterReplacementModelNumber, code: .projectorFailure)))),
+                .response(.status(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .projectorFailure))),
                 "%2RFIL=ERR4"
             ),
             .init(
-                .response(.get(.success(.filterReplacementModelNumber(.mock)))),
+                .response(.getSuccess(.filterReplacementModelNumber(.mock))),
                 "%2RFIL=\(PJLink.ModelNumber.mock.value)"
             ),
         ]
@@ -759,23 +741,23 @@ struct StringPrintingTests {
     func speakerVolumeAdjustmentResponse() throws {
         let testCases: [TestCase] = [
             .init(
-                .response(.set(.init(pjlinkClass: .two, command: .speakerVolume, code: .ok))),
+                .response(.status(.init(pjlinkClass: .two, command: .speakerVolume, code: .ok))),
                 "%2SVOL=OK"
             ),
             .init(
-                .response(.set(.init(pjlinkClass: .two, command: .speakerVolume, code: .undefinedCommand))),
+                .response(.status(.init(pjlinkClass: .two, command: .speakerVolume, code: .undefinedCommand))),
                 "%2SVOL=ERR1"
             ),
             .init(
-                .response(.set(.init(pjlinkClass: .two, command: .speakerVolume, code: .outOfParameter))),
+                .response(.status(.init(pjlinkClass: .two, command: .speakerVolume, code: .outOfParameter))),
                 "%2SVOL=ERR2"
             ),
             .init(
-                .response(.set(.init(pjlinkClass: .two, command: .speakerVolume, code: .unavailableTime))),
+                .response(.status(.init(pjlinkClass: .two, command: .speakerVolume, code: .unavailableTime))),
                 "%2SVOL=ERR3"
             ),
             .init(
-                .response(.set(.init(pjlinkClass: .two, command: .speakerVolume, code: .projectorFailure))),
+                .response(.status(.init(pjlinkClass: .two, command: .speakerVolume, code: .projectorFailure))),
                 "%2SVOL=ERR4"
             ),
         ]
@@ -795,23 +777,23 @@ struct StringPrintingTests {
     func microphoneVolumeAdjustmentResponse() throws {
         let testCases: [TestCase] = [
             .init(
-                .response(.set(.init(pjlinkClass: .two, command: .microphoneVolume, code: .ok))),
+                .response(.status(.init(pjlinkClass: .two, command: .microphoneVolume, code: .ok))),
                 "%2MVOL=OK"
             ),
             .init(
-                .response(.set(.init(pjlinkClass: .two, command: .microphoneVolume, code: .undefinedCommand))),
+                .response(.status(.init(pjlinkClass: .two, command: .microphoneVolume, code: .undefinedCommand))),
                 "%2MVOL=ERR1"
             ),
             .init(
-                .response(.set(.init(pjlinkClass: .two, command: .microphoneVolume, code: .outOfParameter))),
+                .response(.status(.init(pjlinkClass: .two, command: .microphoneVolume, code: .outOfParameter))),
                 "%2MVOL=ERR2"
             ),
             .init(
-                .response(.set(.init(pjlinkClass: .two, command: .microphoneVolume, code: .unavailableTime))),
+                .response(.status(.init(pjlinkClass: .two, command: .microphoneVolume, code: .unavailableTime))),
                 "%2MVOL=ERR3"
             ),
             .init(
-                .response(.set(.init(pjlinkClass: .two, command: .microphoneVolume, code: .projectorFailure))),
+                .response(.status(.init(pjlinkClass: .two, command: .microphoneVolume, code: .projectorFailure))),
                 "%2MVOL=ERR4"
             ),
         ]
@@ -832,43 +814,43 @@ struct StringPrintingTests {
     func freezeResponse() throws {
         let testCases: [TestCase] = [
             .init(
-                .response(.set(.init(pjlinkClass: .two, command: .freeze, code: .ok))),
+                .response(.status(.init(pjlinkClass: .two, command: .freeze, code: .ok))),
                 "%2FREZ=OK"
             ),
             .init(
-                .response(.set(.init(pjlinkClass: .two, command: .freeze, code: .undefinedCommand))),
+                .response(.status(.init(pjlinkClass: .two, command: .freeze, code: .undefinedCommand))),
                 "%2FREZ=ERR1"
             ),
             .init(
-                .response(.set(.init(pjlinkClass: .two, command: .freeze, code: .outOfParameter))),
+                .response(.status(.init(pjlinkClass: .two, command: .freeze, code: .outOfParameter))),
                 "%2FREZ=ERR2"
             ),
             .init(
-                .response(.set(.init(pjlinkClass: .two, command: .freeze, code: .unavailableTime))),
+                .response(.status(.init(pjlinkClass: .two, command: .freeze, code: .unavailableTime))),
                 "%2FREZ=ERR3"
             ),
             .init(
-                .response(.set(.init(pjlinkClass: .two, command: .freeze, code: .projectorFailure))),
+                .response(.status(.init(pjlinkClass: .two, command: .freeze, code: .projectorFailure))),
                 "%2FREZ=ERR4"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .freeze, code: .undefinedCommand)))),
+                .response(.status(.init(pjlinkClass: .two, command: .freeze, code: .undefinedCommand))),
                 "%2FREZ=ERR1"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .freeze, code: .outOfParameter)))),
+                .response(.status(.init(pjlinkClass: .two, command: .freeze, code: .outOfParameter))),
                 "%2FREZ=ERR2"
             ),
             .init(
-                .response(.get(.failure(.init(pjLinkClass: .two, command: .freeze, code: .unavailableTime)))),
+                .response(.status(.init(pjlinkClass: .two, command: .freeze, code: .unavailableTime))),
                 "%2FREZ=ERR3"
             ),
             .init(
-                .response(.get(.success(.freeze(.stop)))),
+                .response(.getSuccess(.freeze(.stop))),
                 "%2FREZ=0"
             ),
             .init(
-                .response(.get(.success(.freeze(.start)))),
+                .response(.getSuccess(.freeze(.start))),
                 "%2FREZ=1"
             ),
         ]

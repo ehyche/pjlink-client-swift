@@ -221,101 +221,101 @@ extension PJLink {
         private func generateResponse(request: Request) throws -> (Response, PJLink.Notification?) {
             switch request {
             case .get(let getRequest):
-                return (.get(getResponse(for: getRequest)), nil)
+                return (getResponse(for: getRequest), nil)
             case .set(let setRequest):
                 let setResponseAndNotification = setResponse(for: setRequest)
-                return (.set(setResponseAndNotification.0), setResponseAndNotification.1)
+                return (.status(setResponseAndNotification.0), setResponseAndNotification.1)
             }
         }
 
-        private func getResponse(for getRequest: PJLink.GetRequest) -> PJLink.GetResponse {
+        private func getResponse(for getRequest: PJLink.GetRequest) -> PJLink.Response {
             let stateValue = state.value
             switch (getRequest, stateValue) {
             case (.power, _):
-                return .success(.power(stateValue.power))
+                return .getSuccess(.power(stateValue.power))
             case (.inputSwitchClass1, .class1(let class1State)):
-                return .success(.inputSwitchClass1(class1State.activeInputSwitch))
+                return .getSuccess(.inputSwitchClass1(class1State.activeInputSwitch))
             case (.inputSwitchClass1, .class2):
                 // TODO - handle producing Class 1 inputs from Class 2 inputs
-                return .failure(.init(pjLinkClass: .one, command: .inputSwitch, code: .undefinedCommand))
+                return .status(.init(pjlinkClass: .one, command: .inputSwitch, code: .undefinedCommand))
             case (.inputSwitchClass2, .class1):
                 // We are emulating a Class 1 projector, so we fail on a Class 2 request
-                return .failure(.init(pjLinkClass: .two, command: .inputSwitch, code: .undefinedCommand))
+                return .status(.init(pjlinkClass: .two, command: .inputSwitch, code: .undefinedCommand))
             case (.inputSwitchClass2, .class2(let class2State)):
-                return .success(.inputSwitchClass2(class2State.activeInputSwitch))
+                return .getSuccess(.inputSwitchClass2(class2State.activeInputSwitch))
             case (.avMute, _):
-                return .success(.avMute(stateValue.mute))
+                return .getSuccess(.avMute(stateValue.mute))
             case (.errorStatus, _):
-                return .success(.errorStatus(stateValue.error))
+                return .getSuccess(.errorStatus(stateValue.error))
             case (.lamp, _):
-                return .success(.lamp(stateValue.lamps))
+                return .getSuccess(.lamp(stateValue.lamps))
             case (.inputListClass1, .class1(let class1State)):
-                return .success(.inputListClass1(class1State.inputSwitches))
+                return .getSuccess(.inputListClass1(class1State.inputSwitches))
             case (.inputListClass1, .class2):
                 // TODO - handle producing Class 1 inputs from Class 2 inputs
-                return .failure(.init(pjLinkClass: .one, command: .inputList, code: .undefinedCommand))
+                return .status(.init(pjlinkClass: .one, command: .inputList, code: .undefinedCommand))
             case (.inputListClass2, .class1):
-                return .failure(.init(pjLinkClass: .two, command: .inputList, code: .undefinedCommand))
+                return .status(.init(pjlinkClass: .two, command: .inputList, code: .undefinedCommand))
             case (.inputListClass2, .class2(let class2State)):
-                return .success(.inputListClass2(class2State.inputSwitches))
+                return .getSuccess(.inputListClass2(class2State.inputSwitches))
             case (.projectorName, _):
-                return .success(.projectorName(stateValue.projectorName))
+                return .getSuccess(.projectorName(stateValue.projectorName))
             case (.manufacturerName, _):
-                return .success(.manufacturerName(stateValue.manufacturerName))
+                return .getSuccess(.manufacturerName(stateValue.manufacturerName))
             case (.productName, _):
-                return .success(.productName(stateValue.productName))
+                return .getSuccess(.productName(stateValue.productName))
             case (.otherInformation, _):
-                return .success(.otherInformation(stateValue.otherInformation))
+                return .getSuccess(.otherInformation(stateValue.otherInformation))
             case (.projectorClass, _):
-                return .success(.projectorClass(stateValue.class))
+                return .getSuccess(.projectorClass(stateValue.class))
             case (.serialNumber, .class1):
                 // We are emulating a Class 1 projector, so SNUM does not exist for Class 1
-                return .failure(.init(pjLinkClass: .one, command: .serialNumber, code: .undefinedCommand))
+                return .status(.init(pjlinkClass: .one, command: .serialNumber, code: .undefinedCommand))
             case (.serialNumber, .class2(let class2State)):
-                return .success(.serialNumber(class2State.serialNumber))
+                return .getSuccess(.serialNumber(class2State.serialNumber))
             case (.softwareVersion, .class1):
                 // We are emulating a Class 1 projector, so SVER does not exist for Class 1
-                return .failure(.init(pjLinkClass: .one, command: .softwareVersion, code: .undefinedCommand))
+                return .status(.init(pjlinkClass: .one, command: .softwareVersion, code: .undefinedCommand))
             case (.softwareVersion, .class2(let class2State)):
-                return .success(.softwareVersion(class2State.softwareVersion))
+                return .getSuccess(.softwareVersion(class2State.softwareVersion))
             case (.inputTerminalName, .class1):
-                return .failure(.init(pjLinkClass: .one, command: .inputTerminalName, code: .undefinedCommand))
+                return .status(.init(pjlinkClass: .one, command: .inputTerminalName, code: .undefinedCommand))
             case (.inputTerminalName(let inputSwitchClass2), .class2(let class2State)):
                 if let inputTerminalName = class2State.inputNames[inputSwitchClass2] {
-                    return .success(.inputTerminalName(inputTerminalName))
+                    return .getSuccess(.inputTerminalName(inputTerminalName))
                 } else {
-                    return .failure(.init(pjLinkClass: .two, command: .inputTerminalName, code: .outOfParameter))
+                    return .status(.init(pjlinkClass: .two, command: .inputTerminalName, code: .outOfParameter))
                 }
             case (.inputResolution, .class1):
                 // We are emulating a Class 1 projector, so IRES does not exist for Class 1
-                return .failure(.init(pjLinkClass: .one, command: .inputResolution, code: .undefinedCommand))
+                return .status(.init(pjlinkClass: .one, command: .inputResolution, code: .undefinedCommand))
             case (.inputResolution, .class2(let class2State)):
-                return .success(.inputResolution(class2State.inputResolution))
+                return .getSuccess(.inputResolution(class2State.inputResolution))
             case (.recommendedResolution, .class1):
                 // We are emulating a Class 1 projector, so RRES does not exist for Class 1
-                return .failure(.init(pjLinkClass: .one, command: .recommendedResolution, code: .undefinedCommand))
+                return .status(.init(pjlinkClass: .one, command: .recommendedResolution, code: .undefinedCommand))
             case (.recommendedResolution, .class2(let class2State)):
-                return .success(.recommendedResolution(class2State.recommendedResolution))
+                return .getSuccess(.recommendedResolution(class2State.recommendedResolution))
             case (.filterUsageTime, .class1):
                 // We are emulating a Class 1 projector, so FILT does not exist for Class 1
-                return .failure(.init(pjLinkClass: .one, command: .filterUsageTime, code: .undefinedCommand))
+                return .status(.init(pjlinkClass: .one, command: .filterUsageTime, code: .undefinedCommand))
             case (.filterUsageTime, .class2(let class2State)):
-                return .success(.filterUsageTime(class2State.filterUsageTime))
+                return .getSuccess(.filterUsageTime(class2State.filterUsageTime))
             case (.lampReplacementModelNumber, .class1):
                 // We are emulating a Class 1 projector, so RLMP does not exist for Class 1
-                return .failure(.init(pjLinkClass: .one, command: .lampReplacementModelNumber, code: .undefinedCommand))
+                return .status(.init(pjlinkClass: .one, command: .lampReplacementModelNumber, code: .undefinedCommand))
             case (.lampReplacementModelNumber, .class2(let class2State)):
-                return .success(.lampReplacementModelNumber(class2State.lampReplacementModelNumber))
+                return .getSuccess(.lampReplacementModelNumber(class2State.lampReplacementModelNumber))
             case (.filterReplacementModelNumber, .class1):
                 // We are emulating a Class 1 projector, so RFIL does not exist for Class 1
-                return .failure(.init(pjLinkClass: .one, command: .filterReplacementModelNumber, code: .undefinedCommand))
+                return .status(.init(pjlinkClass: .one, command: .filterReplacementModelNumber, code: .undefinedCommand))
             case (.filterReplacementModelNumber, .class2(let class2State)):
-                return .success(.filterReplacementModelNumber(class2State.filterReplacementModelNumber))
+                return .getSuccess(.filterReplacementModelNumber(class2State.filterReplacementModelNumber))
             case (.freeze, .class1):
                 // We are emulating a Class 1 projector, so FREZ does not exist for Class 1
-                return .failure(.init(pjLinkClass: .one, command: .freeze, code: .undefinedCommand))
+                return .status(.init(pjlinkClass: .one, command: .freeze, code: .undefinedCommand))
             case (.freeze, .class2(let class2State)):
-                return .success(.freeze(class2State.freeze))
+                return .getSuccess(.freeze(class2State.freeze))
             }
         }
 

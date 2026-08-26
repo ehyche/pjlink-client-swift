@@ -522,7 +522,7 @@ extension PJLink.Client {
         }
         // We expect that if we had a set request, then we should have a set response.
         // Likewise, if we had a get request, then we should have a get response.
-        guard request.isSet == response.isSet else {
+        guard request.isSet == response.isStatus else {
             throw PJLink.Error.unexpectedResponse(request: request.description, response: response.description)
         }
 

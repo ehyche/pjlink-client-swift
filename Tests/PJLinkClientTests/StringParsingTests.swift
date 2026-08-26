@@ -40,37 +40,37 @@ struct StringParsingTests {
     @Test
     func powerResponse() throws {
         let testCases: [TestCase] = [
-            .init("%1POWR=0", .success(.response(.get(.success(.power(.standby)))))),
+            .init("%1POWR=0", .success(.response(.getSuccess(.power(.standby))))),
             .init("%1POWR=0", .failure(.invalidSetResponseCode("0")), true),
-            .init("%1POWR=0", .success(.response(.get(.success(.power(.standby))))), false),
-            .init("%1POWR=1", .success(.response(.get(.success(.power(.lampOn)))))),
+            .init("%1POWR=0", .success(.response(.getSuccess(.power(.standby)))), false),
+            .init("%1POWR=1", .success(.response(.getSuccess(.power(.lampOn))))),
             .init("%1POWR=1", .failure(.invalidSetResponseCode("1")), true),
-            .init("%1POWR=1", .success(.response(.get(.success(.power(.lampOn))))), false),
-            .init("%1POWR=2", .success(.response(.get(.success(.power(.cooling)))))),
+            .init("%1POWR=1", .success(.response(.getSuccess(.power(.lampOn)))), false),
+            .init("%1POWR=2", .success(.response(.getSuccess(.power(.cooling))))),
             .init("%1POWR=2", .failure(.invalidSetResponseCode("2")), true),
-            .init("%1POWR=2", .success(.response(.get(.success(.power(.cooling))))), false),
-            .init("%1POWR=3", .success(.response(.get(.success(.power(.warmUp)))))),
+            .init("%1POWR=2", .success(.response(.getSuccess(.power(.cooling)))), false),
+            .init("%1POWR=3", .success(.response(.getSuccess(.power(.warmUp))))),
             .init("%1POWR=3", .failure(.invalidSetResponseCode("3")), true),
-            .init("%1POWR=3", .success(.response(.get(.success(.power(.warmUp))))), false),
+            .init("%1POWR=3", .success(.response(.getSuccess(.power(.warmUp)))), false),
             .init("%2POWR=0", .failure(.unexpectedGetResponse(.two, .power))),
             .init("%1POWR=FOO", .failure(.invalidPowerStatus("FOO"))),
             .init("%1POWR=FOO", .failure(.invalidSetResponseCode("FOO")), true),
             .init("%1POWR=FOO", .failure(.invalidPowerStatus("FOO")), false),
-            .init("%1POWR=OK", .success(.response(.set(.init(pjlinkClass: .one, command: .power, code: .ok))))),
-            .init("%1POWR=OK", .success(.response(.set(.init(pjlinkClass: .one, command: .power, code: .ok)))), true),
+            .init("%1POWR=OK", .success(.response(.status(.init(pjlinkClass: .one, command: .power, code: .ok))))),
+            .init("%1POWR=OK", .success(.response(.status(.init(pjlinkClass: .one, command: .power, code: .ok)))), true),
             .init("%1POWR=OK", .failure(.invalidPowerStatus("OK")), false),
-            .init("%1POWR=ERR1", .success(.response(.set(.init(pjlinkClass: .one, command: .power, code: .undefinedCommand))))),
-            .init("%1POWR=ERR1", .success(.response(.set(.init(pjlinkClass: .one, command: .power, code: .undefinedCommand)))), true),
-            .init("%1POWR=ERR1", .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .power, code: .undefinedCommand))))), false),
-            .init("%1POWR=ERR2", .success(.response(.set(.init(pjlinkClass: .one, command: .power, code: .outOfParameter))))),
-            .init("%1POWR=ERR2", .success(.response(.set(.init(pjlinkClass: .one, command: .power, code: .outOfParameter)))), true),
-            .init("%1POWR=ERR2", .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .power, code: .outOfParameter))))), false),
-            .init("%1POWR=ERR3", .success(.response(.set(.init(pjlinkClass: .one, command: .power, code: .unavailableTime))))),
-            .init("%1POWR=ERR3", .success(.response(.set(.init(pjlinkClass: .one, command: .power, code: .unavailableTime)))), true),
-            .init("%1POWR=ERR3", .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .power, code: .unavailableTime))))), false),
-            .init("%1POWR=ERR4", .success(.response(.set(.init(pjlinkClass: .one, command: .power, code: .projectorFailure))))),
-            .init("%1POWR=ERR4", .success(.response(.set(.init(pjlinkClass: .one, command: .power, code: .projectorFailure)))), true),
-            .init("%1POWR=ERR4", .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .power, code: .projectorFailure))))), false),
+            .init("%1POWR=ERR1", .success(.response(.status(.init(pjlinkClass: .one, command: .power, code: .undefinedCommand))))),
+            .init("%1POWR=ERR1", .success(.response(.status(.init(pjlinkClass: .one, command: .power, code: .undefinedCommand)))), true),
+            .init("%1POWR=ERR1", .success(.response(.status(.init(pjlinkClass: .one, command: .power, code: .undefinedCommand)))), false),
+            .init("%1POWR=ERR2", .success(.response(.status(.init(pjlinkClass: .one, command: .power, code: .outOfParameter))))),
+            .init("%1POWR=ERR2", .success(.response(.status(.init(pjlinkClass: .one, command: .power, code: .outOfParameter)))), true),
+            .init("%1POWR=ERR2", .success(.response(.status(.init(pjlinkClass: .one, command: .power, code: .outOfParameter)))), false),
+            .init("%1POWR=ERR3", .success(.response(.status(.init(pjlinkClass: .one, command: .power, code: .unavailableTime))))),
+            .init("%1POWR=ERR3", .success(.response(.status(.init(pjlinkClass: .one, command: .power, code: .unavailableTime)))), true),
+            .init("%1POWR=ERR3", .success(.response(.status(.init(pjlinkClass: .one, command: .power, code: .unavailableTime)))), false),
+            .init("%1POWR=ERR4", .success(.response(.status(.init(pjlinkClass: .one, command: .power, code: .projectorFailure))))),
+            .init("%1POWR=ERR4", .success(.response(.status(.init(pjlinkClass: .one, command: .power, code: .projectorFailure)))), true),
+            .init("%1POWR=ERR4", .success(.response(.status(.init(pjlinkClass: .one, command: .power, code: .projectorFailure)))), false),
         ]
         try run(testCases)
     }
@@ -113,11 +113,11 @@ struct StringParsingTests {
         var testCases: [TestCase] = [
             .init(
                 "%1INPT=OK",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .inputSwitch, code: .ok))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputSwitch, code: .ok))))
             ),
             .init(
                 "%1INPT=OK",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .inputSwitch, code: .ok)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputSwitch, code: .ok)))),
                 true
             ),
             .init(
@@ -127,67 +127,67 @@ struct StringParsingTests {
             ),
             .init(
                 "%1INPT=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .inputSwitch, code: .undefinedCommand))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputSwitch, code: .undefinedCommand))))
             ),
             .init(
                 "%1INPT=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .inputSwitch, code: .undefinedCommand)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputSwitch, code: .undefinedCommand)))),
                 true
             ),
             .init(
                 "%1INPT=ERR1",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .inputSwitch, code: .undefinedCommand))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputSwitch, code: .undefinedCommand)))),
                 false
             ),
             .init(
                 "%1INPT=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .inputSwitch, code: .outOfParameter))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputSwitch, code: .outOfParameter))))
             ),
             .init(
                 "%1INPT=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .inputSwitch, code: .outOfParameter)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputSwitch, code: .outOfParameter)))),
                 true
             ),
             .init(
                 "%1INPT=ERR2",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .inputSwitch, code: .outOfParameter))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputSwitch, code: .outOfParameter)))),
                 false
             ),
             .init(
                 "%1INPT=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .inputSwitch, code: .unavailableTime))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputSwitch, code: .unavailableTime))))
             ),
             .init(
                 "%1INPT=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .inputSwitch, code: .unavailableTime)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputSwitch, code: .unavailableTime)))),
                 true
             ),
             .init(
                 "%1INPT=ERR3",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .inputSwitch, code: .unavailableTime))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputSwitch, code: .unavailableTime)))),
                 false
             ),
             .init(
                 "%1INPT=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .inputSwitch, code: .projectorFailure))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputSwitch, code: .projectorFailure))))
             ),
             .init(
                 "%1INPT=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .inputSwitch, code: .projectorFailure)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputSwitch, code: .projectorFailure)))),
                 true
             ),
             .init(
                 "%1INPT=ERR4",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .inputSwitch, code: .projectorFailure))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputSwitch, code: .projectorFailure)))),
                 false
             ),
             .init(
                 "%2INPT=OK",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputSwitch, code: .ok))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputSwitch, code: .ok))))
             ),
             .init(
                 "%2INPT=OK",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputSwitch, code: .ok)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputSwitch, code: .ok)))),
                 true
             ),
             .init(
@@ -197,58 +197,58 @@ struct StringParsingTests {
             ),
             .init(
                 "%2INPT=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputSwitch, code: .undefinedCommand))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputSwitch, code: .undefinedCommand))))
             ),
             .init(
                 "%2INPT=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputSwitch, code: .undefinedCommand)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputSwitch, code: .undefinedCommand)))),
                 true
             ),
             .init(
                 "%2INPT=ERR1",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .inputSwitch, code: .undefinedCommand))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputSwitch, code: .undefinedCommand)))),
                 false
             ),
             .init(
                 "%2INPT=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputSwitch, code: .outOfParameter))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputSwitch, code: .outOfParameter))))
             ),
             .init(
                 "%2INPT=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputSwitch, code: .outOfParameter)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputSwitch, code: .outOfParameter)))),
                 true
             ),
             .init(
                 "%2INPT=ERR2",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .inputSwitch, code: .outOfParameter))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputSwitch, code: .outOfParameter)))),
                 false
             ),
             .init(
                 "%2INPT=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputSwitch, code: .unavailableTime))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputSwitch, code: .unavailableTime))))
             ),
             .init(
                 "%2INPT=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputSwitch, code: .unavailableTime)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputSwitch, code: .unavailableTime)))),
                 true
             ),
             .init(
                 "%2INPT=ERR3",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .inputSwitch, code: .unavailableTime))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputSwitch, code: .unavailableTime)))),
                 false
             ),
             .init(
                 "%2INPT=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputSwitch, code: .projectorFailure))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputSwitch, code: .projectorFailure))))
             ),
             .init(
                 "%2INPT=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputSwitch, code: .projectorFailure)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputSwitch, code: .projectorFailure)))),
                 true
             ),
             .init(
                 "%2INPT=ERR4",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .inputSwitch, code: .projectorFailure))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputSwitch, code: .projectorFailure)))),
                 false
             ),
             .init(
@@ -265,7 +265,7 @@ struct StringParsingTests {
             testCases.append(
                 .init(
                     "%1INPT=\(inputStr)",
-                    .success(.response(.get(.success(.inputSwitchClass1(inputSwitch)))))
+                    .success(.response(.getSuccess(.inputSwitchClass1(inputSwitch))))
                 )
             )
             testCases.append(
@@ -278,7 +278,7 @@ struct StringParsingTests {
             testCases.append(
                 .init(
                     "%1INPT=\(inputStr)",
-                    .success(.response(.get(.success(.inputSwitchClass1(inputSwitch))))),
+                    .success(.response(.getSuccess(.inputSwitchClass1(inputSwitch)))),
                     false
                 )
             )
@@ -288,7 +288,7 @@ struct StringParsingTests {
             testCases.append(
                 .init(
                     "%2INPT=\(inputStr)",
-                    .success(.response(.get(.success(.inputSwitchClass2(inputSwitch)))))
+                    .success(.response(.getSuccess(.inputSwitchClass2(inputSwitch))))
                 )
             )
             testCases.append(
@@ -301,7 +301,7 @@ struct StringParsingTests {
             testCases.append(
                 .init(
                     "%2INPT=\(inputStr)",
-                    .success(.response(.get(.success(.inputSwitchClass2(inputSwitch))))),
+                    .success(.response(.getSuccess(.inputSwitchClass2(inputSwitch)))),
                     false
                 )
             )
@@ -335,11 +335,11 @@ struct StringParsingTests {
         var testCases: [TestCase] = [
             .init(
                 "%1AVMT=OK",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .avMute, code: .ok))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .avMute, code: .ok))))
             ),
             .init(
                 "%1AVMT=OK",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .avMute, code: .ok)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .avMute, code: .ok)))),
                 true
             ),
             .init(
@@ -349,58 +349,58 @@ struct StringParsingTests {
             ),
             .init(
                 "%1AVMT=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .avMute, code: .undefinedCommand))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .avMute, code: .undefinedCommand))))
             ),
             .init(
                 "%1AVMT=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .avMute, code: .undefinedCommand)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .avMute, code: .undefinedCommand)))),
                 true
             ),
             .init(
                 "%1AVMT=ERR1",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .avMute, code: .undefinedCommand))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .avMute, code: .undefinedCommand)))),
                 false
             ),
             .init(
                 "%1AVMT=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .avMute, code: .outOfParameter))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .avMute, code: .outOfParameter))))
             ),
             .init(
                 "%1AVMT=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .avMute, code: .outOfParameter)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .avMute, code: .outOfParameter)))),
                 true
             ),
             .init(
                 "%1AVMT=ERR2",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .avMute, code: .outOfParameter))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .avMute, code: .outOfParameter)))),
                 false
             ),
             .init(
                 "%1AVMT=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .avMute, code: .unavailableTime))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .avMute, code: .unavailableTime))))
             ),
             .init(
                 "%1AVMT=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .avMute, code: .unavailableTime)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .avMute, code: .unavailableTime)))),
                 true
             ),
             .init(
                 "%1AVMT=ERR3",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .avMute, code: .unavailableTime))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .avMute, code: .unavailableTime)))),
                 false
             ),
             .init(
                 "%1AVMT=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .avMute, code: .projectorFailure))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .avMute, code: .projectorFailure))))
             ),
             .init(
                 "%1AVMT=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .avMute, code: .projectorFailure)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .avMute, code: .projectorFailure)))),
                 true
             ),
             .init(
                 "%1AVMT=ERR4",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .avMute, code: .projectorFailure))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .avMute, code: .projectorFailure)))),
                 false
             ),
             .init(
@@ -416,7 +416,7 @@ struct StringParsingTests {
             testCases.append(
                 .init(
                     "%1AVMT=\(muteState.description)",
-                    .success(.response(.get(.success(.avMute(muteState)))))
+                    .success(.response(.getSuccess(.avMute(muteState))))
                 )
             )
         }
@@ -470,7 +470,7 @@ struct StringParsingTests {
             testCases.append(
                 .init(
                     "%1ERST=\(errorStatus.description)",
-                    .success(.response(.get(.success(.errorStatus(errorStatus)))))
+                    .success(.response(.getSuccess(.errorStatus(errorStatus))))
                 )
             )
         }
@@ -496,63 +496,63 @@ struct StringParsingTests {
             .init("%1LAMP=-1 0", .failure(.lampUsageTimeOutOfRange(-1))),
             .init("%1LAMP=100000 0", .failure(.lampUsageTimeOutOfRange(100000))),
             .init("%1LAMP=0 2", .failure(.invalidLampOnOff("2"))),
-            .init("%1LAMP=1 0", .success(.response(.get(.success(.lamp(.init(lampStatus: [.init(usageTime: 1, state: .off)]))))))),
-            .init("%1LAMP=1 1", .success(.response(.get(.success(.lamp(.init(lampStatus: [.init(usageTime: 1, state: .on)]))))))),
+            .init("%1LAMP=1 0", .success(.response(.getSuccess(.lamp(.init(lampStatus: [.init(usageTime: 1, state: .off)])))))),
+            .init("%1LAMP=1 1", .success(.response(.getSuccess(.lamp(.init(lampStatus: [.init(usageTime: 1, state: .on)])))))),
             .init("%2LAMP=1 0", .failure(.unexpectedGetResponse(.two, .lamp))),
             .init(
                 "%1LAMP=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .lamp, code: .undefinedCommand))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .lamp, code: .undefinedCommand))))
             ),
             .init(
                 "%1LAMP=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .lamp, code: .undefinedCommand)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .lamp, code: .undefinedCommand)))),
                 true
             ),
             .init(
                 "%1LAMP=ERR1",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .lamp, code: .undefinedCommand))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .lamp, code: .undefinedCommand)))),
                 false
             ),
             .init(
                 "%1LAMP=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .lamp, code: .outOfParameter))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .lamp, code: .outOfParameter))))
             ),
             .init(
                 "%1LAMP=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .lamp, code: .outOfParameter)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .lamp, code: .outOfParameter)))),
                 true
             ),
             .init(
                 "%1LAMP=ERR2",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .lamp, code: .outOfParameter))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .lamp, code: .outOfParameter)))),
                 false
             ),
             .init(
                 "%1LAMP=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .lamp, code: .unavailableTime))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .lamp, code: .unavailableTime))))
             ),
             .init(
                 "%1LAMP=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .lamp, code: .unavailableTime)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .lamp, code: .unavailableTime)))),
                 true
             ),
             .init(
                 "%1LAMP=ERR3",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .lamp, code: .unavailableTime))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .lamp, code: .unavailableTime)))),
                 false
             ),
             .init(
                 "%1LAMP=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .lamp, code: .projectorFailure))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .lamp, code: .projectorFailure))))
             ),
             .init(
                 "%1LAMP=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .lamp, code: .projectorFailure)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .lamp, code: .projectorFailure)))),
                 true
             ),
             .init(
                 "%1LAMP=ERR4",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .lamp, code: .projectorFailure))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .lamp, code: .projectorFailure)))),
                 false
             ),
         ]
@@ -580,58 +580,58 @@ struct StringParsingTests {
             ),
             .init(
                 "%1INST=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .inputList, code: .undefinedCommand))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputList, code: .undefinedCommand))))
             ),
             .init(
                 "%1INST=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .inputList, code: .undefinedCommand)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputList, code: .undefinedCommand)))),
                 true
             ),
             .init(
                 "%1INST=ERR1",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .inputList, code: .undefinedCommand))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputList, code: .undefinedCommand)))),
                 false
             ),
             .init(
                 "%1INST=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .inputList, code: .outOfParameter))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputList, code: .outOfParameter))))
             ),
             .init(
                 "%1INST=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .inputList, code: .outOfParameter)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputList, code: .outOfParameter)))),
                 true
             ),
             .init(
                 "%1INST=ERR2",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .inputList, code: .outOfParameter))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputList, code: .outOfParameter)))),
                 false
             ),
             .init(
                 "%1INST=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .inputList, code: .unavailableTime))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputList, code: .unavailableTime))))
             ),
             .init(
                 "%1INST=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .inputList, code: .unavailableTime)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputList, code: .unavailableTime)))),
                 true
             ),
             .init(
                 "%1INST=ERR3",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .inputList, code: .unavailableTime))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputList, code: .unavailableTime)))),
                 false
             ),
             .init(
                 "%1INST=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .inputList, code: .projectorFailure))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputList, code: .projectorFailure))))
             ),
             .init(
                 "%1INST=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .inputList, code: .projectorFailure)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputList, code: .projectorFailure)))),
                 true
             ),
             .init(
                 "%1INST=ERR4",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .inputList, code: .projectorFailure))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .inputList, code: .projectorFailure)))),
                 false
             ),
         ]
@@ -639,7 +639,7 @@ struct StringParsingTests {
             testCases.append(
                 .init(
                     "%1INST=\(inputSwitch.description)",
-                    .success(.response(.get(.success(.inputListClass1(.init(switches: [inputSwitch]))))))
+                    .success(.response(.getSuccess(.inputListClass1(.init(switches: [inputSwitch])))))
                 )
             )
         }
@@ -647,20 +647,20 @@ struct StringParsingTests {
             testCases.append(
                 .init(
                     "%2INST=\(inputSwitch.description)",
-                    .success(.response(.get(.success(.inputListClass2(.init(switches: [inputSwitch]))))))
+                    .success(.response(.getSuccess(.inputListClass2(.init(switches: [inputSwitch])))))
                 )
             )
         }
         testCases.append(
             .init(
                 "%1INST=\(PJLink.InputSwitchesClass1(switches: PJLink.InputSwitchClass1.allCases).description)",
-                .success(.response(.get(.success(.inputListClass1(.init(switches: PJLink.InputSwitchClass1.allCases))))))
+                .success(.response(.getSuccess(.inputListClass1(.init(switches: PJLink.InputSwitchClass1.allCases)))))
             )
         )
         testCases.append(
             .init(
                 "%2INST=\(PJLink.InputSwitchesClass2(switches: PJLink.InputSwitchClass2.allCases).description)",
-                .success(.response(.get(.success(.inputListClass2(.init(switches: PJLink.InputSwitchClass2.allCases))))))
+                .success(.response(.getSuccess(.inputListClass2(.init(switches: PJLink.InputSwitchClass2.allCases)))))
             )
         )
         try run(testCases)
@@ -683,7 +683,7 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%1NAME=foo",
-                .success(.response(.get(.success(.projectorName(.init(value: "foo"))))))
+                .success(.response(.getSuccess(.projectorName(.init(value: "foo")))))
             ),
             .init(
                 "%2NAME=foo",
@@ -703,58 +703,58 @@ struct StringParsingTests {
             ),
             .init(
                 "%1NAME=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .projectorName, code: .undefinedCommand))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorName, code: .undefinedCommand))))
             ),
             .init(
                 "%1NAME=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .projectorName, code: .undefinedCommand)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorName, code: .undefinedCommand)))),
                 true
             ),
             .init(
                 "%1NAME=ERR1",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .projectorName, code: .undefinedCommand))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorName, code: .undefinedCommand)))),
                 false
             ),
             .init(
                 "%1NAME=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .projectorName, code: .outOfParameter))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorName, code: .outOfParameter))))
             ),
             .init(
                 "%1NAME=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .projectorName, code: .outOfParameter)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorName, code: .outOfParameter)))),
                 true
             ),
             .init(
                 "%1NAME=ERR2",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .projectorName, code: .outOfParameter))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorName, code: .outOfParameter)))),
                 false
             ),
             .init(
                 "%1NAME=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .projectorName, code: .unavailableTime))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorName, code: .unavailableTime))))
             ),
             .init(
                 "%1NAME=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .projectorName, code: .unavailableTime)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorName, code: .unavailableTime)))),
                 true
             ),
             .init(
                 "%1NAME=ERR3",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .projectorName, code: .unavailableTime))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorName, code: .unavailableTime)))),
                 false
             ),
             .init(
                 "%1NAME=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .projectorName, code: .projectorFailure))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorName, code: .projectorFailure))))
             ),
             .init(
                 "%1NAME=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .projectorName, code: .projectorFailure)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorName, code: .projectorFailure)))),
                 true
             ),
             .init(
                 "%1NAME=ERR4",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .projectorName, code: .projectorFailure))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorName, code: .projectorFailure)))),
                 false
             ),
         ]
@@ -777,7 +777,7 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%1INF1=foo",
-                .success(.response(.get(.success(.manufacturerName(.init(value: "foo"))))))
+                .success(.response(.getSuccess(.manufacturerName(.init(value: "foo")))))
             ),
             .init(
                 "%2INF1=foo",
@@ -801,58 +801,58 @@ struct StringParsingTests {
             ),
             .init(
                 "%1INF1=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .manufacturerName, code: .undefinedCommand))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .manufacturerName, code: .undefinedCommand))))
             ),
             .init(
                 "%1INF1=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .manufacturerName, code: .undefinedCommand)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .manufacturerName, code: .undefinedCommand)))),
                 true
             ),
             .init(
                 "%1INF1=ERR1",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .manufacturerName, code: .undefinedCommand))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .manufacturerName, code: .undefinedCommand)))),
                 false
             ),
             .init(
                 "%1INF1=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .manufacturerName, code: .outOfParameter))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .manufacturerName, code: .outOfParameter))))
             ),
             .init(
                 "%1INF1=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .manufacturerName, code: .outOfParameter)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .manufacturerName, code: .outOfParameter)))),
                 true
             ),
             .init(
                 "%1INF1=ERR2",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .manufacturerName, code: .outOfParameter))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .manufacturerName, code: .outOfParameter)))),
                 false
             ),
             .init(
                 "%1INF1=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .manufacturerName, code: .unavailableTime))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .manufacturerName, code: .unavailableTime))))
             ),
             .init(
                 "%1INF1=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .manufacturerName, code: .unavailableTime)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .manufacturerName, code: .unavailableTime)))),
                 true
             ),
             .init(
                 "%1INF1=ERR3",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .manufacturerName, code: .unavailableTime))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .manufacturerName, code: .unavailableTime)))),
                 false
             ),
             .init(
                 "%1INF1=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .manufacturerName, code: .projectorFailure))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .manufacturerName, code: .projectorFailure))))
             ),
             .init(
                 "%1INF1=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .manufacturerName, code: .projectorFailure)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .manufacturerName, code: .projectorFailure)))),
                 true
             ),
             .init(
                 "%1INF1=ERR4",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .manufacturerName, code: .projectorFailure))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .manufacturerName, code: .projectorFailure)))),
                 false
             ),
         ]
@@ -875,7 +875,7 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%1INF2=foo",
-                .success(.response(.get(.success(.productName(.init(value: "foo"))))))
+                .success(.response(.getSuccess(.productName(.init(value: "foo")))))
             ),
             .init(
                 "%2INF2=foo",
@@ -899,58 +899,58 @@ struct StringParsingTests {
             ),
             .init(
                 "%1INF2=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .productName, code: .undefinedCommand))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .productName, code: .undefinedCommand))))
             ),
             .init(
                 "%1INF2=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .productName, code: .undefinedCommand)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .productName, code: .undefinedCommand)))),
                 true
             ),
             .init(
                 "%1INF2=ERR1",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .productName, code: .undefinedCommand))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .productName, code: .undefinedCommand)))),
                 false
             ),
             .init(
                 "%1INF2=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .productName, code: .outOfParameter))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .productName, code: .outOfParameter))))
             ),
             .init(
                 "%1INF2=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .productName, code: .outOfParameter)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .productName, code: .outOfParameter)))),
                 true
             ),
             .init(
                 "%1INF2=ERR2",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .productName, code: .outOfParameter))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .productName, code: .outOfParameter)))),
                 false
             ),
             .init(
                 "%1INF2=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .productName, code: .unavailableTime))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .productName, code: .unavailableTime))))
             ),
             .init(
                 "%1INF2=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .productName, code: .unavailableTime)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .productName, code: .unavailableTime)))),
                 true
             ),
             .init(
                 "%1INF2=ERR3",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .productName, code: .unavailableTime))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .productName, code: .unavailableTime)))),
                 false
             ),
             .init(
                 "%1INF2=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .productName, code: .projectorFailure))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .productName, code: .projectorFailure))))
             ),
             .init(
                 "%1INF2=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .productName, code: .projectorFailure)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .productName, code: .projectorFailure)))),
                 true
             ),
             .init(
                 "%1INF2=ERR4",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .productName, code: .projectorFailure))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .productName, code: .projectorFailure)))),
                 false
             ),
         ]
@@ -973,7 +973,7 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%1INFO=foo",
-                .success(.response(.get(.success(.otherInformation(.init(value: "foo"))))))
+                .success(.response(.getSuccess(.otherInformation(.init(value: "foo")))))
             ),
             .init(
                 "%2INFO=foo",
@@ -997,58 +997,58 @@ struct StringParsingTests {
             ),
             .init(
                 "%1INFO=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .otherInformation, code: .undefinedCommand))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .otherInformation, code: .undefinedCommand))))
             ),
             .init(
                 "%1INFO=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .otherInformation, code: .undefinedCommand)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .otherInformation, code: .undefinedCommand)))),
                 true
             ),
             .init(
                 "%1INFO=ERR1",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .otherInformation, code: .undefinedCommand))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .otherInformation, code: .undefinedCommand)))),
                 false
             ),
             .init(
                 "%1INFO=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .otherInformation, code: .outOfParameter))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .otherInformation, code: .outOfParameter))))
             ),
             .init(
                 "%1INFO=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .otherInformation, code: .outOfParameter)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .otherInformation, code: .outOfParameter)))),
                 true
             ),
             .init(
                 "%1INFO=ERR2",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .otherInformation, code: .outOfParameter))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .otherInformation, code: .outOfParameter)))),
                 false
             ),
             .init(
                 "%1INFO=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .otherInformation, code: .unavailableTime))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .otherInformation, code: .unavailableTime))))
             ),
             .init(
                 "%1INFO=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .otherInformation, code: .unavailableTime)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .otherInformation, code: .unavailableTime)))),
                 true
             ),
             .init(
                 "%1INFO=ERR3",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .otherInformation, code: .unavailableTime))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .otherInformation, code: .unavailableTime)))),
                 false
             ),
             .init(
                 "%1INFO=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .otherInformation, code: .projectorFailure))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .otherInformation, code: .projectorFailure))))
             ),
             .init(
                 "%1INFO=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .otherInformation, code: .projectorFailure)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .otherInformation, code: .projectorFailure)))),
                 true
             ),
             .init(
                 "%1INFO=ERR4",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .otherInformation, code: .projectorFailure))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .otherInformation, code: .projectorFailure)))),
                 false
             ),
         ]
@@ -1071,11 +1071,11 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%1CLSS=1",
-                .success(.response(.get(.success(.projectorClass(.one)))))
+                .success(.response(.getSuccess(.projectorClass(.one))))
             ),
             .init(
                 "%1CLSS=2",
-                .success(.response(.get(.success(.projectorClass(.two)))))
+                .success(.response(.getSuccess(.projectorClass(.two))))
             ),
             .init(
                 "%2CLSS=1",
@@ -1087,58 +1087,58 @@ struct StringParsingTests {
             ),
             .init(
                 "%1CLSS=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .projectorClass, code: .undefinedCommand))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorClass, code: .undefinedCommand))))
             ),
             .init(
                 "%1CLSS=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .projectorClass, code: .undefinedCommand)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorClass, code: .undefinedCommand)))),
                 true
             ),
             .init(
                 "%1CLSS=ERR1",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .projectorClass, code: .undefinedCommand))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorClass, code: .undefinedCommand)))),
                 false
             ),
             .init(
                 "%1CLSS=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .projectorClass, code: .outOfParameter))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorClass, code: .outOfParameter))))
             ),
             .init(
                 "%1CLSS=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .projectorClass, code: .outOfParameter)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorClass, code: .outOfParameter)))),
                 true
             ),
             .init(
                 "%1CLSS=ERR2",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .projectorClass, code: .outOfParameter))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorClass, code: .outOfParameter)))),
                 false
             ),
             .init(
                 "%1CLSS=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .projectorClass, code: .unavailableTime))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorClass, code: .unavailableTime))))
             ),
             .init(
                 "%1CLSS=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .projectorClass, code: .unavailableTime)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorClass, code: .unavailableTime)))),
                 true
             ),
             .init(
                 "%1CLSS=ERR3",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .projectorClass, code: .unavailableTime))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorClass, code: .unavailableTime)))),
                 false
             ),
             .init(
                 "%1CLSS=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .projectorClass, code: .projectorFailure))))
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorClass, code: .projectorFailure))))
             ),
             .init(
                 "%1CLSS=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .one, command: .projectorClass, code: .projectorFailure)))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorClass, code: .projectorFailure)))),
                 true
             ),
             .init(
                 "%1CLSS=ERR4",
-                .success(.response(.get(.failure(.init(pjLinkClass: .one, command: .projectorClass, code: .projectorFailure))))),
+                .success(.response(.status(.init(pjlinkClass: .one, command: .projectorClass, code: .projectorFailure)))),
                 false
             ),
         ]
@@ -1161,7 +1161,7 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%2SNUM=foo",
-                .success(.response(.get(.success(.serialNumber(.init(value: "foo"))))))
+                .success(.response(.getSuccess(.serialNumber(.init(value: "foo")))))
             ),
             .init(
                 "%1SNUM=foo",
@@ -1185,58 +1185,58 @@ struct StringParsingTests {
             ),
             .init(
                 "%2SNUM=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .serialNumber, code: .undefinedCommand))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .serialNumber, code: .undefinedCommand))))
             ),
             .init(
                 "%2SNUM=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .serialNumber, code: .undefinedCommand)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .serialNumber, code: .undefinedCommand)))),
                 true
             ),
             .init(
                 "%2SNUM=ERR1",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .serialNumber, code: .undefinedCommand))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .serialNumber, code: .undefinedCommand)))),
                 false
             ),
             .init(
                 "%2SNUM=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .serialNumber, code: .outOfParameter))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .serialNumber, code: .outOfParameter))))
             ),
             .init(
                 "%2SNUM=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .serialNumber, code: .outOfParameter)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .serialNumber, code: .outOfParameter)))),
                 true
             ),
             .init(
                 "%2SNUM=ERR2",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .serialNumber, code: .outOfParameter))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .serialNumber, code: .outOfParameter)))),
                 false
             ),
             .init(
                 "%2SNUM=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .serialNumber, code: .unavailableTime))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .serialNumber, code: .unavailableTime))))
             ),
             .init(
                 "%2SNUM=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .serialNumber, code: .unavailableTime)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .serialNumber, code: .unavailableTime)))),
                 true
             ),
             .init(
                 "%2SNUM=ERR3",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .serialNumber, code: .unavailableTime))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .serialNumber, code: .unavailableTime)))),
                 false
             ),
             .init(
                 "%2SNUM=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .serialNumber, code: .projectorFailure))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .serialNumber, code: .projectorFailure))))
             ),
             .init(
                 "%2SNUM=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .serialNumber, code: .projectorFailure)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .serialNumber, code: .projectorFailure)))),
                 true
             ),
             .init(
                 "%2SNUM=ERR4",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .serialNumber, code: .projectorFailure))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .serialNumber, code: .projectorFailure)))),
                 false
             ),
         ]
@@ -1259,7 +1259,7 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%2SVER=foo",
-                .success(.response(.get(.success(.softwareVersion(.init(value: "foo"))))))
+                .success(.response(.getSuccess(.softwareVersion(.init(value: "foo")))))
             ),
             .init(
                 "%1SVER=foo",
@@ -1283,58 +1283,58 @@ struct StringParsingTests {
             ),
             .init(
                 "%2SVER=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .softwareVersion, code: .undefinedCommand))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .softwareVersion, code: .undefinedCommand))))
             ),
             .init(
                 "%2SVER=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .softwareVersion, code: .undefinedCommand)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .softwareVersion, code: .undefinedCommand)))),
                 true
             ),
             .init(
                 "%2SVER=ERR1",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .softwareVersion, code: .undefinedCommand))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .softwareVersion, code: .undefinedCommand)))),
                 false
             ),
             .init(
                 "%2SVER=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .softwareVersion, code: .outOfParameter))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .softwareVersion, code: .outOfParameter))))
             ),
             .init(
                 "%2SVER=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .softwareVersion, code: .outOfParameter)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .softwareVersion, code: .outOfParameter)))),
                 true
             ),
             .init(
                 "%2SVER=ERR2",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .softwareVersion, code: .outOfParameter))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .softwareVersion, code: .outOfParameter)))),
                 false
             ),
             .init(
                 "%2SVER=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .softwareVersion, code: .unavailableTime))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .softwareVersion, code: .unavailableTime))))
             ),
             .init(
                 "%2SVER=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .softwareVersion, code: .unavailableTime)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .softwareVersion, code: .unavailableTime)))),
                 true
             ),
             .init(
                 "%2SVER=ERR3",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .softwareVersion, code: .unavailableTime))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .softwareVersion, code: .unavailableTime)))),
                 false
             ),
             .init(
                 "%2SVER=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .softwareVersion, code: .projectorFailure))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .softwareVersion, code: .projectorFailure))))
             ),
             .init(
                 "%2SVER=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .softwareVersion, code: .projectorFailure)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .softwareVersion, code: .projectorFailure)))),
                 true
             ),
             .init(
                 "%2SVER=ERR4",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .softwareVersion, code: .projectorFailure))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .softwareVersion, code: .projectorFailure)))),
                 false
             ),
         ]
@@ -1365,7 +1365,7 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%2INNM=foo",
-                .success(.response(.get(.success(.inputTerminalName(.init(value: "foo"))))))
+                .success(.response(.getSuccess(.inputTerminalName(.init(value: "foo")))))
             ),
             .init(
                 "%1INNM=foo",
@@ -1385,58 +1385,58 @@ struct StringParsingTests {
             ),
             .init(
                 "%2INNM=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputTerminalName, code: .undefinedCommand))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputTerminalName, code: .undefinedCommand))))
             ),
             .init(
                 "%2INNM=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputTerminalName, code: .undefinedCommand)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputTerminalName, code: .undefinedCommand)))),
                 true
             ),
             .init(
                 "%2INNM=ERR1",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .inputTerminalName, code: .undefinedCommand))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputTerminalName, code: .undefinedCommand)))),
                 false
             ),
             .init(
                 "%2INNM=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputTerminalName, code: .outOfParameter))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputTerminalName, code: .outOfParameter))))
             ),
             .init(
                 "%2INNM=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputTerminalName, code: .outOfParameter)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputTerminalName, code: .outOfParameter)))),
                 true
             ),
             .init(
                 "%2INNM=ERR2",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .inputTerminalName, code: .outOfParameter))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputTerminalName, code: .outOfParameter)))),
                 false
             ),
             .init(
                 "%2INNM=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputTerminalName, code: .unavailableTime))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputTerminalName, code: .unavailableTime))))
             ),
             .init(
                 "%2INNM=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputTerminalName, code: .unavailableTime)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputTerminalName, code: .unavailableTime)))),
                 true
             ),
             .init(
                 "%2INNM=ERR3",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .inputTerminalName, code: .unavailableTime))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputTerminalName, code: .unavailableTime)))),
                 false
             ),
             .init(
                 "%2INNM=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputTerminalName, code: .projectorFailure))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputTerminalName, code: .projectorFailure))))
             ),
             .init(
                 "%2INNM=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputTerminalName, code: .projectorFailure)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputTerminalName, code: .projectorFailure)))),
                 true
             ),
             .init(
                 "%2INNM=ERR4",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .inputTerminalName, code: .projectorFailure))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputTerminalName, code: .projectorFailure)))),
                 false
             ),
         ]
@@ -1459,15 +1459,15 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%2IRES=1920x1080",
-                .success(.response(.get(.success(.inputResolution(.ok(.init(horizontal: 1920, vertical: 1080)))))))
+                .success(.response(.getSuccess(.inputResolution(.ok(.init(horizontal: 1920, vertical: 1080))))))
             ),
             .init(
                 "%2IRES=-",
-                .success(.response(.get(.success(.inputResolution(.noSignal)))))
+                .success(.response(.getSuccess(.inputResolution(.noSignal))))
             ),
             .init(
                 "%2IRES=*",
-                .success(.response(.get(.success(.inputResolution(.unknownSignal)))))
+                .success(.response(.getSuccess(.inputResolution(.unknownSignal))))
             ),
             .init(
                 "%1IRES=1920x1080",
@@ -1487,58 +1487,58 @@ struct StringParsingTests {
             ),
             .init(
                 "%2IRES=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputResolution, code: .undefinedCommand))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputResolution, code: .undefinedCommand))))
             ),
             .init(
                 "%2IRES=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputResolution, code: .undefinedCommand)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputResolution, code: .undefinedCommand)))),
                 true
             ),
             .init(
                 "%2IRES=ERR1",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .inputResolution, code: .undefinedCommand))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputResolution, code: .undefinedCommand)))),
                 false
             ),
             .init(
                 "%2IRES=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputResolution, code: .outOfParameter))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputResolution, code: .outOfParameter))))
             ),
             .init(
                 "%2IRES=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputResolution, code: .outOfParameter)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputResolution, code: .outOfParameter)))),
                 true
             ),
             .init(
                 "%2IRES=ERR2",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .inputResolution, code: .outOfParameter))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputResolution, code: .outOfParameter)))),
                 false
             ),
             .init(
                 "%2IRES=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputResolution, code: .unavailableTime))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputResolution, code: .unavailableTime))))
             ),
             .init(
                 "%2IRES=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputResolution, code: .unavailableTime)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputResolution, code: .unavailableTime)))),
                 true
             ),
             .init(
                 "%2IRES=ERR3",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .inputResolution, code: .unavailableTime))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputResolution, code: .unavailableTime)))),
                 false
             ),
             .init(
                 "%2IRES=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputResolution, code: .projectorFailure))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputResolution, code: .projectorFailure))))
             ),
             .init(
                 "%2IRES=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .inputResolution, code: .projectorFailure)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputResolution, code: .projectorFailure)))),
                 true
             ),
             .init(
                 "%2IRES=ERR4",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .inputResolution, code: .projectorFailure))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .inputResolution, code: .projectorFailure)))),
                 false
             ),
         ]
@@ -1561,7 +1561,7 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%2RRES=1920x1080",
-                .success(.response(.get(.success(.recommendedResolution(.init(horizontal: 1920, vertical: 1080))))))
+                .success(.response(.getSuccess(.recommendedResolution(.init(horizontal: 1920, vertical: 1080)))))
             ),
             .init(
                 "%1RRES=1920x1080",
@@ -1581,58 +1581,58 @@ struct StringParsingTests {
             ),
             .init(
                 "%2RRES=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .recommendedResolution, code: .undefinedCommand))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .recommendedResolution, code: .undefinedCommand))))
             ),
             .init(
                 "%2RRES=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .recommendedResolution, code: .undefinedCommand)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .recommendedResolution, code: .undefinedCommand)))),
                 true
             ),
             .init(
                 "%2RRES=ERR1",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .recommendedResolution, code: .undefinedCommand))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .recommendedResolution, code: .undefinedCommand)))),
                 false
             ),
             .init(
                 "%2RRES=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .recommendedResolution, code: .outOfParameter))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .recommendedResolution, code: .outOfParameter))))
             ),
             .init(
                 "%2RRES=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .recommendedResolution, code: .outOfParameter)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .recommendedResolution, code: .outOfParameter)))),
                 true
             ),
             .init(
                 "%2RRES=ERR2",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .recommendedResolution, code: .outOfParameter))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .recommendedResolution, code: .outOfParameter)))),
                 false
             ),
             .init(
                 "%2RRES=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .recommendedResolution, code: .unavailableTime))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .recommendedResolution, code: .unavailableTime))))
             ),
             .init(
                 "%2RRES=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .recommendedResolution, code: .unavailableTime)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .recommendedResolution, code: .unavailableTime)))),
                 true
             ),
             .init(
                 "%2RRES=ERR3",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .recommendedResolution, code: .unavailableTime))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .recommendedResolution, code: .unavailableTime)))),
                 false
             ),
             .init(
                 "%2RRES=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .recommendedResolution, code: .projectorFailure))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .recommendedResolution, code: .projectorFailure))))
             ),
             .init(
                 "%2RRES=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .recommendedResolution, code: .projectorFailure)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .recommendedResolution, code: .projectorFailure)))),
                 true
             ),
             .init(
                 "%2RRES=ERR4",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .recommendedResolution, code: .projectorFailure))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .recommendedResolution, code: .projectorFailure)))),
                 false
             ),
         ]
@@ -1655,7 +1655,7 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%2FILT=12345",
-                .success(.response(.get(.success(.filterUsageTime(.init(value: 12345))))))
+                .success(.response(.getSuccess(.filterUsageTime(.init(value: 12345)))))
             ),
             .init(
                 "%1FILT=12345",
@@ -1675,58 +1675,58 @@ struct StringParsingTests {
             ),
             .init(
                 "%2FILT=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .filterUsageTime, code: .undefinedCommand))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterUsageTime, code: .undefinedCommand))))
             ),
             .init(
                 "%2FILT=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .filterUsageTime, code: .undefinedCommand)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterUsageTime, code: .undefinedCommand)))),
                 true
             ),
             .init(
                 "%2FILT=ERR1",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .filterUsageTime, code: .undefinedCommand))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterUsageTime, code: .undefinedCommand)))),
                 false
             ),
             .init(
                 "%2FILT=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .filterUsageTime, code: .outOfParameter))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterUsageTime, code: .outOfParameter))))
             ),
             .init(
                 "%2FILT=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .filterUsageTime, code: .outOfParameter)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterUsageTime, code: .outOfParameter)))),
                 true
             ),
             .init(
                 "%2FILT=ERR2",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .filterUsageTime, code: .outOfParameter))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterUsageTime, code: .outOfParameter)))),
                 false
             ),
             .init(
                 "%2FILT=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .filterUsageTime, code: .unavailableTime))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterUsageTime, code: .unavailableTime))))
             ),
             .init(
                 "%2FILT=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .filterUsageTime, code: .unavailableTime)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterUsageTime, code: .unavailableTime)))),
                 true
             ),
             .init(
                 "%2FILT=ERR3",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .filterUsageTime, code: .unavailableTime))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterUsageTime, code: .unavailableTime)))),
                 false
             ),
             .init(
                 "%2FILT=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .filterUsageTime, code: .projectorFailure))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterUsageTime, code: .projectorFailure))))
             ),
             .init(
                 "%2FILT=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .filterUsageTime, code: .projectorFailure)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterUsageTime, code: .projectorFailure)))),
                 true
             ),
             .init(
                 "%2FILT=ERR4",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .filterUsageTime, code: .projectorFailure))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterUsageTime, code: .projectorFailure)))),
                 false
             ),
         ]
@@ -1749,11 +1749,11 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%2RLMP=foo",
-                .success(.response(.get(.success(.lampReplacementModelNumber(.init(value: "foo"))))))
+                .success(.response(.getSuccess(.lampReplacementModelNumber(.init(value: "foo")))))
             ),
             .init(
                 "%2RLMP=",
-                .success(.response(.get(.success(.lampReplacementModelNumber(.init(value: ""))))))
+                .success(.response(.getSuccess(.lampReplacementModelNumber(.init(value: "")))))
             ),
             .init(
                 "%1RLMP=foo",
@@ -1777,58 +1777,58 @@ struct StringParsingTests {
             ),
             .init(
                 "%2RLMP=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .undefinedCommand))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .undefinedCommand))))
             ),
             .init(
                 "%2RLMP=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .undefinedCommand)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .undefinedCommand)))),
                 true
             ),
             .init(
                 "%2RLMP=ERR1",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .lampReplacementModelNumber, code: .undefinedCommand))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .undefinedCommand)))),
                 false
             ),
             .init(
                 "%2RLMP=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .outOfParameter))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .outOfParameter))))
             ),
             .init(
                 "%2RLMP=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .outOfParameter)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .outOfParameter)))),
                 true
             ),
             .init(
                 "%2RLMP=ERR2",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .lampReplacementModelNumber, code: .outOfParameter))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .outOfParameter)))),
                 false
             ),
             .init(
                 "%2RLMP=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .unavailableTime))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .unavailableTime))))
             ),
             .init(
                 "%2RLMP=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .unavailableTime)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .unavailableTime)))),
                 true
             ),
             .init(
                 "%2RLMP=ERR3",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .lampReplacementModelNumber, code: .unavailableTime))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .unavailableTime)))),
                 false
             ),
             .init(
                 "%2RLMP=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .projectorFailure))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .projectorFailure))))
             ),
             .init(
                 "%2RLMP=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .projectorFailure)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .projectorFailure)))),
                 true
             ),
             .init(
                 "%2RLMP=ERR4",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .lampReplacementModelNumber, code: .projectorFailure))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .lampReplacementModelNumber, code: .projectorFailure)))),
                 false
             ),
         ]
@@ -1851,11 +1851,11 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%2RFIL=foo",
-                .success(.response(.get(.success(.filterReplacementModelNumber(.init(value: "foo"))))))
+                .success(.response(.getSuccess(.filterReplacementModelNumber(.init(value: "foo")))))
             ),
             .init(
                 "%2RFIL=",
-                .success(.response(.get(.success(.filterReplacementModelNumber(.init(value: ""))))))
+                .success(.response(.getSuccess(.filterReplacementModelNumber(.init(value: "")))))
             ),
             .init(
                 "%1RFIL=foo",
@@ -1879,58 +1879,58 @@ struct StringParsingTests {
             ),
             .init(
                 "%2RFIL=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .undefinedCommand))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .undefinedCommand))))
             ),
             .init(
                 "%2RFIL=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .undefinedCommand)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .undefinedCommand)))),
                 true
             ),
             .init(
                 "%2RFIL=ERR1",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .filterReplacementModelNumber, code: .undefinedCommand))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .undefinedCommand)))),
                 false
             ),
             .init(
                 "%2RFIL=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .outOfParameter))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .outOfParameter))))
             ),
             .init(
                 "%2RFIL=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .outOfParameter)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .outOfParameter)))),
                 true
             ),
             .init(
                 "%2RFIL=ERR2",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .filterReplacementModelNumber, code: .outOfParameter))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .outOfParameter)))),
                 false
             ),
             .init(
                 "%2RFIL=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .unavailableTime))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .unavailableTime))))
             ),
             .init(
                 "%2RFIL=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .unavailableTime)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .unavailableTime)))),
                 true
             ),
             .init(
                 "%2RFIL=ERR3",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .filterReplacementModelNumber, code: .unavailableTime))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .unavailableTime)))),
                 false
             ),
             .init(
                 "%2RFIL=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .projectorFailure))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .projectorFailure))))
             ),
             .init(
                 "%2RFIL=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .projectorFailure)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .projectorFailure)))),
                 true
             ),
             .init(
                 "%2RFIL=ERR4",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .filterReplacementModelNumber, code: .projectorFailure))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .filterReplacementModelNumber, code: .projectorFailure)))),
                 false
             ),
         ]
@@ -1954,11 +1954,11 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%2SVOL=OK",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .speakerVolume, code: .ok))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .speakerVolume, code: .ok))))
             ),
             .init(
                 "%2SVOL=OK",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .speakerVolume, code: .ok)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .speakerVolume, code: .ok)))),
                 true
             ),
             .init(
@@ -1968,58 +1968,58 @@ struct StringParsingTests {
             ),
             .init(
                 "%2SVOL=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .speakerVolume, code: .undefinedCommand))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .speakerVolume, code: .undefinedCommand))))
             ),
             .init(
                 "%2SVOL=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .speakerVolume, code: .undefinedCommand)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .speakerVolume, code: .undefinedCommand)))),
                 true
             ),
             .init(
                 "%2SVOL=ERR1",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .speakerVolume, code: .undefinedCommand))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .speakerVolume, code: .undefinedCommand)))),
                 false
             ),
             .init(
                 "%2SVOL=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .speakerVolume, code: .outOfParameter))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .speakerVolume, code: .outOfParameter))))
             ),
             .init(
                 "%2SVOL=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .speakerVolume, code: .outOfParameter)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .speakerVolume, code: .outOfParameter)))),
                 true
             ),
             .init(
                 "%2SVOL=ERR2",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .speakerVolume, code: .outOfParameter))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .speakerVolume, code: .outOfParameter)))),
                 false
             ),
             .init(
                 "%2SVOL=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .speakerVolume, code: .unavailableTime))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .speakerVolume, code: .unavailableTime))))
             ),
             .init(
                 "%2SVOL=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .speakerVolume, code: .unavailableTime)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .speakerVolume, code: .unavailableTime)))),
                 true
             ),
             .init(
                 "%2SVOL=ERR3",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .speakerVolume, code: .unavailableTime))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .speakerVolume, code: .unavailableTime)))),
                 false
             ),
             .init(
                 "%2SVOL=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .speakerVolume, code: .projectorFailure))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .speakerVolume, code: .projectorFailure))))
             ),
             .init(
                 "%2SVOL=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .speakerVolume, code: .projectorFailure)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .speakerVolume, code: .projectorFailure)))),
                 true
             ),
             .init(
                 "%2SVOL=ERR4",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .speakerVolume, code: .projectorFailure))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .speakerVolume, code: .projectorFailure)))),
                 false
             ),
         ]
@@ -2043,11 +2043,11 @@ struct StringParsingTests {
         let testCases: [TestCase] = [
             .init(
                 "%2MVOL=OK",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .microphoneVolume, code: .ok))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .microphoneVolume, code: .ok))))
             ),
             .init(
                 "%2MVOL=OK",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .microphoneVolume, code: .ok)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .microphoneVolume, code: .ok)))),
                 true
             ),
             .init(
@@ -2057,58 +2057,58 @@ struct StringParsingTests {
             ),
             .init(
                 "%2MVOL=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .microphoneVolume, code: .undefinedCommand))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .microphoneVolume, code: .undefinedCommand))))
             ),
             .init(
                 "%2MVOL=ERR1",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .microphoneVolume, code: .undefinedCommand)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .microphoneVolume, code: .undefinedCommand)))),
                 true
             ),
             .init(
                 "%2MVOL=ERR1",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .microphoneVolume, code: .undefinedCommand))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .microphoneVolume, code: .undefinedCommand)))),
                 false
             ),
             .init(
                 "%2MVOL=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .microphoneVolume, code: .outOfParameter))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .microphoneVolume, code: .outOfParameter))))
             ),
             .init(
                 "%2MVOL=ERR2",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .microphoneVolume, code: .outOfParameter)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .microphoneVolume, code: .outOfParameter)))),
                 true
             ),
             .init(
                 "%2MVOL=ERR2",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .microphoneVolume, code: .outOfParameter))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .microphoneVolume, code: .outOfParameter)))),
                 false
             ),
             .init(
                 "%2MVOL=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .microphoneVolume, code: .unavailableTime))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .microphoneVolume, code: .unavailableTime))))
             ),
             .init(
                 "%2MVOL=ERR3",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .microphoneVolume, code: .unavailableTime)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .microphoneVolume, code: .unavailableTime)))),
                 true
             ),
             .init(
                 "%2MVOL=ERR3",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .microphoneVolume, code: .unavailableTime))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .microphoneVolume, code: .unavailableTime)))),
                 false
             ),
             .init(
                 "%2MVOL=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .microphoneVolume, code: .projectorFailure))))
+                .success(.response(.status(.init(pjlinkClass: .two, command: .microphoneVolume, code: .projectorFailure))))
             ),
             .init(
                 "%2MVOL=ERR4",
-                .success(.response(.set(.init(pjlinkClass: .two, command: .microphoneVolume, code: .projectorFailure)))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .microphoneVolume, code: .projectorFailure)))),
                 true
             ),
             .init(
                 "%2MVOL=ERR4",
-                .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .microphoneVolume, code: .projectorFailure))))),
+                .success(.response(.status(.init(pjlinkClass: .two, command: .microphoneVolume, code: .projectorFailure)))),
                 false
             ),
         ]
@@ -2132,25 +2132,25 @@ struct StringParsingTests {
     @Test
     func freezeResponse() throws {
         let testCases: [TestCase] = [
-            .init("%2FREZ=0", .success(.response(.get(.success(.freeze(.stop)))))),
-            .init("%2FREZ=1", .success(.response(.get(.success(.freeze(.start)))))),
+            .init("%2FREZ=0", .success(.response(.getSuccess(.freeze(.stop))))),
+            .init("%2FREZ=1", .success(.response(.getSuccess(.freeze(.start))))),
             .init("%2FREZ=2", .failure(.invalidFreeze("2"))),
             .init("%1FREZ=0", .failure(.unexpectedGetResponse(.one, .freeze))),
-            .init("%2FREZ=OK", .success(.response(.set(.init(pjlinkClass: .two, command: .freeze, code: .ok))))),
-            .init("%2FREZ=OK", .success(.response(.set(.init(pjlinkClass: .two, command: .freeze, code: .ok)))), true),
+            .init("%2FREZ=OK", .success(.response(.status(.init(pjlinkClass: .two, command: .freeze, code: .ok))))),
+            .init("%2FREZ=OK", .success(.response(.status(.init(pjlinkClass: .two, command: .freeze, code: .ok)))), true),
             .init("%2FREZ=OK", .failure(.invalidFreeze("OK")), false),
-            .init("%2FREZ=ERR1", .success(.response(.set(.init(pjlinkClass: .two, command: .freeze, code: .undefinedCommand))))),
-            .init("%2FREZ=ERR1", .success(.response(.set(.init(pjlinkClass: .two, command: .freeze, code: .undefinedCommand)))), true),
-            .init("%2FREZ=ERR1", .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .freeze, code: .undefinedCommand))))), false),
-            .init("%2FREZ=ERR2", .success(.response(.set(.init(pjlinkClass: .two, command: .freeze, code: .outOfParameter))))),
-            .init("%2FREZ=ERR2", .success(.response(.set(.init(pjlinkClass: .two, command: .freeze, code: .outOfParameter)))), true),
-            .init("%2FREZ=ERR2", .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .freeze, code: .outOfParameter))))), false),
-            .init("%2FREZ=ERR3", .success(.response(.set(.init(pjlinkClass: .two, command: .freeze, code: .unavailableTime))))),
-            .init("%2FREZ=ERR3", .success(.response(.set(.init(pjlinkClass: .two, command: .freeze, code: .unavailableTime)))), true),
-            .init("%2FREZ=ERR3", .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .freeze, code: .unavailableTime))))), false),
-            .init("%2FREZ=ERR4", .success(.response(.set(.init(pjlinkClass: .two, command: .freeze, code: .projectorFailure))))),
-            .init("%2FREZ=ERR4", .success(.response(.set(.init(pjlinkClass: .two, command: .freeze, code: .projectorFailure)))), true),
-            .init("%2FREZ=ERR4", .success(.response(.get(.failure(.init(pjLinkClass: .two, command: .freeze, code: .projectorFailure))))), false),
+            .init("%2FREZ=ERR1", .success(.response(.status(.init(pjlinkClass: .two, command: .freeze, code: .undefinedCommand))))),
+            .init("%2FREZ=ERR1", .success(.response(.status(.init(pjlinkClass: .two, command: .freeze, code: .undefinedCommand)))), true),
+            .init("%2FREZ=ERR1", .success(.response(.status(.init(pjlinkClass: .two, command: .freeze, code: .undefinedCommand)))), false),
+            .init("%2FREZ=ERR2", .success(.response(.status(.init(pjlinkClass: .two, command: .freeze, code: .outOfParameter))))),
+            .init("%2FREZ=ERR2", .success(.response(.status(.init(pjlinkClass: .two, command: .freeze, code: .outOfParameter)))), true),
+            .init("%2FREZ=ERR2", .success(.response(.status(.init(pjlinkClass: .two, command: .freeze, code: .outOfParameter)))), false),
+            .init("%2FREZ=ERR3", .success(.response(.status(.init(pjlinkClass: .two, command: .freeze, code: .unavailableTime))))),
+            .init("%2FREZ=ERR3", .success(.response(.status(.init(pjlinkClass: .two, command: .freeze, code: .unavailableTime)))), true),
+            .init("%2FREZ=ERR3", .success(.response(.status(.init(pjlinkClass: .two, command: .freeze, code: .unavailableTime)))), false),
+            .init("%2FREZ=ERR4", .success(.response(.status(.init(pjlinkClass: .two, command: .freeze, code: .projectorFailure))))),
+            .init("%2FREZ=ERR4", .success(.response(.status(.init(pjlinkClass: .two, command: .freeze, code: .projectorFailure)))), true),
+            .init("%2FREZ=ERR4", .success(.response(.status(.init(pjlinkClass: .two, command: .freeze, code: .projectorFailure)))), false),
         ]
         try run(testCases)
     }

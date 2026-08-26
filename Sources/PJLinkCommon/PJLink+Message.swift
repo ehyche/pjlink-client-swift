@@ -20,8 +20,8 @@ extension PJLink {
     }
 
     public enum Response: Equatable {
-        case get(GetResponse)
-        case set(StatusResponse)
+        case getSuccess(GetResponseSuccess)
+        case status(StatusResponse)
     }
 }
 
@@ -72,20 +72,8 @@ extension PJLink.Message {
                 self = .request(.set(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc)))
             }
         } else {
-            // This is a response. Is a hint provided?
-            if let isSetResponseHint {
-                if isSetResponseHint {
-                    self = .response(.set(.init(pjlinkClass: pjlinkClass, command: pjlinkCommand, code: try .init(mutableDesc))))
-                } else {
-                    self = .response(.get(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc)))
-                }
-            } else {
-                // We don't have a hint, so we have to try and infer
-                // GetResponse vs StatusResponse from the parameters.
-                // In this case, we assume that a standard response code
-                // (OK, ERR1, ERR2, ERR3, or ERR4) is a Set Response.
-                self = .response(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc))
-            }
+            // This is a response.
+            self = .response(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc))
         }
     }
 
@@ -127,7 +115,7 @@ extension PJLink.Message {
     public var isSetResponse: Bool {
         switch self {
         case .request: false
-        case .response(let response): response.isSet
+        case .response(let response): response.isStatus
         }
     }
 
@@ -154,8 +142,8 @@ extension PJLink.Message {
             }
         case .response(let response):
             switch response {
-            case .get(let getResponse): getResponse.description
-            case .set(let setResponse): setResponse.code.description
+            case .getSuccess(let getSuccess): getSuccess.description
+            case .status(let statusResponse): statusResponse.code.description
             }
         }
     }
@@ -271,55 +259,43 @@ extension PJLink.Response {
         }
         mutableDesc.removeFirst(1)
 
-        // This is a response. Is a hint provided?
-        if let isSetResponseHint {
-            if isSetResponseHint {
-                self = .set(.init(pjlinkClass: pjlinkClass, command: pjlinkCommand, code: try .init(mutableDesc)))
-            } else {
-                self = .get(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc))
-            }
-        } else {
-            // We don't have a hint, so we have to try and infer
-            // GetResponse vs StatusResponse from the parameters.
-            // In this case, we assume that a standard response code
-            // (OK, ERR1, ERR2, ERR3, or ERR4) is a Set Response.
-            self = try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc)
-        }
+        try self.init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc)
     }
 
     public init(pjlinkClass: PJLink.Class, command: PJLink.Command, parameters: String) throws {
-        if let setResponseCode = PJLink.ResponseCode(rawValue: parameters) {
-            self = .set(.init(pjlinkClass: pjlinkClass, command: command, code: setResponseCode))
+        // Are the parameters a status code?
+        if let statusCode = PJLink.ResponseCode(rawValue: parameters) {
+            self = .status(.init(pjlinkClass: pjlinkClass, command: command, code: statusCode))
         } else {
-            self = .get(try .init(pjlinkClass: pjlinkClass, command: command, parameters: parameters))
+            self = .getSuccess(try .init(pjlinkClass: pjlinkClass, command: command, parameters: parameters))
         }
     }
 
     public var `class`: PJLink.Class {
         switch self {
-        case .get(let getResponse): getResponse.class
-        case .set(let setResponse): setResponse.class
+        case .getSuccess(let getSuccess): getSuccess.class
+        case .status(let statusResponse): statusResponse.class
         }
     }
 
     public var command: PJLink.Command {
         switch self {
-        case .get(let getResponse): getResponse.command
-        case .set(let setResponse): setResponse.command
+        case .getSuccess(let getSuccess): getSuccess.command
+        case .status(let statusResponse): statusResponse.command
         }
     }
 
-    public var isSet: Bool {
+    public var isStatus: Bool {
         switch self {
-        case .get: false
-        case .set: true
+        case .getSuccess: false
+        case .status: true
         }
     }
 
     public var isSuccess: Bool {
         switch self {
-        case .get(let getResponse): getResponse.isSuccess
-        case .set(let setResponse): setResponse.isOK
+        case .getSuccess: true
+        case .status(let statusResponse): statusResponse.isOK
         }
     }
 }
@@ -328,8 +304,8 @@ extension PJLink.Response: CustomStringConvertible {
 
     public var description: String {
         switch self {
-        case .get(let getResponse): getResponse.description
-        case .set(let setResponse): setResponse.description
+        case .getSuccess(let getSuccess): getSuccess.description
+        case .status(let statusResponse): statusResponse.description
         }
     }
 }
