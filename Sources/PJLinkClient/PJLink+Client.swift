@@ -478,12 +478,12 @@ extension PJLink.Client {
     /// If the projector response is an error (i.e. - "ERR1", etc.), then this method
     /// throws the error `PJLink.Error.projectorRespondedWithError`.
     private static func fetchResponseThrowing(
-        request: PJLink.Message,
+        request: PJLink.Request,
         from connectionState: PJLink.ConnectionState
-    ) async throws -> PJLink.Message {
+    ) async throws -> PJLink.Response {
         let response = try await fetchResponse(request: request, from: connectionState)
 
-        guard response.isSuccessfulResponse else {
+        guard response.isSuccess else {
             throw PJLink.Error.projectorRespondedWithError(request: request.description, response: response.description)
         }
 
@@ -494,14 +494,10 @@ extension PJLink.Client {
     /// If the projector response is an error (i.e. - "ERR1", etc.), then this method does NOT
     /// throw an error.
     private static func fetchResponse(
-        request: PJLink.Message,
+        request: PJLink.Request,
         from connectionState: PJLink.ConnectionState
-    ) async throws -> PJLink.Message {
+    ) async throws -> PJLink.Response {
         let logger = Logger(sub: .client, cat: .connection)
-        // Make sure the input message is a request
-        guard request.isRequest else {
-            throw PJLink.Error.inputMessageMustBeRequest(request.description)
-        }
         let requestString = connectionState.auth.authString + request.description
         let requestStringTerminated = requestString.crTerminated
 
@@ -515,7 +511,7 @@ extension PJLink.Client {
         // As we are parsing, we give the PJLink.Message parser a hint
         // whether or not we are expecting a response to a set request.
         // If the request is a Set request, then we expect a Set response.
-        let response = try PJLink.Message(responseUTF8, isSetResponseHint: request.isSetRequest)
+        let response = try PJLink.Response(responseUTF8, isSetResponseHint: request.isSet)
 
         // Do some error-checking.
         //
@@ -526,7 +522,7 @@ extension PJLink.Client {
         }
         // We expect that if we had a set request, then we should have a set response.
         // Likewise, if we had a get request, then we should have a get response.
-        guard request.isSetRequest == response.isSetResponse else {
+        guard request.isSet == response.isSet else {
             throw PJLink.Error.unexpectedResponse(request: request.description, response: response.description)
         }
 

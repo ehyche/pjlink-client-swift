@@ -237,6 +237,56 @@ extension PJLink.Request: LosslessStringConvertibleThrowing {
 
 extension PJLink.Response {
 
+    /// Initializer
+    /// - Parameters:
+    ///   - description: The string to parse
+    ///   - isSetResponseHint: This optional boolean is a hint which indicates this is a response to a Set command.
+    ///   Why is this needed? If the response is either "ERR1",  "ERR3" or "ERR4", then there is no
+    ///   way to distinguish just from the parsed text if this is a response to a set command or a get command.
+    ///   But in practice, we will know what we are expecting. So if we know we should be parsing the
+    ///   response to a Set command, then we can provide this hint.
+    public init(_ description: String, isSetResponseHint: Bool? = nil) throws {
+        var mutableDesc = description
+        let pjlinkId = String(mutableDesc.prefix(1))
+        guard pjlinkId == PJLink.identifier else {
+            throw PJLink.Error.invalidID(pjlinkId)
+        }
+        mutableDesc.removeFirst(1)
+
+        let classRawValue = String(mutableDesc.prefix(1))
+        guard let pjlinkClass = PJLink.Class(rawValue: classRawValue) else {
+            throw PJLink.Error.invalidClass(classRawValue)
+        }
+        mutableDesc.removeFirst(1)
+
+        let commandRawValue = mutableDesc.prefix(4).uppercased()
+        guard let pjlinkCommand = PJLink.Command(rawValue: commandRawValue) else {
+            throw PJLink.Error.invalidCommand(commandRawValue)
+        }
+        mutableDesc.removeFirst(4)
+
+        let separator = String(mutableDesc.prefix(1))
+        guard separator == PJLink.separatorResponse else {
+            throw PJLink.Error.invalidSeparator(separator)
+        }
+        mutableDesc.removeFirst(1)
+
+        // This is a response. Is a hint provided?
+        if let isSetResponseHint {
+            if isSetResponseHint {
+                self = .set(.init(pjlinkClass: pjlinkClass, command: pjlinkCommand, code: try .init(mutableDesc)))
+            } else {
+                self = .get(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc))
+            }
+        } else {
+            // We don't have a hint, so we have to try and infer
+            // GetResponse vs SetResponse from the parameters.
+            // In this case, we assume that a standard response code
+            // (OK, ERR1, ERR2, ERR3, or ERR4) is a Set Response.
+            self = try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc)
+        }
+    }
+
     public init(pjlinkClass: PJLink.Class, command: PJLink.Command, parameters: String) throws {
         if let setResponseCode = PJLink.ResponseCode(rawValue: parameters) {
             self = .set(.init(pjlinkClass: pjlinkClass, command: command, code: setResponseCode))
