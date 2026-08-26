@@ -18,6 +18,8 @@ extension PJLink {
         case securityLevel1(Buffer4)
         case securityLevel2(Buffer16)
         case authError
+
+        public static let authErrorCode = "ERRA"
     }
 
     public struct Buffer4: Equatable, Sendable {
@@ -166,7 +168,7 @@ extension PJLink.AuthResponse: LosslessStringConvertibleThrowing {
         guard components[0] == PJLink.pjlink else {
             throw PJLink.Error.invalidAuthResponseHeader(components[0])
         }
-        guard components[1] != "ERRA" else {
+        guard components[1] != Self.authErrorCode else {
             self = .authError
             return
         }
@@ -195,13 +197,13 @@ extension PJLink.AuthResponse: LosslessStringConvertibleThrowing {
     public var description: String {
         switch self {
         case .authDisabled:
-            PJLink.pjlink + " " + PJLink.SecurityLevel.disabled.rawValue
+            [PJLink.pjlink, PJLink.SecurityLevel.disabled.rawValue].joined(separator: " ")
         case .securityLevel1(let buffer4):
-            PJLink.pjlink + " " + PJLink.SecurityLevel.level1.rawValue + " " + buffer4.data.hexEncodedString
+            [PJLink.pjlink, PJLink.SecurityLevel.level1.rawValue, buffer4.data.hexEncodedString].joined(separator: " ")
         case .securityLevel2(let buffer16):
-            PJLink.pjlink + " " + PJLink.SecurityLevel.level2.rawValue + " " + buffer16.data.hexEncodedString
+            [PJLink.pjlink, PJLink.SecurityLevel.level2.rawValue, buffer16.data.hexEncodedString].joined(separator: " ")
         case .authError:
-            PJLink.pjlink + " ERRA"
+            [PJLink.pjlink, Self.authErrorCode].joined(separator: " ")
         }
     }
 }
