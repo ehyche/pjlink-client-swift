@@ -1,16 +1,11 @@
 //
-//  PJLink+GetResponse.swift
+//  PJLink+GetResponseSuccess.swift
 //  pjlink-client-swift
 //
 //  Created by Eric Hyche on 11/6/25.
 //
 
 extension PJLink {
-
-    public enum GetResponse: Equatable, Sendable {
-        case success(GetResponseSuccess)
-        case failure(GetResponseFailure)
-    }
 
     public enum GetResponseSuccess: Equatable, Sendable {
         case power(PowerStatus)
@@ -35,107 +30,6 @@ extension PJLink {
         case lampReplacementModelNumber(ModelNumber)
         case filterReplacementModelNumber(ModelNumber)
         case freeze(Freeze)
-    }
-
-    public struct GetResponseFailure: Equatable, Sendable {
-        public var `class`: PJLink.Class
-        public var command: PJLink.Command
-        public var code: GetResponseCode
-
-        public init(pjLinkClass: PJLink.Class, command: PJLink.Command, code: GetResponseCode) {
-            self.class = pjLinkClass
-            self.command = command
-            self.code = code
-        }
-    }
-
-    public enum GetResponseCode: String, CaseIterable, Equatable, Sendable {
-        case undefinedCommand = "ERR1"
-        case outOfParameter = "ERR2"
-        case unavailableTime = "ERR3"
-        case projectorFailure = "ERR4"
-    }
-}
-
-extension PJLink.GetResponse {
-
-    public init(pjlinkClass: PJLink.Class, command: PJLink.Command, parameters: String) throws {
-        if let getResponseCode = PJLink.GetResponseCode(rawValue: parameters) {
-            self = .failure(.init(pjLinkClass: pjlinkClass, command: command, code: getResponseCode))
-        } else {
-            self = .success(try .init(pjlinkClass: pjlinkClass, command: command, parameters: parameters))
-        }
-    }
-
-    public var `class`: PJLink.Class {
-        switch self {
-        case .success(let getResponseSuccess): getResponseSuccess.class
-        case .failure(let getResponseFailure): getResponseFailure.class
-        }
-    }
-
-    public var command: PJLink.Command {
-        switch self {
-        case .success(let getResponseSuccess): getResponseSuccess.command
-        case .failure(let getResponseFailure): getResponseFailure.command
-        }
-    }
-
-    public var isSuccess: Bool {
-        switch self {
-        case .success: true
-        case .failure: false
-        }
-    }
-
-    public var parameterDescription: String {
-        switch self {
-        case .success(let getResponseSuccess): getResponseSuccess.description
-        case .failure(let getResponseFailure): getResponseFailure.description
-        }
-    }
-}
-
-extension PJLink.GetResponse: LosslessStringConvertibleThrowing {
-
-    public init(_ description: String) throws {
-        var mutableDesc = description
-        let pjlinkId = String(mutableDesc.prefix(1))
-        guard pjlinkId == PJLink.identifier else {
-            throw PJLink.Error.invalidID(pjlinkId)
-        }
-        mutableDesc.removeFirst(1)
-
-        let classRawValue = String(mutableDesc.prefix(1))
-        guard let pjlinkClass = PJLink.Class(rawValue: classRawValue) else {
-            throw PJLink.Error.invalidClass(classRawValue)
-        }
-        mutableDesc.removeFirst(1)
-
-        let commandRawValue = mutableDesc.prefix(4).uppercased()
-        guard let pjlinkCommand = PJLink.Command(rawValue: commandRawValue) else {
-            throw PJLink.Error.invalidCommand(commandRawValue)
-        }
-        mutableDesc.removeFirst(4)
-
-        let separator = String(mutableDesc.prefix(1))
-        guard separator == PJLink.separatorResponse else {
-            let error: PJLink.Error = separator == PJLink.separatorRequest ?
-                .unexpectedGetResponse(description) :
-                .invalidSeparator(separator)
-            throw error
-        }
-        mutableDesc.removeFirst(1)
-
-        if let getResponseCode = PJLink.GetResponseCode(rawValue: mutableDesc) {
-            self = .failure(.init(pjLinkClass: pjlinkClass, command: pjlinkCommand, code: getResponseCode))
-        } else {
-            self = .success(try .init(pjlinkClass: pjlinkClass, command: pjlinkCommand, parameters: mutableDesc))
-        }
-    }
-
-    public var description: String {
-        PJLink.identifier + self.class.rawValue + self.command.rawValue + PJLink.separatorResponse + parameterDescription
     }
 }
 
@@ -425,9 +319,4 @@ extension PJLink.GetResponseSuccess {
         default: nil
         }
     }
-}
-
-extension PJLink.GetResponseFailure: CustomStringConvertible {
-
-    public var description: String { code.rawValue }
 }

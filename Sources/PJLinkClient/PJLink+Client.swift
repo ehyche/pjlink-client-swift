@@ -763,10 +763,10 @@ extension PJLink.Client {
         let response = try await query(request: request, from: connectionState)
 
         switch response {
-        case .success(let getResponseSuccess):
-            return getResponseSuccess
-        case .failure(let getResponseFailure):
-            throw PJLink.Error.queryFailed(request: request.description, code: getResponseFailure.code.rawValue)
+        case .getSuccess(let getSuccess):
+            return getSuccess
+        case .status(let statusResponse):
+            throw PJLink.Error.queryFailed(request: request.description, code: statusResponse.code.rawValue)
         }
     }
 
@@ -776,7 +776,7 @@ extension PJLink.Client {
     private static func query(
         request: PJLink.GetRequest,
         from connectionState: PJLink.ConnectionState
-    ) async throws -> PJLink.GetResponse {
+    ) async throws -> PJLink.Response {
         let logger = Logger(sub: .client, cat: .connection)
         let requestString = connectionState.auth.authString + request.description
         let requestStringTerminated = requestString.crTerminated
@@ -788,10 +788,7 @@ extension PJLink.Client {
         let responseUTF8 = try responseData.toUTF8String()
         logger.debug("RECV: \(responseUTF8)")
 
-        // As we are parsing, we give the PJLink.Message parser a hint
-        // whether or not we are expecting a response to a set request.
-        // If the request is a Set request, then we expect a Set response.
-        let response = try PJLink.GetResponse(responseUTF8)
+        let response = try PJLink.Response(responseUTF8)
 
         // Do some error-checking.
         //
