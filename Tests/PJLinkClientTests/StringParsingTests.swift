@@ -24,11 +24,11 @@ struct StringParsingTests {
     @Test
     func powerRequest() throws {
         let testCases: [TestCase] = [
-            .init("%1POWR ?", .success(.request(.get(.power)))),
+            .init("%1POWR ?", .success(.requestGetPower)),
             .init("%2POWR ?", .failure(.unexpectedGetRequest(.two, .power, ""))),
             .init("%1POWR ?X", .failure(.unexpectedGetRequest(.one, .power, "X"))),
-            .init("%1POWR 1", .success(.request(.set(.power(.on))))),
-            .init("%1POWR 0", .success(.request(.set(.power(.off))))),
+            .init("%1POWR 1", .success(.requestSetPowerOn)),
+            .init("%1POWR 0", .success(.requestSetPowerOff)),
             .init("%2POWR 0", .failure(.unexpectedSetRequest(.two, .power))),
             .init("%1POWR x", .failure(.invalidOnOff("x"))),
         ]
@@ -56,8 +56,8 @@ struct StringParsingTests {
     @Test
     func inputSwitchRequest() throws {
         var testCases: [TestCase] = [
-            .init("%1INPT ?", .success(.request(.get(.inputSwitchClass1)))),
-            .init("%2INPT ?", .success(.request(.get(.inputSwitchClass2)))),
+            .init("%1INPT ?", .success(.requestGetInputSwitchClass1)),
+            .init("%2INPT ?", .success(.requestGetInputSwitchClass2)),
             .init("%3INPT ?", .failure(.invalidClass("3"))),
             .init("%1INPT ?EXTRA", .failure(.unexpectedGetRequest(.one, .inputSwitch, "EXTRA"))),
             .init("%1INPT 61", .failure(.invalidClass1Input("6"))),
@@ -69,7 +69,7 @@ struct StringParsingTests {
             testCases.append(
                 .init(
                     "%1INPT \(inputSwitch.input.rawValue)\(inputSwitch.channel.rawValue)",
-                    .success(.request(.set(.inputSwitchClass1(inputSwitch))))
+                    .success(.requestSetInputSwitchClass1(inputSwitch))
                 )
             )
         }
@@ -77,7 +77,7 @@ struct StringParsingTests {
             testCases.append(
                 .init(
                     "%2INPT \(inputSwitch.input.rawValue)\(inputSwitch.channel.rawValue)",
-                    .success(.request(.set(.inputSwitchClass2(inputSwitch))))
+                    .success(.requestSetInputSwitchClass2(inputSwitch))
                 )
             )
         }
@@ -160,7 +160,7 @@ struct StringParsingTests {
     @Test
     func muteRequest() throws {
         var testCases: [TestCase] = [
-            .init("%1AVMT ?", .success(.request(.get(.avMute)))),
+            .init("%1AVMT ?", .success(.requestGetAudioVideoMute)),
             .init("%2AVMT ?", .failure(.unexpectedGetRequest(.two, .avMute, ""))),
             .init("%3AVMT ?", .failure(.invalidClass("3"))),
             .init("%1AVMT ?XTRA",  .failure(.unexpectedGetRequest(.one, .avMute, "XTRA"))),
@@ -171,7 +171,7 @@ struct StringParsingTests {
             testCases.append(
                 .init(
                     "%1AVMT \(muteState.description)",
-                    .success(.request(.set(.avMute(muteState))))
+                    .success(.requestSetAudioVideoMute(muteState))
                 )
             )
         }
@@ -224,7 +224,7 @@ struct StringParsingTests {
     @Test
     func errorStatusRequest() throws {
         let testCases: [TestCase] = [
-            .init("%1ERST ?", .success(.request(.get(.errorStatus)))),
+            .init("%1ERST ?", .success(.requestGetErrorStatus)),
             .init("%2ERST ?", .failure(.unexpectedGetRequest(.two, .errorStatus, ""))),
             .init("%3ERST ?", .failure(.invalidClass("3"))),
             .init("%1ERST ?XTRA",  .failure(.unexpectedGetRequest(.one, .errorStatus, "XTRA"))),
@@ -278,7 +278,7 @@ struct StringParsingTests {
     @Test
     func lampRequest() throws {
         let testCases: [TestCase] = [
-            .init("%1LAMP ?", .success(.request(.get(.lamp)))),
+            .init("%1LAMP ?", .success(.requestGetLamp)),
             .init("%2LAMP ?", .failure(.unexpectedGetRequest(.two, .lamp, ""))),
             .init("%3LAMP ?", .failure(.invalidClass("3"))),
             .init("%1LAMP ?XTRA",  .failure(.unexpectedGetRequest(.one, .lamp, "XTRA"))),
@@ -320,8 +320,8 @@ struct StringParsingTests {
     @Test
     func inputListRequest() throws {
         let testCases: [TestCase] = [
-            .init("%1INST ?", .success(.request(.get(.inputListClass1)))),
-            .init("%2INST ?", .success(.request(.get(.inputListClass2)))),
+            .init("%1INST ?", .success(.requestGetInputListClass1)),
+            .init("%2INST ?", .success(.requestGetInputListClass2)),
             .init("%3INST ?", .failure(.invalidClass("3"))),
             .init("%1INST ?XTRA",  .failure(.unexpectedGetRequest(.one, .inputList, "XTRA"))),
             .init("%2INST ?XTRA",  .failure(.unexpectedGetRequest(.two, .inputList, "XTRA"))),
@@ -387,7 +387,7 @@ struct StringParsingTests {
     @Test
     func projectorNameRequest() throws {
         let testCases: [TestCase] = [
-            .init("%1NAME ?", .success(.request(.get(.projectorName)))),
+            .init("%1NAME ?", .success(.requestGetProjectorName)),
             .init("%2NAME ?", .failure(.unexpectedGetRequest(.two, .projectorName, ""))),
             .init("%3NAME ?", .failure(.invalidClass("3"))),
             .init("%1NAME ?XTRA",  .failure(.unexpectedGetRequest(.one, .projectorName, "XTRA"))),
@@ -442,7 +442,7 @@ struct StringParsingTests {
     @Test
     func manufacturerNameRequest() throws {
         let testCases: [TestCase] = [
-            .init("%1INF1 ?", .success(.request(.get(.manufacturerName)))),
+            .init("%1INF1 ?", .success(.requestGetManufacturerName)),
             .init("%2INF1 ?", .failure(.unexpectedGetRequest(.two, .manufacturerName, ""))),
             .init("%3INF1 ?", .failure(.invalidClass("3"))),
             .init("%1INF1 ?XTRA",  .failure(.unexpectedGetRequest(.one, .manufacturerName, "XTRA"))),
@@ -500,7 +500,7 @@ struct StringParsingTests {
     @Test
     func productNameRequest() throws {
         let testCases: [TestCase] = [
-            .init("%1INF2 ?", .success(.request(.get(.productName)))),
+            .init("%1INF2 ?", .success(.requestGetProductName)),
             .init("%2INF2 ?", .failure(.unexpectedGetRequest(.two, .productName, ""))),
             .init("%3INF2 ?", .failure(.invalidClass("3"))),
             .init("%1INF2 ?XTRA",  .failure(.unexpectedGetRequest(.one, .productName, "XTRA"))),
@@ -558,7 +558,7 @@ struct StringParsingTests {
     @Test
     func otherInformationRequest() throws {
         let testCases: [TestCase] = [
-            .init("%1INFO ?", .success(.request(.get(.otherInformation)))),
+            .init("%1INFO ?", .success(.requestGetOtherInformation)),
             .init("%2INFO ?", .failure(.unexpectedGetRequest(.two, .otherInformation, ""))),
             .init("%3INFO ?", .failure(.invalidClass("3"))),
             .init("%1INFO ?XTRA",  .failure(.unexpectedGetRequest(.one, .otherInformation, "XTRA"))),
@@ -616,7 +616,7 @@ struct StringParsingTests {
     @Test
     func classRequest() throws {
         let testCases: [TestCase] = [
-            .init("%1CLSS ?", .success(.request(.get(.projectorClass)))),
+            .init("%1CLSS ?", .success(.requestGetProjectorClass)),
             .init("%2CLSS ?", .failure(.unexpectedGetRequest(.two, .projectorClass, ""))),
             .init("%3CLSS ?", .failure(.invalidClass("3"))),
             .init("%1CLSS ?XTRA",  .failure(.unexpectedGetRequest(.one, .projectorClass, "XTRA"))),
@@ -667,7 +667,7 @@ struct StringParsingTests {
     func serialNumberRequest() throws {
         let testCases: [TestCase] = [
             .init("%1SNUM ?", .failure(.unexpectedGetRequest(.one, .serialNumber, ""))),
-            .init("%2SNUM ?", .success(.request(.get(.serialNumber)))),
+            .init("%2SNUM ?", .success(.requestGetSerialNumber)),
             .init("%3SNUM ?", .failure(.invalidClass("3"))),
             .init("%2SNUM ?XTRA",  .failure(.unexpectedGetRequest(.two, .serialNumber, "XTRA"))),
         ]
@@ -725,7 +725,7 @@ struct StringParsingTests {
     func softwareVersionRequest() throws {
         let testCases: [TestCase] = [
             .init("%1SVER ?", .failure(.unexpectedGetRequest(.one, .softwareVersion, ""))),
-            .init("%2SVER ?", .success(.request(.get(.softwareVersion)))),
+            .init("%2SVER ?", .success(.requestGetSoftwareVersion)),
             .init("%3SVER ?", .failure(.invalidClass("3"))),
             .init("%2SVER ?XTRA",  .failure(.unexpectedGetRequest(.two, .softwareVersion, "XTRA"))),
         ]
@@ -791,7 +791,7 @@ struct StringParsingTests {
             testCases.append(
                 .init(
                     "%2INNM ?\(inputSwitch.description)",
-                    .success(.request(.get(.inputTerminalName(inputSwitch))))
+                    .success(.requestGetInputTerminalName(inputSwitch))
                 )
             )
         }
@@ -845,7 +845,7 @@ struct StringParsingTests {
     func inputResolutionRequest() throws {
         let testCases: [TestCase] = [
             .init("%1IRES ?", .failure(.unexpectedGetRequest(.one, .inputResolution, ""))),
-            .init("%2IRES ?", .success(.request(.get(.inputResolution)))),
+            .init("%2IRES ?", .success(.requestGetInputResolution)),
             .init("%3IRES ?", .failure(.invalidClass("3"))),
             .init("%2IRES ?XTRA",  .failure(.unexpectedGetRequest(.two, .inputResolution, "XTRA"))),
         ]
@@ -907,7 +907,7 @@ struct StringParsingTests {
     func recommendedResolutionRequest() throws {
         let testCases: [TestCase] = [
             .init("%1RRES ?", .failure(.unexpectedGetRequest(.one, .recommendedResolution, ""))),
-            .init("%2RRES ?", .success(.request(.get(.recommendedResolution)))),
+            .init("%2RRES ?", .success(.requestGetRecommendedResolution)),
             .init("%3RRES ?", .failure(.invalidClass("3"))),
             .init("%2RRES ?XTRA",  .failure(.unexpectedGetRequest(.two, .recommendedResolution, "XTRA"))),
         ]
@@ -961,7 +961,7 @@ struct StringParsingTests {
     func filterUsageTimeRequest() throws {
         let testCases: [TestCase] = [
             .init("%1FILT ?", .failure(.unexpectedGetRequest(.one, .filterUsageTime, ""))),
-            .init("%2FILT ?", .success(.request(.get(.filterUsageTime)))),
+            .init("%2FILT ?", .success(.requestGetFilterUsageTime)),
             .init("%3FILT ?", .failure(.invalidClass("3"))),
             .init("%2FILT ?XTRA",  .failure(.unexpectedGetRequest(.two, .filterUsageTime, "XTRA"))),
         ]
@@ -1015,7 +1015,7 @@ struct StringParsingTests {
     func lampReplacementModelNumberRequest() throws {
         let testCases: [TestCase] = [
             .init("%1RLMP ?", .failure(.unexpectedGetRequest(.one, .lampReplacementModelNumber, ""))),
-            .init("%2RLMP ?", .success(.request(.get(.lampReplacementModelNumber)))),
+            .init("%2RLMP ?", .success(.requestGetLampReplacementModelNumber)),
             .init("%3RLMP ?", .failure(.invalidClass("3"))),
             .init("%2RLMP ?XTRA",  .failure(.unexpectedGetRequest(.two, .lampReplacementModelNumber, "XTRA"))),
         ]
@@ -1077,7 +1077,7 @@ struct StringParsingTests {
     func filterReplacementModelNumberRequest() throws {
         let testCases: [TestCase] = [
             .init("%1RFIL ?", .failure(.unexpectedGetRequest(.one, .filterReplacementModelNumber, ""))),
-            .init("%2RFIL ?", .success(.request(.get(.filterReplacementModelNumber)))),
+            .init("%2RFIL ?", .success(.requestGetFilterReplacementModelNumber)),
             .init("%3RFIL ?", .failure(.invalidClass("3"))),
             .init("%2RFIL ?XTRA",  .failure(.unexpectedGetRequest(.two, .filterReplacementModelNumber, "XTRA"))),
         ]
@@ -1139,8 +1139,8 @@ struct StringParsingTests {
     func speakerVolumeAdjustmentRequest() throws {
         let testCases: [TestCase] = [
             .init("%1SVOL 0", .failure(.unexpectedSetRequest(.one, .speakerVolume))),
-            .init("%2SVOL 0", .success(.request(.set(.speakerVolume(.decrease))))),
-            .init("%2SVOL 1", .success(.request(.set(.speakerVolume(.increase))))),
+            .init("%2SVOL 0", .success(.requestSetSpeakerVolumeDecrease)),
+            .init("%2SVOL 1", .success(.requestSetSpeakerVolumeIncrease)),
             .init("%3SVOL 1", .failure(.invalidClass("3"))),
             .init("%2SVOL 2", .failure(.invalidVolume("2"))),
         ]
@@ -1178,8 +1178,8 @@ struct StringParsingTests {
     func microphoneVolumeAdjustmentRequest() throws {
         let testCases: [TestCase] = [
             .init("%1MVOL 0", .failure(.unexpectedSetRequest(.one, .microphoneVolume))),
-            .init("%2MVOL 0", .success(.request(.set(.microphoneVolume(.decrease))))),
-            .init("%2MVOL 1", .success(.request(.set(.microphoneVolume(.increase))))),
+            .init("%2MVOL 0", .success(.requestSetMicrophoneVolumeDecrease)),
+            .init("%2MVOL 1", .success(.requestSetMicrophoneVolumeIncrease)),
             .init("%3MVOL 1", .failure(.invalidClass("3"))),
             .init("%2MVOL 2", .failure(.invalidVolume("2"))),
         ]
@@ -1216,11 +1216,11 @@ struct StringParsingTests {
     @Test
     func freezeRequest() throws {
         let testCases: [TestCase] = [
-            .init("%2FREZ ?", .success(.request(.get(.freeze)))),
+            .init("%2FREZ ?", .success(.requestGetFreeze)),
             .init("%1FREZ ?", .failure(.unexpectedGetRequest(.one, .freeze, ""))),
             .init("%2FREZ ?X", .failure(.unexpectedGetRequest(.two, .freeze, "X"))),
-            .init("%2FREZ 1", .success(.request(.set(.freeze(.start))))),
-            .init("%2FREZ 0", .success(.request(.set(.freeze(.stop))))),
+            .init("%2FREZ 1", .success(.requestSetFreezeStart)),
+            .init("%2FREZ 0", .success(.requestSetFreezeStop)),
             .init("%1FREZ 0", .failure(.unexpectedSetRequest(.one, .freeze))),
             .init("%2FREZ x", .failure(.invalidFreeze("x"))),
         ]

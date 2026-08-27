@@ -223,9 +223,9 @@ extension PJLink {
             case .auth:
                 throw PJLink.Error.unexpectedAuthRequest(request.description)
             case .get(let getRequest):
-                return (getResponse(for: getRequest), nil)
+                return (getResponse(for: getRequest.request), nil)
             case .set(let setRequest):
-                let setResponseAndNotification = setResponse(for: setRequest)
+                let setResponseAndNotification = setResponse(for: setRequest.request)
                 return (.status(setResponseAndNotification.0), setResponseAndNotification.1)
             }
         }

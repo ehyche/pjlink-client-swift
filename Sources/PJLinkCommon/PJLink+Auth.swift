@@ -72,6 +72,19 @@ extension PJLink {
         case class2(Buffer16, Buffer32)
     }
 
+    public enum AuthPrefix: Equatable, Sendable {
+        // Either auth is disabled, or we have already successfully authenticated
+        case none
+        // A Class 1 auth string was in the request.
+        // The associated value is the 16-byte MD5 hash.
+        case class1(Buffer16)
+        // A Class 2 auth string was in the request.
+        // The associated values are:
+        // - The 16-byte client random number
+        // - The 32-byte SHA256 hash
+        case class2(Buffer16, Buffer32)
+    }
+
     public enum ServerAuthState: Equatable, Sendable {
         // We haven't sent or received anything yet.
         case indeterminate
@@ -292,6 +305,38 @@ extension PJLink.AuthMessage: LosslessStringConvertibleThrowing {
         switch self {
         case .none: ""
         case .securityLevel: PJLink.pjlink + " " + PJLink.SecurityLevel.level2.rawValue
+        case .class1(let buffer16): buffer16.data.hexEncodedString
+        case .class2(let buffer16, let buffer32): buffer16.data.hexEncodedString + buffer32.data.hexEncodedString
+        }
+    }
+}
+
+extension PJLink.AuthPrefix: LosslessStringConvertibleThrowing {
+
+    public init(_ description: String) throws {
+        guard !description.isEmpty else {
+            self = .none
+            return
+        }
+        switch description.count {
+        case PJLink.class1AuthRequestSize:
+            self = .class1(try .init(try .init(hex: description)))
+        case PJLink.class2AuthRequestSize:
+            self = .class2(
+                try .init(try .init(hex: String(description.prefix(PJLink.class2RandomNumberCount)))),
+                try .init(try .init(hex: String(description.suffix(PJLink.class2HashCount))))
+            )
+        default:
+            throw PJLink.Error.unexpectedRequestAuthSize(
+                expected: PJLink.class2AuthRequestSize,
+                actual: description.count
+            )
+        }
+    }
+
+    public var description: String {
+        switch self {
+        case .none: ""
         case .class1(let buffer16): buffer16.data.hexEncodedString
         case .class2(let buffer16, let buffer32): buffer16.data.hexEncodedString + buffer32.data.hexEncodedString
         }

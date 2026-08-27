@@ -24,9 +24,9 @@ struct StringPrintingTests {
     @Test
     func powerRequest() throws {
         let testCases: [TestCase] = [
-            .init(.request(.get(.power)), "%1POWR ?"),
-            .init(.request(.set(.power(.off))), "%1POWR 0"),
-            .init(.request(.set(.power(.on))), "%1POWR 1"),
+            .init(.requestGetPower, "%1POWR ?"),
+            .init(.requestSetPowerOff, "%1POWR 0"),
+            .init(.requestSetPowerOn, "%1POWR 1"),
         ]
         try run(testCases)
     }
@@ -50,13 +50,13 @@ struct StringPrintingTests {
     @Test
     func inputSwitchRequest() throws {
         var testCases: [TestCase] = [
-            .init(.request(.get(.inputSwitchClass1)), "%1INPT ?"),
-            .init(.request(.get(.inputSwitchClass2)), "%2INPT ?"),
+            .init(.requestGetInputSwitchClass1, "%1INPT ?"),
+            .init(.requestGetInputSwitchClass2, "%2INPT ?"),
         ]
         PJLink.InputSwitchClass1.allCases.forEach { inputSwitch in
             testCases.append(
                 .init(
-                    .request(.set(.inputSwitchClass1(inputSwitch))),
+                    .requestSetInputSwitchClass1(inputSwitch),
                     "%1INPT \(inputSwitch.input.rawValue)\(inputSwitch.channel.rawValue)"
                 )
             )
@@ -64,7 +64,7 @@ struct StringPrintingTests {
         PJLink.InputSwitchClass2.allCases.forEach { inputSwitch in
             testCases.append(
                 .init(
-                    .request(.set(.inputSwitchClass2(inputSwitch))),
+                    .requestSetInputSwitchClass2(inputSwitch),
                     "%2INPT \(inputSwitch.input.rawValue)\(inputSwitch.channel.rawValue)"
                 )
             )
@@ -108,12 +108,12 @@ struct StringPrintingTests {
     @Test
     func muteRequest() throws {
         var testCases: [TestCase] = [
-            .init(.request(.get(.avMute)), "%1AVMT ?"),
+            .init(.requestGetAudioVideoMute, "%1AVMT ?"),
         ]
         PJLink.MuteState.allCases.forEach { muteState in
             testCases.append(
                 .init(
-                    .request(.set(.avMute(muteState))),
+                    .requestSetAudioVideoMute(muteState),
                     "%1AVMT \(muteState.mute.rawValue)\(muteState.state.rawValue)"
                 )
             )
@@ -144,7 +144,7 @@ struct StringPrintingTests {
     @Test
     func errorStatusRequest() throws {
         let testCases: [TestCase] = [
-            .init(.request(.get(.errorStatus)), "%1ERST ?"),
+            .init(.requestGetErrorStatus, "%1ERST ?"),
         ]
         try run(testCases)
     }
@@ -171,7 +171,7 @@ struct StringPrintingTests {
     @Test
     func lampRequest() throws {
         let testCases: [TestCase] = [
-            .init(.request(.get(.lamp)), "%1LAMP ?"),
+            .init(.requestGetLamp, "%1LAMP ?"),
         ]
         try run(testCases)
     }
@@ -204,8 +204,8 @@ struct StringPrintingTests {
     @Test
     func inputListRequest() throws {
         let testCases: [TestCase] = [
-            .init(.request(.get(.inputListClass1)), "%1INST ?"),
-            .init(.request(.get(.inputListClass2)), "%2INST ?"),
+            .init(.requestGetInputListClass1, "%1INST ?"),
+            .init(.requestGetInputListClass2, "%2INST ?"),
         ]
         try run(testCases)
     }
@@ -256,7 +256,7 @@ struct StringPrintingTests {
     @Test
     func projectorNameRequest() throws {
         let testCases: [TestCase] = [
-            .init(.request(.get(.projectorName)), "%1NAME ?"),
+            .init(.requestGetProjectorName, "%1NAME ?"),
         ]
         try run(testCases)
     }
@@ -291,7 +291,7 @@ struct StringPrintingTests {
     @Test
     func manufacturerNameRequest() throws {
         let testCases: [TestCase] = [
-            .init(.request(.get(.manufacturerName)), "%1INF1 ?"),
+            .init(.requestGetManufacturerName, "%1INF1 ?"),
         ]
         try run(testCases)
     }
@@ -326,7 +326,7 @@ struct StringPrintingTests {
     @Test
     func productNameRequest() throws {
         let testCases: [TestCase] = [
-            .init(.request(.get(.productName)), "%1INF2 ?"),
+            .init(.requestGetProductName, "%1INF2 ?"),
         ]
         try run(testCases)
     }
@@ -361,7 +361,7 @@ struct StringPrintingTests {
     @Test
     func otherInformationRequest() throws {
         let testCases: [TestCase] = [
-            .init(.request(.get(.otherInformation)), "%1INFO ?"),
+            .init(.requestGetOtherInformation, "%1INFO ?"),
         ]
         try run(testCases)
     }
@@ -396,7 +396,7 @@ struct StringPrintingTests {
     @Test
     func classRequest() throws {
         let testCases: [TestCase] = [
-            .init(.request(.get(.projectorClass)), "%1CLSS ?"),
+            .init(.requestGetProjectorClass, "%1CLSS ?"),
         ]
         try run(testCases)
     }
@@ -435,7 +435,7 @@ struct StringPrintingTests {
     @Test
     func serialNumberRequest() throws {
         let testCases: [TestCase] = [
-            .init(.request(.get(.serialNumber)), "%2SNUM ?"),
+            .init(.requestGetSerialNumber, "%2SNUM ?"),
         ]
         try run(testCases)
     }
@@ -471,7 +471,7 @@ struct StringPrintingTests {
     @Test
     func softwareVersionRequest() throws {
         let testCases: [TestCase] = [
-            .init(.request(.get(.softwareVersion)), "%2SVER ?"),
+            .init(.requestGetSoftwareVersion, "%2SVER ?"),
         ]
         try run(testCases)
     }
@@ -509,7 +509,7 @@ struct StringPrintingTests {
         PJLink.InputSwitchClass2.allCases.forEach { inputSwitch in
             testCases.append(
                 .init(
-                    .request(.get(.inputTerminalName(inputSwitch))),
+                    .requestGetInputTerminalName(inputSwitch),
                     "%2INNM ?\(inputSwitch.input.rawValue)\(inputSwitch.channel.rawValue)"
                 )
             )
@@ -547,7 +547,7 @@ struct StringPrintingTests {
     @Test
     func inputResolutionRequest() throws {
         let testCases: [TestCase] = [
-            .init(.request(.get(.inputResolution)), "%2IRES ?"),
+            .init(.requestGetInputResolution, "%2IRES ?"),
         ]
         try run(testCases)
     }
@@ -591,7 +591,7 @@ struct StringPrintingTests {
     @Test
     func recommendedResolutionRequest() throws {
         let testCases: [TestCase] = [
-            .init(.request(.get(.recommendedResolution)), "%2RRES ?"),
+            .init(.requestGetRecommendedResolution, "%2RRES ?"),
         ]
         try run(testCases)
     }
@@ -626,7 +626,7 @@ struct StringPrintingTests {
     @Test
     func filterUsageTimeRequest() throws {
         let testCases: [TestCase] = [
-            .init(.request(.get(.filterUsageTime)), "%2FILT ?"),
+            .init(.requestGetFilterUsageTime, "%2FILT ?"),
         ]
         try run(testCases)
     }
@@ -661,7 +661,7 @@ struct StringPrintingTests {
     @Test
     func lampReplacementModelNumberRequest() throws {
         let testCases: [TestCase] = [
-            .init(.request(.get(.lampReplacementModelNumber)), "%2RLMP ?"),
+            .init(.requestGetLampReplacementModelNumber, "%2RLMP ?"),
         ]
         try run(testCases)
     }
@@ -696,7 +696,7 @@ struct StringPrintingTests {
     @Test
     func filterReplacementModelNumberRequest() throws {
         let testCases: [TestCase] = [
-            .init(.request(.get(.filterReplacementModelNumber)), "%2RFIL ?"),
+            .init(.requestGetFilterReplacementModelNumber, "%2RFIL ?"),
         ]
         try run(testCases)
     }
@@ -731,8 +731,8 @@ struct StringPrintingTests {
     @Test
     func speakerVolumeAdjustmentRequest() throws {
         let testCases: [TestCase] = [
-            .init(.request(.set(.speakerVolume(.increase))), "%2SVOL 1"),
-            .init(.request(.set(.speakerVolume(.decrease))), "%2SVOL 0"),
+            .init(.requestSetSpeakerVolumeIncrease, "%2SVOL 1"),
+            .init(.requestSetSpeakerVolumeDecrease, "%2SVOL 0"),
         ]
         try run(testCases)
     }
@@ -767,8 +767,8 @@ struct StringPrintingTests {
     @Test
     func microphoneVolumeAdjustmentRequest() throws {
         let testCases: [TestCase] = [
-            .init(.request(.set(.microphoneVolume(.increase))), "%2MVOL 1"),
-            .init(.request(.set(.microphoneVolume(.decrease))), "%2MVOL 0"),
+            .init(.requestSetMicrophoneVolumeIncrease, "%2MVOL 1"),
+            .init(.requestSetMicrophoneVolumeDecrease, "%2MVOL 0"),
         ]
         try run(testCases)
     }
@@ -803,9 +803,9 @@ struct StringPrintingTests {
     @Test
     func freezeRequest() throws {
         let testCases: [TestCase] = [
-            .init(.request(.get(.freeze)), "%2FREZ ?"),
-            .init(.request(.set(.freeze(.start))), "%2FREZ 1"),
-            .init(.request(.set(.freeze(.stop))), "%2FREZ 0"),
+            .init(.requestGetFreeze, "%2FREZ ?"),
+            .init(.requestSetFreezeStart, "%2FREZ 1"),
+            .init(.requestSetFreezeStop, "%2FREZ 0"),
         ]
         try run(testCases)
     }

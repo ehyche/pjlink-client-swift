@@ -7,6 +7,16 @@
 
 extension PJLink {
 
+    public struct GetRequestWithAuth: Equatable, Sendable {
+        public let request: GetRequest
+        public let authPrefix: AuthPrefix
+
+        public init(_ request: GetRequest, authPrefix: AuthPrefix = .none) {
+            self.request = request
+            self.authPrefix = authPrefix
+        }
+    }
+
     public enum GetRequest: Equatable, Sendable {
         case power
         case inputSwitchClass1
@@ -34,6 +44,14 @@ extension PJLink {
 }
 
 extension PJLink.GetRequest {
+
+    public var withAuthNone: PJLink.GetRequestWithAuth {
+        .init(self)
+    }
+
+    public func withAuth(_ authPrefix: PJLink.AuthPrefix) -> PJLink.GetRequestWithAuth {
+        .init(self, authPrefix: authPrefix)
+    }
 
     public init(pjlinkClass: PJLink.Class, command: PJLink.Command, parameters: String) throws {
         switch (pjlinkClass, command, parameters.isEmpty) {
@@ -150,5 +168,12 @@ extension PJLink.GetRequest: CustomStringConvertible {
         case .inputTerminalName(let inputSwitch): PJLink.prefixGet + inputSwitch.description
         default: PJLink.prefixGet
         }
+    }
+}
+
+extension PJLink.GetRequestWithAuth: CustomStringConvertible {
+
+    public var description: String {
+        authPrefix.description + request.description
     }
 }

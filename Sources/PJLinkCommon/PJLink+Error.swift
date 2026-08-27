@@ -11,6 +11,7 @@ extension PJLink {
     public enum Error: Swift.Error, Equatable {
         case couldNotCreateUTF8StringFromData(Data)
         case couldNotCreateDataFromUTF8String(String)
+        case missingIdentifier
         case invalidID(String)
         case invalidClass(String)
         case invalidCommand(String)
