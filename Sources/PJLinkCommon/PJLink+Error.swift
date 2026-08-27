@@ -77,5 +77,6 @@ extension PJLink {
         case broadcastUDPSocketIO(Int32, String)
         case broadcastUDPSocketWouldBlock
         case broadcastUDPSocketGeneral(String)
+        case unimplementedMethod(String)
     }
 }
