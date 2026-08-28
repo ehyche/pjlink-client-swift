@@ -185,9 +185,11 @@ extension PJLink {
 
         public static func isProjectorPresent(at host: NWEndpoint.Host) async -> Bool {
             let connection = NetworkConnection(to: .hostPort(host: host, port: .pjlink)) {
-                TCP()
-                    .connectionTimeout(1)
-                    .persistTimeout(1)
+                Coder(PJLink.Message.self, using: .pjlink) {
+                    TCP()
+                        .connectionTimeout(1)
+                        .persistTimeout(1)
+                }
             }
 
             let logger = Logger(sub: .client, cat: .connection)
@@ -224,11 +226,9 @@ extension PJLink {
                 // Upon connection, we should receive either:
                 // "PJLINK 0" (Authentication disabled); OR
                 // "PJLINK 1 498e4a67" (Authentication enabled with 4-byte random number)
-                let connectionResponse = try await connection.receive(atLeast: 9, atMost: 18).content
-                let connectionResponseUTF8 = try connectionResponse.toUTF8String()
-                logger.debug("RECV: \(connectionResponseUTF8)")
-                _ = try PJLink.AuthResponse(connectionResponseUTF8)
-                // If we received any sort of AuthResponse and were able to parse it,
+                let connectionMessage = try await connection.receive().content
+                logger.debug("RECV: \(connectionMessage)")
+                // If we were able to parse this response,
                 // then we know we are talking to a projector.
                 return true
             } catch {
