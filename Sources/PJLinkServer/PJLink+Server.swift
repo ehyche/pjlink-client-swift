@@ -29,7 +29,9 @@ extension PJLink {
             let logger = Logger(sub: .server, cat: .listener)
             let listener = try NetworkListener(
                 using: .parameters {
-                    TCP()
+                    Coder(PJLink.Message.self, using: .pjlink) {
+                        TCP()
+                    }
                 }
                 .localPort(.pjlink)
             )

@@ -367,3 +367,14 @@ extension PJLink.AuthPrefix: LosslessStringConvertibleThrowing {
         }
     }
 }
+
+extension PJLink.AuthPrefix {
+
+    public var authMessage: PJLink.AuthMessage {
+        switch self {
+        case .none: .none
+        case .class1(let buffer16): .class1(buffer16)
+        case .class2(let buffer16, let buffer32): .class2(buffer16, buffer32)
+        }
+    }
+}
