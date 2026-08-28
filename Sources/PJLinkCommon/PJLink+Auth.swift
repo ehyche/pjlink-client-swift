@@ -272,6 +272,31 @@ extension PJLink.AuthState {
         case .authenticated: ""
         }
     }
+
+    public var authPrefix: PJLink.AuthPrefix {
+        get throws {
+            switch self {
+            case .indeterminate:
+                return .none
+            case .disabled:
+                return .none
+            case .level1(let projectorRandom, let password):
+                let toBeHashed = projectorRandom.data.hexEncodedString + password
+                return .class1(try .init(Data(toBeHashed.utf8).md5))
+            case .level2(let clientRandom, let projectorRandom, let password):
+                // XOR the projector and client random numbers
+                let xorRandom16 = clientRandom.xor(with: projectorRandom)
+                // Construct the string to be hashed. This string consists of:
+                // - The hex-encoded XOR of the projector and client random numbers
+                // - The password
+                let toBeHashed = xorRandom16.data.hexEncodedString + password
+                // Perform a SHA256 on this data and then hex-encode it.
+                return .class2(clientRandom, try .init(Data(toBeHashed.utf8).sha256))
+            case .authenticated:
+                return .none
+            }
+        }
+    }
 }
 
 extension PJLink.AuthMessage: LosslessStringConvertibleThrowing {

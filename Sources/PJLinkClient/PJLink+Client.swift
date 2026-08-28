@@ -14,7 +14,7 @@ import PJLinkCommon
 extension PJLink {
 
     public struct ConnectionState: Sendable {
-        public var connection: NetworkConnection<TCP>
+        public var connection: NetworkConnection<Coder<PJLink.Message, PJLink.Message, PJLink.NetworkPJLinkCoder>>
         public var auth: AuthState
     }
 
@@ -243,7 +243,9 @@ extension PJLink.Client {
 
     private static func createConnectionState(host: NWEndpoint.Host) -> PJLink.ConnectionState {
         let connection = NetworkConnection(to: .hostPort(host: host, port: .pjlink)) {
-            TCP()
+            Coder(PJLink.Message.self, using: .pjlink) {
+                TCP()
+            }
         }
 
         let logger = Logger(sub: .client, cat: .connection)
@@ -281,43 +283,41 @@ extension PJLink.Client {
     }
 
     private static func authenticate(
-        on connection: NetworkConnection<TCP>,
+        on connection: NetworkConnection<Coder<PJLink.Message, PJLink.Message, PJLink.NetworkPJLinkCoder>>,
         password: String?
     ) async throws -> PJLink.ConnectionState {
         let logger = Logger(sub: .client, cat: .connection)
         // Upon connection, we should receive either:
         // "PJLINK 0" (Authentication disabled); OR
         // "PJLINK 1 498e4a67" (Authentication enabled with 4-byte random number)
-        let connectionResponse = try await connection.receive(atLeast: 9, atMost: 18).content
-        let connectionResponseUTF8 = try connectionResponse.toUTF8String()
-        logger.debug("RECV: \(connectionResponseUTF8)")
-        let authResponse = try PJLink.AuthResponse(connectionResponseUTF8)
+        let connectionResponse = try await connection.receive().content
+        logger.debug("RECV: \(connectionResponse)")
 
-        guard authResponse != .authDisabled else {
+        guard connectionResponse != .responseAuthDisabled else {
+            // We received "PJLINK 0", so authentication is disabled
             return .init(connection: connection, auth: .disabled)
         }
 
-        guard case .securityLevel1(let randomNumber4Bytes) = authResponse else {
-            throw PJLink.Error.unexpectedConnectionResponse(connectionResponseUTF8)
+        // We should have received something like "PJLINK 1 498e4a67".
+        // If we didn't, then it's an error.
+        guard case .response(.auth(.securityLevel1(let randomNumber4Bytes))) = connectionResponse else {
+            throw PJLink.Error.unexpectedConnectionResponse(connectionResponse.description)
         }
 
-        // The client then responds with "PJLINK 2\r" to check the security level.
-        let requestString = PJLink.AuthRequest.securityLevel.description
-        let requestStringTerminatedData = requestString.crTerminatedData
-        try await connection.send(requestStringTerminatedData)
-        logger.debug("SEND: \(requestString)")
+        // Send a "PJLINK 2"
+        let message: PJLink.Message = .requestAuthSecurityLevel
+        try await connection.send(message)
+        logger.debug("SEND: \(message.description)")
 
         // The projector should respond with "PJLINK 2 <hex-encoded-16-byte-random-number>\r"
-        let securityLevelResponseData = try await connection.receive(atMost: 42).content
-        let securityLevelUTF8 = try securityLevelResponseData.toUTF8String()
-        logger.debug("RECV: \(securityLevelUTF8)")
-        let securityLevelResponse: PJLink.AuthResponse
-        do {
-            securityLevelResponse = try PJLink.AuthResponse(securityLevelUTF8)
-        } catch {
-            // We could not parse the response to "PJLINK 2\r".
-            // So we assume a class 1 projector.
-            securityLevelResponse = .securityLevel1(randomNumber4Bytes)
+        let securityLevelResponse = try await connection.receive().content
+        logger.debug("RECV: \(securityLevelResponse)")
+
+        guard case .response(.auth(let authResponse)) = securityLevelResponse else {
+            throw PJLink.Error.unexpectedResponse(
+                request: message.description,
+                response: securityLevelResponse.description
+            )
         }
 
         // At this point, we know we need a password. If we don't have it, then fail.
@@ -326,7 +326,7 @@ extension PJLink.Client {
         }
 
         let authState: PJLink.AuthState
-        switch securityLevelResponse {
+        switch authResponse {
         case .authDisabled:
             authState = .disabled
         case .securityLevel1(let buffer4):
@@ -507,29 +507,32 @@ extension PJLink.Client {
         from connectionState: PJLink.ConnectionState
     ) async throws -> PJLink.Response {
         let logger = Logger(sub: .client, cat: .connection)
-        let requestString = connectionState.auth.authString + request.description
-        let requestStringTerminated = requestString.crTerminated
 
-        try await connectionState.connection.send(Data(requestStringTerminated.utf8))
-        logger.debug("SEND: \(requestString)")
+        let requestMessage: PJLink.Message = .request(request)
+        try await connectionState.connection.send(requestMessage)
+        logger.debug("SEND: \(requestMessage)")
 
-        let responseData = try await connectionState.connection.receive(atMost: PJLink.maxResponseSize).content
-        let responseUTF8 = try responseData.toUTF8String()
-        logger.debug("RECV: \(responseUTF8)")
-
-        // As we are parsing, we give the PJLink.Message parser a hint
-        // whether or not we are expecting a response to a set request.
-        // If the request is a Set request, then we expect a Set response.
-        let response = try PJLink.Response(responseUTF8)
+        let responseMessage = try await connectionState.connection.receive().content
+        logger.debug("RECV: \(responseMessage)")
 
         // Do some error-checking.
         //
+        // This better be a response
+        guard case .response(let response) = responseMessage else {
+            throw PJLink.Error.unexpectedResponse(
+                request: requestMessage.description,
+                response: responseMessage.description
+            )
+        }
         // We expect that the associated command in the response should
         // be the same as the command in the request.
-        if let requestCommand = request.command, let responseCommand = response.command, requestCommand != responseCommand {
+        if
+            let requestCommand = requestMessage.command,
+            let responseCommand = responseMessage.command,
+            requestCommand != responseCommand {
             throw PJLink.Error.unexpectedResponseCommand(request: requestCommand, response: responseCommand)
         }
-        // We expect that if we had a set request, then we should have a set response.
+        // We expect that if we had a set request, then we should have a status response.
         // Likewise, if we had a get request, then we should have a get response.
         guard request.isSet == response.isStatus else {
             throw PJLink.Error.unexpectedResponse(request: request.description, response: response.description)
@@ -789,23 +792,28 @@ extension PJLink.Client {
         from connectionState: PJLink.ConnectionState
     ) async throws -> PJLink.Response {
         let logger = Logger(sub: .client, cat: .connection)
-        let requestString = connectionState.auth.authString + request.description
-        let requestStringTerminated = requestString.crTerminated
 
-        try await connectionState.connection.send(Data(requestStringTerminated.utf8))
-        logger.debug("SEND \(requestString)")
+        let requestMessage: PJLink.Message = .request(
+            .get(
+                .init(request, authPrefix: try connectionState.auth.authPrefix)
+            )
+        )
+        try await connectionState.connection.send(requestMessage)
+        logger.debug("SEND \(requestMessage)")
 
-        let responseData = try await connectionState.connection.receive(atMost: PJLink.maxResponseSize).content
-        let responseUTF8 = try responseData.toUTF8String()
-        logger.debug("RECV: \(responseUTF8)")
-
-        let response = try PJLink.Response(responseUTF8)
+        let responseMessage = try await connectionState.connection.receive().content
+        logger.debug("RECV: \(responseMessage)")
 
         // Do some error-checking.
         //
+        // This better be a response
+        guard case .response(let response) = responseMessage else {
+            throw PJLink.Error.unexpectedResponse(request: requestMessage.description, response: responseMessage.description)
+        }
+
         // We expect that the associated command in the response should
         // be the same as the command in the request.
-        if let responseCommand = response.command, request.command != responseCommand {
+        if let responseCommand = responseMessage.command, request.command != responseCommand {
             throw PJLink.Error.unexpectedResponseCommand(request: request.command, response: responseCommand)
         }
 
@@ -906,22 +914,26 @@ extension PJLink.Client {
         from connectionState: PJLink.ConnectionState
     ) async throws -> PJLink.StatusResponse {
         let logger = Logger(sub: .client, cat: .connection)
-        let requestString = connectionState.auth.authString + request.description
-        let requestStringTerminated = requestString.crTerminated
+        let requestMessage: PJLink.Message = .request(.set(.init(request, authPrefix: try connectionState.auth.authPrefix)))
 
-        try await connectionState.connection.send(Data(requestStringTerminated.utf8))
-        logger.debug("SEND \(requestString)")
+        try await connectionState.connection.send(requestMessage)
+        logger.debug("SEND \(requestMessage)")
 
-        let responseData = try await connectionState.connection.receive(atMost: PJLink.maxResponseSize).content
-        let responseUTF8 = try responseData.toUTF8String()
-        logger.debug("RECV: \(responseUTF8)")
-        let response = try PJLink.StatusResponse(responseUTF8)
+        let responseMessage = try await connectionState.connection.receive().content
+        logger.debug("RECV: \(responseMessage)")
 
         // Do some error-checking.
         //
+        // This better be a status response
+        guard case .response(.status(let response)) = requestMessage else {
+            throw PJLink.Error.unexpectedResponse(
+                request: requestMessage.description,
+                response: responseMessage.description
+            )
+        }
         // We expect that the associated command in the response should
         // be the same as the command in the request.
-        guard request.command == response.command else {
+        if let responseCommand = responseMessage.command, request.command != responseCommand {
             throw PJLink.Error.unexpectedResponseCommand(request: request.command, response: response.command)
         }
 

@@ -27,8 +27,8 @@ extension PJLink {
     }
 }
 
-extension PJLink.Message {
-    
+extension PJLink.Message: LosslessStringConvertibleThrowing {
+
     /// Initializer
     /// - Parameters:
     ///   - description: The string to parse
@@ -113,6 +113,9 @@ extension PJLink.Message {
         case .response(let response): response.description
         }
     }
+}
+
+extension PJLink.Message {
 
     public var isRequest: Bool {
         switch self {
@@ -146,6 +149,13 @@ extension PJLink.Message {
         switch self {
         case .request: PJLink.separatorRequest
         case .response: PJLink.separatorResponse
+        }
+    }
+
+    public var command: PJLink.Command? {
+        switch self {
+        case .request(let request): request.command
+        case .response(let response): response.command
         }
     }
 }
@@ -434,4 +444,8 @@ extension PJLink.Message {
     public static let requestSetFreezeStart: Self = .request(.setFreezeStart)
     public static let requestSetFreezeStop: Self = .request(.setFreezeStop)
     public static let requestGetFreeze: Self = .request(.getFreeze)
+
+    // Auth-related messages
+    public static let responseAuthDisabled: Self = .response(.auth(.authDisabled))
+    public static let requestAuthSecurityLevel: Self = .request(.auth(.securityLevel))
 }

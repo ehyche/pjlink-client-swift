@@ -47,7 +47,7 @@ extension NWEndpoint.Port {
     public static let pjlink: Self = 4352
 }
 
-extension NetworkCoder {
+extension NetworkCoder where Self == PJLink.NetworkPJLinkCoder {
 
     public static var pjlink: PJLink.NetworkPJLinkCoder { .init() }
 }
