@@ -117,6 +117,13 @@ extension PJLink.Message: LosslessStringConvertibleThrowing {
 
 extension PJLink.Message {
 
+    public init(_ data: Data) throws {
+        guard let utf8 = String(data: data, encoding: .utf8) else {
+            throw PJLink.Error.couldNotCreateUTF8StringFromData(data)
+        }
+        try self.init(utf8.removingCRSuffix)
+    }
+
     public var isRequest: Bool {
         switch self {
         case .request: true

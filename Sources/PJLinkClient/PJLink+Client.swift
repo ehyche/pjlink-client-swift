@@ -14,7 +14,7 @@ import PJLinkCommon
 extension PJLink {
 
     public struct ConnectionState: Sendable {
-        public var connection: NetworkConnection<Coder<PJLink.Message, PJLink.Message, PJLink.NetworkPJLinkCoder>>
+        public var connection: NetworkConnection<Framer<PJLinkFramer>>
         public var auth: AuthState
     }
 
@@ -185,7 +185,7 @@ extension PJLink {
 
         public static func isProjectorPresent(at host: NWEndpoint.Host) async -> Bool {
             let connection = NetworkConnection(to: .hostPort(host: host, port: .pjlink)) {
-                Coder(PJLink.Message.self, using: .pjlink) {
+                Framer(using: PJLinkFramer.self) {
                     TCP()
                         .connectionTimeout(1)
                         .persistTimeout(1)
@@ -243,7 +243,7 @@ extension PJLink.Client {
 
     private static func createConnectionState(host: NWEndpoint.Host) -> PJLink.ConnectionState {
         let connection = NetworkConnection(to: .hostPort(host: host, port: .pjlink)) {
-            Coder(PJLink.Message.self, using: .pjlink) {
+            Framer(using: PJLinkFramer.self) {
                 TCP()
             }
         }
@@ -283,14 +283,14 @@ extension PJLink.Client {
     }
 
     private static func authenticate(
-        on connection: NetworkConnection<Coder<PJLink.Message, PJLink.Message, PJLink.NetworkPJLinkCoder>>,
+        on connection: NetworkConnection<Framer<PJLinkFramer>>,
         password: String?
     ) async throws -> PJLink.ConnectionState {
         let logger = Logger(sub: .client, cat: .connection)
         // Upon connection, we should receive either:
         // "PJLINK 0" (Authentication disabled); OR
         // "PJLINK 1 498e4a67" (Authentication enabled with 4-byte random number)
-        let connectionResponse = try await connection.receive().content
+        let connectionResponse = try await connection.receivePJLinkMessage()
         logger.debug("RECV: \(connectionResponse)")
 
         guard connectionResponse != .responseAuthDisabled else {
@@ -306,11 +306,11 @@ extension PJLink.Client {
 
         // Send a "PJLINK 2"
         let message: PJLink.Message = .requestAuthSecurityLevel
-        try await connection.send(message)
+        try await connection.sendPJLinkMessage(message)
         logger.debug("SEND: \(message.description)")
 
         // The projector should respond with "PJLINK 2 <hex-encoded-16-byte-random-number>\r"
-        let securityLevelResponse = try await connection.receive().content
+        let securityLevelResponse = try await connection.receivePJLinkMessage()
         logger.debug("RECV: \(securityLevelResponse)")
 
         guard case .response(.auth(let authResponse)) = securityLevelResponse else {
@@ -509,10 +509,10 @@ extension PJLink.Client {
         let logger = Logger(sub: .client, cat: .connection)
 
         let requestMessage: PJLink.Message = .request(request)
-        try await connectionState.connection.send(requestMessage)
+        try await connectionState.connection.sendPJLinkMessage(requestMessage)
         logger.debug("SEND: \(requestMessage)")
 
-        let responseMessage = try await connectionState.connection.receive().content
+        let responseMessage = try await connectionState.connection.receivePJLinkMessage()
         logger.debug("RECV: \(responseMessage)")
 
         // Do some error-checking.
@@ -798,10 +798,10 @@ extension PJLink.Client {
                 .init(request, authPrefix: try connectionState.auth.authPrefix)
             )
         )
-        try await connectionState.connection.send(requestMessage)
+        try await connectionState.connection.sendPJLinkMessage(requestMessage)
         logger.debug("SEND \(requestMessage)")
 
-        let responseMessage = try await connectionState.connection.receive().content
+        let responseMessage = try await connectionState.connection.receivePJLinkMessage()
         logger.debug("RECV: \(responseMessage)")
 
         // Do some error-checking.
@@ -916,16 +916,16 @@ extension PJLink.Client {
         let logger = Logger(sub: .client, cat: .connection)
         let requestMessage: PJLink.Message = .request(.set(.init(request, authPrefix: try connectionState.auth.authPrefix)))
 
-        try await connectionState.connection.send(requestMessage)
+        try await connectionState.connection.sendPJLinkMessage(requestMessage)
         logger.debug("SEND \(requestMessage)")
 
-        let responseMessage = try await connectionState.connection.receive().content
+        let responseMessage = try await connectionState.connection.receivePJLinkMessage()
         logger.debug("RECV: \(responseMessage)")
 
         // Do some error-checking.
         //
         // This better be a status response
-        guard case .response(.status(let response)) = requestMessage else {
+        guard case .response(.status(let response)) = responseMessage else {
             throw PJLink.Error.unexpectedResponse(
                 request: requestMessage.description,
                 response: responseMessage.description

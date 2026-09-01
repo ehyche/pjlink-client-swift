@@ -377,4 +377,12 @@ extension PJLink.AuthPrefix {
         case .class2(let buffer16, let buffer32): .class2(buffer16, buffer32)
         }
     }
+
+    public var messageSizeRange: ClosedRange<Int> {
+        switch self {
+        case .none: 0...0
+        case .class1: 32...32
+        case .class2: 96...96
+        }
+    }
 }

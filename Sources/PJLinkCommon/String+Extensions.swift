@@ -21,11 +21,19 @@ extension String {
         Data(crTerminated.utf8)
     }
 
+    public var utf8Data: Data {
+        Data(self.utf8)
+    }
+
     public var removingCRSuffix: String {
         if let crIndex = self.firstIndex(of: "\r") {
             return String(self.prefix(upTo: crIndex))
         } else {
             return self
         }
+    }
+
+    public var replacingCR: String {
+        replacingOccurrences(of: "\r", with: "\\r")
     }
 }

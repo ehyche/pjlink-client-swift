@@ -24,6 +24,8 @@ extension PJLink {
         case searchListener = "SearchListener"
         case udpListener = "UDPListener"
         case discovery = "Discovery"
+        case coder = "Coder"
+        case framer = "Framer"
     }
 }
 

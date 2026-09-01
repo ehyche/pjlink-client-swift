@@ -155,6 +155,13 @@ extension PJLink.GetRequest {
         case .freeze: .freeze
         }
     }
+
+    public var messageSizeRange: ClosedRange<Int> {
+        switch self {
+        case .inputTerminalName(let inputSwitchClass2): 11...11
+        default: 9...9
+        }
+    }
 }
 
 extension PJLink.GetRequest: CustomStringConvertible {
@@ -168,6 +175,18 @@ extension PJLink.GetRequest: CustomStringConvertible {
         case .inputTerminalName(let inputSwitch): PJLink.prefixGet + inputSwitch.description
         default: PJLink.prefixGet
         }
+    }
+}
+
+extension PJLink.GetRequest: CaseIterable {
+
+    public static var allCases: [PJLink.GetRequest] {
+        [
+            .power, .inputSwitchClass1, .inputSwitchClass2, .avMute, .errorStatus, .lamp, .inputListClass1,
+            .inputListClass2, projectorName, .manufacturerName, productName, .otherInformation, .projectorClass,
+            .serialNumber, .softwareVersion, .inputTerminalName(.mock), .inputResolution, .recommendedResolution,
+            .filterUsageTime, .lampReplacementModelNumber, .filterReplacementModelNumber, .freeze,
+        ]
     }
 }
 

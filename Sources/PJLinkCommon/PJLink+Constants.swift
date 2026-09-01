@@ -14,6 +14,7 @@ extension PJLink {
     public static let prefixGet = "?"
     public static let terminator = "\r"
     public static let pjlink = "PJLINK"
+    public static let minRequestSize = 9
     public static let maxRequestSize = 136
     public static let maxResponseSize = 136
     public static let maxAuthRequestSize = 96

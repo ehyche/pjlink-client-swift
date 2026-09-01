@@ -51,3 +51,14 @@ extension NetworkCoder where Self == PJLink.NetworkPJLinkCoder {
 
     public static var pjlink: PJLink.NetworkPJLinkCoder { .init() }
 }
+
+extension NetworkConnection where ApplicationProtocol == Framer<PJLinkFramer> {
+
+    public func receivePJLinkMessage() async throws -> PJLink.Message {
+        try PJLink.Message(try await receive().content)
+    }
+
+    public func sendPJLinkMessage(_ message: PJLink.Message) async throws {
+        try await send(message.description.utf8Data)
+    }
+}

@@ -1,12 +1,24 @@
 import Network
+import os
 
 extension PJLink {
 
     public struct NetworkPJLinkCoder: NetworkCoder {
-        public init() {}
+        private let logger: Logger
 
-        public func makeDecoder() -> NetworkPJLinkDecoder { NetworkPJLinkDecoder() }
+        public init() {
+            logger = Logger(sub: .client, cat: .coder)
+            logger.debug("NetworkPJLinkCoder init()")
+        }
 
-        public func makeEncoder() -> NetworkPJLinkEncoder { NetworkPJLinkEncoder() }
+        public func makeDecoder() -> NetworkPJLinkDecoder {
+            logger.debug("NetworkPJLinkCoder makeDecoder()")
+            return NetworkPJLinkDecoder()
+        }
+
+        public func makeEncoder() -> NetworkPJLinkEncoder {
+            logger.debug("NetworkPJLinkCoder makeEncoder()")
+            return NetworkPJLinkEncoder()
+        }
     }
 }

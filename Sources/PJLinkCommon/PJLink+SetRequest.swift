@@ -93,6 +93,13 @@ extension PJLink.SetRequest {
         case .freeze(let freeze): freeze.rawValue
         }
     }
+
+    public var messageSizeRange: ClosedRange<Int> {
+        switch self {
+        case .power, .speakerVolume, .microphoneVolume, .freeze: 9...9
+        case .inputSwitchClass1, .inputSwitchClass2, .avMute: 10...10
+        }
+    }
 }
 
 extension PJLink.SetRequest: CustomStringConvertible {
