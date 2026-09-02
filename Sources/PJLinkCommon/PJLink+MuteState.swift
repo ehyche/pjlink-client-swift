@@ -52,4 +52,6 @@ extension PJLink.MuteState {
     public var displayName: String {
         mute.displayName + " " + state.displayName
     }
+
+    public static let mock: Self = .init(mute: .audioVideo, state: .off)
 }

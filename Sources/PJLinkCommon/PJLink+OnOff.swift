@@ -21,6 +21,8 @@ extension PJLink.OnOff {
         case .on: "On"
         }
     }
+
+    public static let mock: Self = .off
 }
 
 extension PJLink.OnOff: LosslessStringConvertibleThrowing {

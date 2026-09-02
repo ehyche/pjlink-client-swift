@@ -16,7 +16,7 @@ extension PJLink {
         private let continuation: AsyncThrowingStream<Output, Swift.Error>.Continuation
 
         public struct Output: Sendable {
-            public let host: NWEndpoint.Host?
+            public let host: NWEndpoint.Host
             public let data: Data
         }
 
@@ -42,9 +42,13 @@ extension PJLink {
                 do {
                     try await listener.run { connection in
                         logger.debug("New Connection: \(connection.id)")
+                        guard let remoteEndpointHost = connection.remoteEndpoint?.host else {
+                            logger.error("Connection[\(connection.id)] Could not get remote endpoint host.")
+                            return
+                        }
                         do {
                             let output = Output(
-                                host: connection.remoteEndpoint?.host,
+                                host: remoteEndpointHost,
                                 data: try await connection.receive().content
                             )
                             logger.info("RECV: \(output, privacy: .public)")
@@ -73,7 +77,7 @@ extension PJLink {
 extension PJLink.UDPListener.Output: CustomStringConvertible {
 
     public var description: String {
-        "\"\(String(describing: data.utf8StringWithCRStripped))\" from \(String(describing: host?.debugDescription))"
+        "\"\(String(describing: data.utf8StringWithCRStripped))\" from \(host.debugDescription))"
     }
 }
 

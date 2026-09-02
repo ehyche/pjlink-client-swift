@@ -121,10 +121,8 @@ struct PJLinkClientCLI: AsyncParsableCommand {
             case .progressUpdate(let progress):
                 print("\(progress.formatted(.percent.precision(.fractionLength(1))))...", terminator: "")
             case .projectorDiscovered(let projector):
-                print("Discovered projector at \(String(describing: projector.host))")
-                if let host = projector.host {
-                    projectors.append(host)
-                }
+                print("Discovered projector at \(projector.host)")
+                projectors.append(projector.host)
             }
         }
         return projectors

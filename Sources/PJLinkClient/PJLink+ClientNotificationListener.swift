@@ -43,16 +43,12 @@ extension PJLink {
                 logger.error("Could not convert data to UTF8 string.")
                 return nil
             }
-            guard let host = output.host else {
-                logger.error("Client notification \"\(utf8String, privacy: .public)\" missing host.")
-                return nil
-            }
             let utf8MinusCR = utf8String.removingCRSuffix
             guard let notification = try? PJLink.Notification(utf8MinusCR) else {
                 logger.error("Could not parse \"\(utf8MinusCR)\" as notification")
                 return nil
             }
-            return .init(host: host, notification: notification)
+            return .init(host: output.host, notification: notification)
         }
     }
 }

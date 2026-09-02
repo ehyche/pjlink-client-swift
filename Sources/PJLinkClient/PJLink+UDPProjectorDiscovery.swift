@@ -25,7 +25,7 @@ extension PJLink {
         }
 
         public struct Projector: Equatable, Sendable {
-            public let host: NWEndpoint.Host?
+            public let host: NWEndpoint.Host
             public let macAddress: MacAddress
         }
 

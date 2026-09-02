@@ -93,12 +93,30 @@ extension PJLink.SetRequest {
         case .freeze(let freeze): freeze.rawValue
         }
     }
+}
+
+extension PJLink.SetRequest: PJLink.MessageSizeRange {
 
     public var messageSizeRange: ClosedRange<Int> {
         switch self {
         case .power, .speakerVolume, .microphoneVolume, .freeze: 9...9
         case .inputSwitchClass1, .inputSwitchClass2, .avMute: 10...10
         }
+    }
+}
+
+extension PJLink.SetRequest: CaseIterable {
+
+    public static var allCases: [Self] {
+        [
+            .power(.mock),
+            .inputSwitchClass1(.mock),
+            .inputSwitchClass2(.mock),
+            .avMute(.mock),
+            .speakerVolume(.mock),
+            .microphoneVolume(.mock),
+            .freeze(.mock),
+        ]
     }
 }
 
@@ -113,5 +131,27 @@ extension PJLink.SetRequestWithAuth: CustomStringConvertible {
 
     public var description: String {
         authPrefix.description + request.description
+    }
+}
+
+extension PJLink.SetRequestWithAuth: PJLink.MessageSizeRange {
+
+    public var messageSizeRange: ClosedRange<Int> {
+        let lowerBound = authPrefix.messageSizeRange.lowerBound + request.messageSizeRange.lowerBound
+        let upperBound = authPrefix.messageSizeRange.upperBound + request.messageSizeRange.upperBound
+        return lowerBound...upperBound
+    }
+}
+
+extension PJLink.SetRequestWithAuth: CaseIterable {
+
+    public static var allCases: [Self] {
+        var result: [Self] = []
+        for request in PJLink.SetRequest.allCases {
+            for authPrefix in PJLink.AuthPrefix.allCases {
+                result.append(.init(request, authPrefix: authPrefix))
+            }
+        }
+        return result
     }
 }

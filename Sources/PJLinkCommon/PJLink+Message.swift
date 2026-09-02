@@ -193,6 +193,17 @@ extension PJLink.Request {
     }
 }
 
+extension PJLink.Request: PJLink.MessageSizeRange {
+
+    public var messageSizeRange: ClosedRange<Int> {
+        switch self {
+        case .auth(let authRequest): authRequest.messageSizeRange
+        case .get(let getRequestWithAuth): getRequestWithAuth.messageSizeRange
+        case .set(let setRequestWithAuth): setRequestWithAuth.messageSizeRange
+        }
+    }
+}
+
 extension PJLink.Request: LosslessStringConvertibleThrowing {
 
     public init(_ description: String) throws {
@@ -262,6 +273,15 @@ extension PJLink.Request: LosslessStringConvertibleThrowing {
         case .get(let getRequest): getRequest.description
         case .set(let setRequest): setRequest.description
         }
+    }
+}
+
+extension PJLink.Request: CaseIterable {
+
+    public static var allCases: [Self] {
+        PJLink.AuthRequest.allCases.map(PJLink.Request.auth) +
+        PJLink.GetRequestWithAuth.allCases.map(PJLink.Request.get) +
+        PJLink.SetRequestWithAuth.allCases.map(PJLink.Request.set)
     }
 }
 

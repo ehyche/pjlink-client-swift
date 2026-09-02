@@ -55,14 +55,13 @@ extension PJLink {
 
         private static func searchPacket(from udpPacket: UDPListener.Output) -> SearchPacket? {
             guard
-                let host = udpPacket.host,
                 let utf8 = try? udpPacket.data.toUTF8String(),
                 let search = try? PJLink.Search(utf8),
                 search == .request
             else {
                 return nil
             }
-            return .init(host: host)
+            return .init(host: udpPacket.host)
         }
 
         private func sendSearchAck(to host: NWEndpoint.Host) async throws {

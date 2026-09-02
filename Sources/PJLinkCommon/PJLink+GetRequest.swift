@@ -155,10 +155,13 @@ extension PJLink.GetRequest {
         case .freeze: .freeze
         }
     }
+}
+
+extension PJLink.GetRequest: PJLink.MessageSizeRange {
 
     public var messageSizeRange: ClosedRange<Int> {
         switch self {
-        case .inputTerminalName(let inputSwitchClass2): 11...11
+        case .inputTerminalName: 11...11
         default: 9...9
         }
     }
@@ -194,5 +197,27 @@ extension PJLink.GetRequestWithAuth: CustomStringConvertible {
 
     public var description: String {
         authPrefix.description + request.description
+    }
+}
+
+extension PJLink.GetRequestWithAuth: PJLink.MessageSizeRange {
+
+    public var messageSizeRange: ClosedRange<Int> {
+        let lowerBound = authPrefix.messageSizeRange.lowerBound + request.messageSizeRange.lowerBound
+        let upperBound = authPrefix.messageSizeRange.upperBound + request.messageSizeRange.upperBound
+        return lowerBound...upperBound
+    }
+}
+
+extension PJLink.GetRequestWithAuth: CaseIterable {
+
+    public static var allCases: [Self] {
+        var result: [Self] = []
+        for request in PJLink.GetRequest.allCases {
+            for authPrefix in PJLink.AuthPrefix.allCases {
+                result.append(.init(request, authPrefix: authPrefix))
+            }
+        }
+        return result
     }
 }

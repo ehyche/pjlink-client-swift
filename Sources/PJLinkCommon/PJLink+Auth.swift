@@ -9,7 +9,7 @@ import Foundation
 
 extension PJLink {
 
-    public enum AuthRequest: Equatable, Sendable {
+    public enum AuthRequest: Equatable, Sendable, CaseIterable {
         case securityLevel
     }
 
@@ -120,6 +120,8 @@ extension PJLink.Buffer4 {
         }
         self.data = data
     }
+
+    public static let mock: Self = .init(data: Data(repeating: 0, count: 4))
 }
 
 extension PJLink.Buffer16 {
@@ -138,6 +140,8 @@ extension PJLink.Buffer16 {
     public func xor(with other: Self) -> Self {
         combine(with: other, transform: ^)
     }
+
+    public static let mock: Self = .init(data: Data(repeating: 0, count: 16))
 }
 
 extension PJLink.Buffer32 {
@@ -148,6 +152,8 @@ extension PJLink.Buffer32 {
         }
         self.data = data
     }
+
+    public static let mock: Self = .init(data: Data(repeating: 0, count: 32))
 }
 
 extension PJLink.AuthRequest: LosslessStringConvertibleThrowing {
@@ -168,6 +174,15 @@ extension PJLink.AuthRequest: LosslessStringConvertibleThrowing {
 
     public var description: String {
         PJLink.pjlink + " " + PJLink.SecurityLevel.level2.rawValue
+    }
+}
+
+extension PJLink.AuthRequest: PJLink.MessageSizeRange {
+
+    public var messageSizeRange: ClosedRange<Int> {
+        switch self {
+        case .securityLevel: 9...9
+        }
     }
 }
 
@@ -368,6 +383,17 @@ extension PJLink.AuthPrefix: LosslessStringConvertibleThrowing {
     }
 }
 
+extension PJLink.AuthPrefix: CaseIterable {
+
+    public static var allCases: [Self] {
+        [
+            .none,
+            .class1(.mock),
+            .class2(.mock, .mock),
+        ]
+    }
+}
+
 extension PJLink.AuthPrefix {
 
     public var authMessage: PJLink.AuthMessage {
@@ -377,6 +403,9 @@ extension PJLink.AuthPrefix {
         case .class2(let buffer16, let buffer32): .class2(buffer16, buffer32)
         }
     }
+}
+
+extension PJLink.AuthPrefix: PJLink.MessageSizeRange {
 
     public var messageSizeRange: ClosedRange<Int> {
         switch self {

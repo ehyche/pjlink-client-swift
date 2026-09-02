@@ -21,6 +21,8 @@ extension PJLink.VolumeAdjustment {
         case .increase: "Increase"
         }
     }
+
+    public static let mock: Self = .decrease
 }
 
 extension PJLink.VolumeAdjustment: LosslessStringConvertibleThrowing {

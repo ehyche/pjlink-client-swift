@@ -21,6 +21,8 @@ extension PJLink.Freeze {
         case .start: "Freeze"
         }
     }
+
+    public static let mock: Self = .start
 }
 
 extension PJLink.Freeze: LosslessStringConvertibleThrowing {

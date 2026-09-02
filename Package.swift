@@ -52,6 +52,7 @@ let package = Package(
             name: "PJLinkCommon",
             dependencies: [
                 .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
+                .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
             ]
         ),
         .target(
