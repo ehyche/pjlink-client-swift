@@ -236,6 +236,25 @@ extension PJLink.AuthResponse: LosslessStringConvertibleThrowing {
     }
 }
 
+extension PJLink.AuthResponse: PJLink.MessageSizeRange {
+
+    public var messageSizeRange: ClosedRange<Int> {
+        switch self {
+        case .authDisabled: 9...9
+        case .securityLevel1: 18...18
+        case .securityLevel2: 42...42
+        case .authError: 12...12
+        }
+    }
+}
+
+extension PJLink.AuthResponse: CaseIterable {
+
+    public static var allCases: [Self] {
+        [.authDisabled, .securityLevel1(.mock), .securityLevel2(.mock), .authError]
+    }
+}
+
 extension PJLink.AuthState {
 
     public static let level2ClientRandomCount = 32

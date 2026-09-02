@@ -40,6 +40,13 @@ extension PJLink.ResponseCode: LosslessStringConvertibleThrowing {
     public var description: String { rawValue }
 }
 
+extension PJLink.ResponseCode: PJLink.MessageSizeRange {
+
+    public var messageSizeRange: ClosedRange<Int> {
+        rawValue.count...rawValue.count
+    }
+}
+
 extension PJLink.ResponseCode {
 
     public var isOK: Bool {
@@ -53,6 +60,24 @@ extension PJLink.ResponseCode {
 extension PJLink.StatusResponse {
 
     public var isOK: Bool { code.isOK }
+}
+
+extension PJLink.StatusResponse: PJLink.MessageSizeRange {
+
+    public var messageSizeRange: ClosedRange<Int> {
+        let count = 8 + code.rawValue.count
+        return count...count
+    }
+}
+
+extension PJLink.StatusResponse: PJLink.MinMaxMessageSize {
+
+    public static var minMaxMessageSize: ClosedRange<Int> {
+        let responseCodeMinMax = PJLink.ResponseCode.minMaxMessageSize
+        let lowerBound = 8 + responseCodeMinMax.lowerBound
+        let upperBound = 8 + responseCodeMinMax.upperBound
+        return lowerBound...upperBound
+    }
 }
 
 extension PJLink.StatusResponse: LosslessStringConvertibleThrowing {
