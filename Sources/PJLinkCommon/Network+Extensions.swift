@@ -6,6 +6,7 @@
 //
 
 import Network
+import ConcurrencyExtras
 
 extension NetworkListener.State {
 
@@ -47,11 +48,6 @@ extension NWEndpoint.Port {
     public static let pjlink: Self = 4352
 }
 
-extension NetworkCoder where Self == PJLink.NetworkPJLinkCoder {
-
-    public static var pjlink: PJLink.NetworkPJLinkCoder { .init() }
-}
-
 extension NetworkConnection where ApplicationProtocol == Framer<PJLinkFramer> {
 
     public func receivePJLinkMessage() async throws -> PJLink.Message {
@@ -60,5 +56,10 @@ extension NetworkConnection where ApplicationProtocol == Framer<PJLinkFramer> {
 
     public func sendPJLinkMessage(_ message: PJLink.Message) async throws {
         try await send(message.description.utf8Data)
+    }
+
+    public var pjlinkMessages: AsyncThrowingStream<PJLink.Message, any Error> {
+        UncheckedSendable(messages.map { try PJLink.Message($0.content) })
+            .eraseToThrowingStream()
     }
 }

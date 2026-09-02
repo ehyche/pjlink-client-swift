@@ -29,7 +29,7 @@ extension PJLink {
             let logger = Logger(sub: .server, cat: .listener)
             let listener = try NetworkListener(
                 using: .parameters {
-                    Coder(PJLink.Message.self, using: .pjlink) {
+                    Framer(using: PJLinkFramer.self) {
                         TCP()
                     }
                 }
