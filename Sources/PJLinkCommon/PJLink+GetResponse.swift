@@ -320,3 +320,24 @@ extension PJLink.GetResponse {
         }
     }
 }
+
+extension PJLink.GetResponse: PJLink.MessageSizeRange {
+
+    public var messageSizeRange: ClosedRange<Int> {
+        switch self {
+        case .power: 9...9
+        case .inputSwitchClass1, .inputSwitchClass2, .avMute: 10...10
+        case .errorStatus: 14...14
+        case .lamp: 11...71
+        case .inputListClass1, .inputListClass2: 10...156
+        case .projectorName: 8...72
+        case .manufacturerName, .productName, .otherInformation, .serialNumber, .softwareVersion: 8...40
+        case .projectorClass: 9...9
+        case .inputTerminalName: 8...136
+        case .inputResolution, .recommendedResolution: 9...21
+        case .filterUsageTime: 9...13
+        case .lampReplacementModelNumber, .filterReplacementModelNumber: 8...136
+        case .freeze: 9...9
+        }
+    }
+}
