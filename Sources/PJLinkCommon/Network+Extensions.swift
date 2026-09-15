@@ -22,6 +22,21 @@ extension NetworkListener.State {
     }
 }
 
+extension NetworkConnection.State {
+
+    public var name: String {
+        switch self {
+        case .cancelled: ".cancelled"
+        case .failed(let error): ".failed(\(error))"
+        case .preparing: ".preparing"
+        case .ready: ".ready"
+        case .setup: ".setup"
+        case .waiting(let error): ".waiting(\(error))"
+        @unknown default: "unknown"
+        }
+    }
+}
+
 extension NetworkListener.ServiceRegistrationChange {
 
     public var name: String {

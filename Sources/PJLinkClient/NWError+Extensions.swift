@@ -6,7 +6,7 @@ extension NWError {
         switch self {
         case .posix(let posixErrorCode):
             switch posixErrorCode {
-            case .ENOTCONN, .ECONNRESET: true
+            case .ENOTCONN, .ECONNRESET, .EINVAL: true
             default: false
             }
         case .dns: false
