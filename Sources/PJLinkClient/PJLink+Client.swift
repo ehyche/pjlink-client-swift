@@ -78,6 +78,10 @@ extension PJLink {
             }
         }
 
+        public func shutdown() {
+            connectionState.connection.tryNextEndpoint()
+        }
+
         private mutating func withRetry(_ work: @Sendable (ConnectionState, LockIsolated<PJLink.State?>) async throws -> Void) async throws {
             let retryState = LockIsolated(RetryState.notTried)
             while retryState.value.shouldRetry {
