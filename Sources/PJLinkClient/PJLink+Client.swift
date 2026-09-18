@@ -18,57 +18,23 @@ extension PJLink {
         public var auth: AuthState
     }
 
-    public enum RetryState: Sendable {
-        case notTried
-        case success
-        case recoverableFailure(count: Int)
-        case unrecoverableFailure
-
-        private static let maxAttempts = 3
-
-        var shouldRetry: Bool {
-            switch self {
-            case .notTried: true
-            case .success: false
-            case .recoverableFailure(let count): count < Self.maxAttempts
-            case .unrecoverableFailure: false
-            }
-        }
-
-        var uponRecoverableFailure: Self {
-            switch self {
-            case .notTried: .recoverableFailure(count: 1)
-            case .success: .success
-            case .recoverableFailure(let count): .recoverableFailure(count: count + 1)
-            case .unrecoverableFailure: .unrecoverableFailure
-            }
-        }
-    }
-
-    // A Client's job is to manage the state for a single projector.
+    /// The client:
+    /// - Makes the appropriate API calls to the projector to carry out the desired function.
+    /// - It manages the `NetworkConnection` internal to each function.
+    /// - It does not manage state.
     public struct Client: Sendable {
         // The IP address of the projector.
         public let host: NWEndpoint.Host
         // The password to authenticate with the projector.
         private let password: String?
-        // Each client manages a single connection.
-        // We may try multiple connections in the future.
-        private var connectionState: ConnectionState
-        // Each client also mananges the state for single projector.
-        public let state = LockIsolated<PJLink.State?>(nil)
 
         public init(host: NWEndpoint.Host, password: String? = nil) {
             self.host = host
             self.password = password
-
-            self.connectionState = Self.createConnectionState(host: host)
         }
 
-        public mutating func resetConnectionState() {
-            self.connectionState = Self.createConnectionState(host: host)
-        }
-
-        public mutating func setup() async throws {
+        private static func setup(host: NWEndpoint.Host, password: String? = nil) async throws -> ConnectionState {
+            var connectionState = Self.createConnectionState(host: host)
             // This performs the handshake with the projector to determine how we authenticate.
             connectionState = try await Self.authenticate(on: connectionState.connection, password: password)
             // We do a first request so that we can successfully authenticate. If we are successful,
@@ -76,115 +42,54 @@ extension PJLink {
             if connectionState.auth.mustAuthenticate {
                 connectionState = try await Self.updateAuthenticationState(from: connectionState)
             }
+            return connectionState
         }
 
-        public func shutdown() {
-            connectionState.connection.tryNextEndpoint()
+        public func fetchState() async throws -> State {
+            let connectionState = try await Self.setup(host: host, password: password)
+            return try await Self.fetchState(from: connectionState)
         }
 
-        private mutating func withRetry(_ work: @Sendable (ConnectionState, LockIsolated<PJLink.State?>) async throws -> Void) async throws {
-            let retryState = LockIsolated(RetryState.notTried)
-            while retryState.value.shouldRetry {
-                do {
-                    try await work(connectionState, state)
-                    retryState.withValue { $0 = .success }
-                } catch {
-                    Self.logError(error, prefix: "withRetry Connection[\(self.connectionState.connection.id)] ")
-                    let shouldReconnect: Bool
-                    if let nwError = error as? NWError {
-                        shouldReconnect = nwError.shouldReconnect
-                    } else if let pjlinkError = error as? PJLink.Error {
-                        shouldReconnect = pjlinkError.shouldReconnect
-                    } else {
-                        shouldReconnect = false
-                    }
-                    if shouldReconnect {
-                        retryState.withValue { $0 = $0.uponRecoverableFailure }
-                        if retryState.value.shouldRetry {
-                            resetConnectionState()
-                            try await setup()
-                        } else {
-                            throw error
-                        }
-                    } else {
-                        throw error
-                    }
-                }
+        public func setPower(to onOff: OnOff) async throws -> PowerStatus {
+            let connectionState = try await Self.setup(host: host, password: password)
+            return try await Self.setPower(to: onOff, from: connectionState)
+        }
+
+        public func setInput(to input: Input) async throws -> Input {
+            let connectionState = try await Self.setup(host: host, password: password)
+            return try await Self.setInput(to: input, from: connectionState)
+        }
+
+        public func setMuteState(to muteState: MuteState) async throws -> MuteState {
+            let connectionState = try await Self.setup(host: host, password: password)
+            return try await Self.setMuteState(to: muteState, from: connectionState)
+        }
+
+        public func setSpeakerVolume(to volume: VolumeAdjustment) async throws {
+            let connectionState = try await Self.setup(host: host, password: password)
+            let projectorClass = try await Self.queryClass(from: connectionState)
+            guard projectorClass > .one else {
+                throw PJLink.Error.classDoesNotSupportCommand(projectorClass, .speakerVolume)
             }
+            try await Self.setSpeakerVolume(to: volume, from: connectionState)
         }
 
-        public mutating func refreshState() async throws {
-            try await withRetry { connState, lockState in
-                let newState = try await Self.fetchState(from: connState)
-                lockState.setValue(newState)
+        public func setMicrophoneVolume(to volume: VolumeAdjustment) async throws {
+            let connectionState = try await Self.setup(host: host, password: password)
+            let projectorClass = try await Self.queryClass(from: connectionState)
+            guard projectorClass > .one else {
+                throw PJLink.Error.classDoesNotSupportCommand(projectorClass, .microphoneVolume)
             }
+            try await Self.setMicrophoneVolume(to: volume, from: connectionState)
         }
 
-        public mutating func setPower(to onOff: PJLink.OnOff) async throws {
-            try await withRetry { connState, lockState in
-                let powerStatus = try await Self.setPower(to: onOff, from: connState)
-                lockState.withValue {
-                    $0?.power = powerStatus
-                }
+        public func setFreeze(to freeze: Freeze) async throws -> Freeze {
+            let connectionState = try await Self.setup(host: host, password: password)
+            let projectorClass = try await Self.queryClass(from: connectionState)
+            guard projectorClass > .one else {
+                throw PJLink.Error.classDoesNotSupportCommand(projectorClass, .freeze)
             }
-        }
-
-        public mutating func setInput(to input: PJLink.Input) async throws {
-            try await withRetry { connState, lockState in
-                let newInput = try await Self.setInput(to: input, from: connState)
-                lockState.withValue {
-                    $0?.activeInput = newInput
-                }
-            }
-        }
-
-        public mutating func setMuteState(to muteState: PJLink.MuteState) async throws {
-            try await withRetry { connState, lockState in
-                let newMuteState = try await Self.setMuteState(to: muteState, from: connState)
-                lockState.withValue {
-                    $0?.mute = newMuteState
-                }
-            }
-        }
-
-        public mutating func setSpeakerVolume(to volume: PJLink.VolumeAdjustment) async throws {
-            try await withRetry { connState, _ in
-                try await Self.setSpeakerVolume(to: volume, from: connState)
-            }
-        }
-
-        public mutating func setMicrophoneVolume(to volume: PJLink.VolumeAdjustment) async throws {
-            try await withRetry { connState, _ in
-                try await Self.setMicrophoneVolume(to: volume, from: connState)
-            }
-        }
-
-        public mutating func setFreeze(to freeze: PJLink.Freeze) async throws {
-            try await withRetry { connState, lockState in
-                let newFreeze = try await Self.setFreeze(to: freeze, from: connState)
-                lockState.withValue {
-                    $0?.freeze = newFreeze
-                }
-            }
-        }
-
-        public var stateDescription: String {
-            guard let projectorState = state.value else {
-                return "Not Initialized"
-            }
-            return projectorState.description
-        }
-
-        public var inputs: [PJLink.Input] {
-            return state.value?.inputs ?? []
-        }
-
-        public func handleNotification(_ notification: PJLink.Notification) {
-            let logger = Logger(sub: .client, cat: .notification)
-            logger.debug("Handling notification: \(notification.description, privacy: .public)")
-            state.withValue {
-                $0?.applyingNotification(notification)
-            }
+            return try await Self.setFreeze(to: freeze, from: connectionState)
         }
 
         public static func isProjectorPresent(at host: NWEndpoint.Host) async -> Bool {

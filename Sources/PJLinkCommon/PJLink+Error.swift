@@ -80,5 +80,6 @@ extension PJLink {
         case broadcastUDPSocketGeneral(String)
         case unimplementedMethod(String)
         case serverReceivedResponseInsteadOfRequest(String)
+        case classDoesNotSupportCommand(Class, Command)
     }
 }

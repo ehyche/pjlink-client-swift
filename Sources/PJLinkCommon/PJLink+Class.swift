@@ -6,7 +6,7 @@
 //
 
 extension PJLink {
-    public enum Class: String, CaseIterable, Sendable {
+    public enum Class: String, Equatable, CaseIterable, Sendable {
         case one = "1"
         case two = "2"
     }
@@ -22,4 +22,11 @@ extension PJLink.Class: LosslessStringConvertibleThrowing {
     }
 
     public var description: String { rawValue }
+}
+
+extension PJLink.Class: Comparable {
+
+    public static func < (lhs: Self, rhs: Self) -> Bool {
+        lhs.rawValue < rhs.rawValue
+    }
 }
