@@ -7,12 +7,12 @@
 
 extension PJLink {
 
-    public enum State: Sendable, Codable {
+    public enum State: Equatable, Sendable, Codable {
         case class1(Class1State)
         case class2(Class2State)
     }
 
-    public struct Class1State: Sendable, Codable {
+    public struct Class1State: Equatable, Sendable, Codable {
         public var power: PowerStatus
         public var mute: MuteState
         public var error: ErrorStatus
@@ -49,7 +49,7 @@ extension PJLink {
         }
     }
 
-    public struct Class2State: Sendable, Codable {
+    public struct Class2State: Equatable, Sendable, Codable {
         public var power: PowerStatus
         public var mute: MuteState
         public var error: ErrorStatus

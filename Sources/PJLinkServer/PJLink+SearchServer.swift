@@ -35,10 +35,11 @@ extension PJLink {
                 // Compute a random number of seconds between 1 and 10
                 let delay = Int.random(in: 1...10)
                 Task {
-                    // Sleep for this number of seconds
-                    logger.info("Delaying for \(delay) seconds...")
-                    try await Task.sleep(for: .seconds(delay))
                     do {
+                        // Sleep for this number of seconds
+                        logger.info("Delaying for \(delay) seconds...")
+                        try await Task.sleep(for: .seconds(delay))
+                        // Send the ACKN
                         try await sendSearchAck(to: searchRequest.host)
                         logger.info("SENT: ACKN to \(searchRequest.host.debugDescription, privacy: .public)")
                     } catch {

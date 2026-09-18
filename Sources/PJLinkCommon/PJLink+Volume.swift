@@ -7,7 +7,7 @@
 
 extension PJLink {
 
-    public struct Volume: Codable, Sendable {
+    public struct Volume: Equatable, Codable, Sendable {
         public var value: Int
 
         public init(value: Int = Self.initialVolume) {
