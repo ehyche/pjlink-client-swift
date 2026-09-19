@@ -78,3 +78,10 @@ extension NetworkConnection where ApplicationProtocol == Framer<PJLinkFramer> {
             .eraseToThrowingStream()
     }
 }
+
+extension NWEndpoint.Host: @retroactive Comparable {
+
+    public static func < (lhs: Self, rhs: Self) -> Bool {
+        lhs.debugDescription < rhs.debugDescription
+    }
+}

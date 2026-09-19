@@ -5,12 +5,18 @@
 // https://swiftpackageindex.com/apple/swift-argument-parser/documentation
 
 import ArgumentParser
+import ConcurrencyExtras
 import Foundation
 import Network
 import os
 import PJLinkCommon
 import PJLinkClient
 import PJLinkBroadcastUDP
+
+struct HostState: Equatable, Sendable {
+    let host: NWEndpoint.Host
+    let state: PJLink.State
+}
 
 @main
 struct PJLinkClientCLI: AsyncParsableCommand {
@@ -29,53 +35,63 @@ struct PJLinkClientCLI: AsyncParsableCommand {
     var password: String?
 
     mutating func run() async throws {
-        var projectors = [NWEndpoint.Host]()
+        let hosts: [NWEndpoint.Host]
         if let discovery {
             switch discovery {
             case .broadcast:
-                projectors = try await discoverByBroadcast()
+                hosts = try await discoverByBroadcast()
             case .pingSweep:
-                projectors = try await discoverByPingSweep()
+                hosts = try await discoverByPingSweep()
             }
-            guard !projectors.isEmpty else {
+            guard !hosts.isEmpty else {
                 print("No projectors found. Exiting.")
                 return
             }
         } else if let host {
-            projectors.append(.init(host))
+            hosts = [.init(host)]
         } else {
             print("Either --discovery or --host must be specified. Exiting.")
             return
         }
 
-        var clients = try await withThrowingTaskGroup(of: PJLink.Client.self, returning: [PJLink.Client].self) { [password = self.password] group in
-            for host in projectors {
+        let stateMap = try await withThrowingTaskGroup(
+            of: HostState.self,
+            returning: [NWEndpoint.Host: PJLink.State].self
+        ) { [password = self.password] group in
+            for host in hosts {
                 group.addTask {
-                    var client = PJLink.Client(host: host, password: password)
-                    print("Setting up client for projector at \(host)")
-                    try await client.setup()
+                    let client = PJLink.Client(host: host, password: password)
                     print("Fetching current state for projector at \(host)")
-                    try await client.refreshState()
-                    return client
+                    let state = try await client.fetchState()
+                    return HostState(host: host, state: state)
                 }
             }
-            var clients = [PJLink.Client]()
-            for try await client in group {
-                clients.append(client)
+            var map = [NWEndpoint.Host: PJLink.State]()
+            for try await hostState in group {
+                map[hostState.host] = hostState.state
             }
-            return clients
+            return map
         }
+
+        let stateMapIsolated = LockIsolated(stateMap)
 
         let notificationListener = try PJLink.ClientNotificationListener()
 
-        let listenerTask = Task { [clients] in
-            for try await notification in notificationListener.notificationStream {
-                print("Received \(notification.notification) from \(notification.host)")
-                if let client = clients.first(where: { $0.host == notification.host }) {
-                    client.handleNotification(notification.notification)
-                } else {
-                    print("Could not find Client for \(notification.host).")
+        let listenerTask = Task {
+            do {
+                for try await notification in notificationListener.notificationStream {
+                    print("Received \(notification.notification) from \(notification.host)")
+                    // Look up the state with this host
+                    stateMapIsolated.withValue { map in
+                        if let state = map[notification.host] {
+                            map[notification.host] = state.withNotification(notification.notification)
+                        } else {
+                            print("Could not find state for \(notification.host).")
+                        }
+                    }
                 }
+            } catch {
+                print("Error in client notification stream: \(error)")
             }
             return true
         }
@@ -83,22 +99,29 @@ struct PJLinkClientCLI: AsyncParsableCommand {
         var result = true
         while result {
             var clientIndex = 0
-            if clients.count > 1 {
-                printProjectorsMenu(clients)
+            let hosts = stateMapIsolated.value.keys.sorted()
+            if hosts.count > 1 {
+                printProjectorsMenu(stateMapIsolated.value.keys.sorted())
                 print("Select a projector (or just Enter to exit): ", terminator: "")
                 guard let line = readLine(), !line.isEmpty else { break }
-                guard let index = Int(line), index >= 0, index < clients.count else {
-                    print("\"\(line)\" is not a valid projector index. Please enter an integer between 0 and \(clients.count - 1) inclusive.")
+                guard let index = Int(line), index >= 0, index < hosts.count else {
+                    print("\"\(line)\" is not a valid projector index. Please enter an integer between 0 and \(hosts.count - 1) inclusive.")
                     continue
                 }
                 clientIndex = index
             }
-            result = await runMenuOnce(client: &clients[clientIndex])
+            let host = hosts[clientIndex]
+            if var state = stateMapIsolated.value[host] {
+                result = await runMenuOnce(host: host, password: password, state: &state)
+                stateMapIsolated.withValue { [state] map in
+                    map[host] = state
+                }
+            }
         }
 
         print("Cancelling ClientNotificationListener.")
         notificationListener.cancel()
-        _ = try await listenerTask.value
+        _ = await listenerTask.value
 
         print("PJLinkClientCLI exiting.")
     }
@@ -155,7 +178,9 @@ struct PJLinkClientCLI: AsyncParsableCommand {
     }
 
     private func runMenuOnce(
-        client: inout PJLink.Client
+        host: NWEndpoint.Host,
+        password: String?,
+        state: inout PJLink.State
     ) async -> Bool {
         printMenu()
         print("Enter an option to perform (or just Enter to exit): ", terminator: "")
@@ -166,13 +191,16 @@ struct PJLinkClientCLI: AsyncParsableCommand {
             return true
         }
 
+        let client = PJLink.Client(host: host, password: password)
+
         switch menuOption {
         case .showState:
-            print("Current state: \n\(client.stateDescription)")
+            print("Current state: \n\(state.description)")
         case .refreshState:
             do {
-                try await client.refreshState()
-                print("Refreshed state: \n\(client.stateDescription)")
+                let newState = try await client.fetchState()
+                print("Refreshed state: \n\(newState.description)")
+                state = newState
             } catch {
                 print("Error refreshing state: \(error)")
             }
@@ -183,14 +211,15 @@ struct PJLinkClientCLI: AsyncParsableCommand {
             guard let powerLine = readLine(), let onOff = PJLink.OnOff(rawValue: powerLine) else { break }
             do {
                 // Make the API call
-                try await client.setPower(to: onOff)
-                print("Current state: \n\(client.stateDescription)")
+                let powerStatus = try await client.setPower(to: onOff)
+                state.power = powerStatus
+                print("Power Status set to \(powerStatus)")
             } catch {
                 print("Error setting power status: \(error)")
             }
         case .setInput:
             // Get the user input
-            let inputs = client.inputs
+            let inputs = state.inputs
             printInputMenu(inputs: inputs)
             print("Enter index of input, or Enter to return to main menu: ", terminator: "")
             guard let inputLine = readLine(), let inputIndex = Int(inputLine) else {
@@ -203,8 +232,9 @@ struct PJLinkClientCLI: AsyncParsableCommand {
             }
             do {
                 // Make the API call
-                try await client.setInput(to: inputs[inputIndex])
-                print("Current state: \n\(client.stateDescription)")
+                let newInput = try await client.setInput(to: inputs[inputIndex])
+                state.activeInput = newInput
+                print("Input set to: \(newInput)")
             } catch {
                 print("Error setting input: \(error)")
             }
@@ -223,8 +253,9 @@ struct PJLinkClientCLI: AsyncParsableCommand {
             }
             do {
                 // Make the API call
-                try await client.setMuteState(to: allMuteStates[inputIndex])
-                print("Current state: \n\(client.stateDescription)")
+                let newMuteState = try await client.setMuteState(to: allMuteStates[inputIndex])
+                state.mute = newMuteState
+                print("Mute set to: \(newMuteState)")
             } catch {
                 print("Error setting mute: \(error)")
             }
@@ -282,8 +313,9 @@ struct PJLinkClientCLI: AsyncParsableCommand {
             }
             do {
                 // Make the API call
-                try await client.setFreeze(to: allFreeze[inputIndex])
-                print("Current state: \n\(client.stateDescription)")
+                let newFreeze = try await client.setFreeze(to: allFreeze[inputIndex])
+                state.freeze = newFreeze
+                print("Freeze set to: \(newFreeze)")
             } catch {
                 print("Error setting freeze: \(error)")
             }
@@ -292,9 +324,9 @@ struct PJLinkClientCLI: AsyncParsableCommand {
         return true
     }
 
-    private func printProjectorsMenu(_ clients: [PJLink.Client]) {
-        clients.enumerated().forEach { index, client in
-            print("\(index)) \(client.host)")
+    private func printProjectorsMenu(_ hosts: [NWEndpoint.Host]) {
+        hosts.enumerated().forEach { index, host in
+            print("\(index)) \(host)")
         }
     }
 
