@@ -69,8 +69,8 @@ extension NetworkConnection where ApplicationProtocol == Framer<PJLinkFramer> {
         try PJLink.Message(try await receive().content)
     }
 
-    public func sendPJLinkMessage(_ message: PJLink.Message) async throws {
-        try await send(message.description.utf8Data)
+    public func sendPJLinkMessage(_ message: PJLink.Message, lastMessage: Bool = false) async throws {
+        try await send(message.description.utf8Data, lastMessage: lastMessage)
     }
 
     public var pjlinkMessages: AsyncThrowingStream<PJLink.Message, any Error> {
