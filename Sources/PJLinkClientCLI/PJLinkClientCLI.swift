@@ -101,7 +101,7 @@ struct PJLinkClientCLI: AsyncParsableCommand {
             var clientIndex = 0
             let hosts = stateMapIsolated.value.keys.sorted()
             if hosts.count > 1 {
-                printProjectorsMenu(stateMapIsolated.value.keys.sorted())
+                printProjectorsMenu(hosts)
                 print("Select a projector (or just Enter to exit): ", terminator: "")
                 guard let line = readLine(), !line.isEmpty else { break }
                 guard let index = Int(line), index >= 0, index < hosts.count else {
