@@ -145,6 +145,33 @@ extension PJLink.GetRequest {
         case .freeze: .freeze
         }
     }
+
+    public var mockResponse: PJLink.GetResponse {
+        switch self {
+        case .power: .power(.standby)
+        case .inputSwitchClass1: .inputSwitchClass1(.mock)
+        case .inputSwitchClass2: .inputSwitchClass2(.mock)
+        case .avMute: .avMute(.mock)
+        case .errorStatus: .errorStatus(.mock)
+        case .lamp: .lamp(.mock)
+        case .inputListClass1: .inputListClass1(.mock)
+        case .inputListClass2: .inputListClass2(.mock)
+        case .projectorName: .projectorName(.mock)
+        case .manufacturerName: .manufacturerName(.mock)
+        case .productName: .productName(.mock)
+        case .otherInformation: .otherInformation(.mock)
+        case .projectorClass: .projectorClass(.two)
+        case .serialNumber: .serialNumber(.mock)
+        case .softwareVersion: .softwareVersion(.mock)
+        case .inputTerminalName: .inputTerminalName(.mock)
+        case .inputResolution: .inputResolution(.mock)
+        case .recommendedResolution: .recommendedResolution(.mock)
+        case .filterUsageTime: .filterUsageTime(.mock)
+        case .lampReplacementModelNumber: .lampReplacementModelNumber(.mock)
+        case .filterReplacementModelNumber: .filterReplacementModelNumber(.mock)
+        case .freeze: .freeze(.mock)
+        }
+    }
 }
 
 extension PJLink.GetRequest: PJLink.MessageSizeRange {
