@@ -255,6 +255,18 @@ extension PJLink.AuthResponse: CaseIterable {
     }
 }
 
+extension PJLink.AuthResponse {
+
+    public static var initialResponseRange: ClosedRange<Int> {
+        // The two possible messages in the initial response are: .authDisabled, or .securityLevel1
+        let msgARange = PJLink.AuthResponse.authDisabled.messageSizeRange
+        let msgBRange = PJLink.AuthResponse.securityLevel1(.mock).messageSizeRange
+        let lowerBound = min(msgARange.lowerBound, msgBRange.lowerBound)
+        let upperBound = max(msgARange.upperBound, msgBRange.upperBound)
+        return lowerBound...upperBound
+    }
+}
+
 extension PJLink.AuthState {
 
     public static let level2ClientRandomCount = 32
