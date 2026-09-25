@@ -38,15 +38,18 @@ extension PJLink.PowerStatus {
         }
     }
 
-    public func applyingOnOff(_ onOff: PJLink.OnOff) -> Self {
-        switch (self, onOff) {
-        case (.standby, .on): .warmUp
-        case (.warmUp, .on): .lampOn
-        case (.warmUp, .off): .standby
-        case (.lampOn, .off): .cooling
-        case (.cooling, .off): .standby
-        case (.cooling, .on): .lampOn
-        default: self
+    public func applyingOnOff(_ onOff: PJLink.OnOff, useIntermediateStates: Bool = true) -> Self {
+        switch (self, onOff, useIntermediateStates) {
+        case (.standby, .on, true): .warmUp
+        case (.standby, .on, false): .lampOn
+        case (.standby, .off, _): .standby
+        case (.lampOn, .off, true): .cooling
+        case (.lampOn, .off, false): .standby
+        case (.lampOn, .on, _): .lampOn
+        case (.warmUp, .on, _): .lampOn
+        case (.warmUp, .off, _): .standby
+        case (.cooling, .on, _): .lampOn
+        case (.cooling, .off, _): .standby
         }
     }
 }
