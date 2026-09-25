@@ -14,7 +14,8 @@ import PJLinkCommon
 extension PJLink {
 
     public struct ConnectionState: Sendable {
-        public var connection: NetworkConnection<Framer<PJLinkFramer>>
+//        public var connection: NetworkConnection<Framer<PJLinkFramer>>
+        public var connection: NetworkConnection<TCP>
         public var auth: AuthState
     }
 
@@ -52,17 +53,17 @@ extension PJLink {
 
         public func setPower(to onOff: OnOff) async throws -> PowerStatus {
             let connectionState = try await Self.setup(host: host, password: password)
-            return try await Self.setPower(to: onOff, from: connectionState)
+            return try await Self.setPower(to: onOff, from: connectionState, lastMessage: true)
         }
 
         public func setInput(to input: Input) async throws -> Input {
             let connectionState = try await Self.setup(host: host, password: password)
-            return try await Self.setInput(to: input, from: connectionState)
+            return try await Self.setInput(to: input, from: connectionState, lastMessage: true)
         }
 
         public func setMuteState(to muteState: MuteState) async throws -> MuteState {
             let connectionState = try await Self.setup(host: host, password: password)
-            return try await Self.setMuteState(to: muteState, from: connectionState)
+            return try await Self.setMuteState(to: muteState, from: connectionState, lastMessage: true)
         }
 
         public func setSpeakerVolume(to volume: VolumeAdjustment) async throws {
@@ -71,7 +72,7 @@ extension PJLink {
             guard projectorClass > .one else {
                 throw PJLink.Error.classDoesNotSupportCommand(projectorClass, .speakerVolume)
             }
-            try await Self.setSpeakerVolume(to: volume, from: connectionState)
+            try await Self.setSpeakerVolume(to: volume, from: connectionState, lastMessage: true)
         }
 
         public func setMicrophoneVolume(to volume: VolumeAdjustment) async throws {
@@ -80,7 +81,7 @@ extension PJLink {
             guard projectorClass > .one else {
                 throw PJLink.Error.classDoesNotSupportCommand(projectorClass, .microphoneVolume)
             }
-            try await Self.setMicrophoneVolume(to: volume, from: connectionState)
+            try await Self.setMicrophoneVolume(to: volume, from: connectionState, lastMessage: true)
         }
 
         public func setFreeze(to freeze: Freeze) async throws -> Freeze {
@@ -89,16 +90,19 @@ extension PJLink {
             guard projectorClass > .one else {
                 throw PJLink.Error.classDoesNotSupportCommand(projectorClass, .freeze)
             }
-            return try await Self.setFreeze(to: freeze, from: connectionState)
+            return try await Self.setFreeze(to: freeze, from: connectionState, lastMessage: true)
         }
 
         public static func isProjectorPresent(at host: NWEndpoint.Host) async -> Bool {
             let connection = NetworkConnection(to: .hostPort(host: host, port: .pjlink)) {
-                Framer(using: PJLinkFramer.self) {
-                    TCP()
-                        .connectionTimeout(1)
-                        .persistTimeout(1)
-                }
+//                Framer(using: PJLinkFramer.self) {
+//                    TCP()
+//                        .connectionTimeout(1)
+//                        .persistTimeout(1)
+//                }
+                TCP()
+                    .connectionTimeout(1)
+                    .persistTimeout(1)
             }
 
             let logger = Logger(sub: .client, cat: .connection)
@@ -135,7 +139,7 @@ extension PJLink {
                 // Upon connection, we should receive either:
                 // "PJLINK 0" (Authentication disabled); OR
                 // "PJLINK 1 498e4a67" (Authentication enabled with 4-byte random number)
-                let connectionMessage = try await connection.receive().content
+                let connectionMessage = try await connection.receivePJLinkMessage()
                 logger.debug("RECV: \(connectionMessage)")
                 // If we were able to parse this response,
                 // then we know we are talking to a projector.
@@ -152,9 +156,10 @@ extension PJLink.Client {
 
     private static func createConnectionState(host: NWEndpoint.Host) -> PJLink.ConnectionState {
         let connection = NetworkConnection(to: .hostPort(host: host, port: .pjlink)) {
-            Framer(using: PJLinkFramer.self) {
-                TCP()
-            }
+//            Framer(using: PJLinkFramer.self) {
+//                TCP()
+//            }
+            TCP()
         }
 
         let logger = Logger(sub: .client, cat: .connection)
@@ -192,7 +197,8 @@ extension PJLink.Client {
     }
 
     private static func authenticate(
-        on connection: NetworkConnection<Framer<PJLinkFramer>>,
+//        on connection: NetworkConnection<Framer<PJLinkFramer>>,
+        on connection: NetworkConnection<TCP>,
         password: String?
     ) async throws -> PJLink.ConnectionState {
         let logger = Logger(sub: .client, cat: .connection)
@@ -275,21 +281,27 @@ extension PJLink.Client {
         }
     }
 
-    private static func fetchState(from connectionState: PJLink.ConnectionState) async throws -> PJLink.State {
+    private static func fetchState(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.State {
         // Fetch the projector class
         let projectorClass = try await queryClass(from: connectionState)
 
         switch projectorClass {
         case .one:
-            let class1State = try await fetchClass1State(from: connectionState)
+            let class1State = try await fetchClass1State(from: connectionState, lastMessage: lastMessage)
             return .class1(class1State)
         case .two:
-            let class2State = try await fetchClass2State(from: connectionState)
+            let class2State = try await fetchClass2State(from: connectionState, lastMessage: lastMessage)
             return .class2(class2State)
         }
     }
 
-    private static func fetchClass1State(from connectionState: PJLink.ConnectionState) async throws -> PJLink.Class1State {
+    private static func fetchClass1State(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.Class1State {
         // Fetch the power status
         let powerStatus = try await queryPowerStatus(from: connectionState)
         // Fetch the input switch
@@ -309,7 +321,7 @@ extension PJLink.Client {
         // Fetch the product name
         let productName = try await queryProductName(from: connectionState)
         // Fetch the other information
-        let otherInformation = try await queryOtherInformation(from: connectionState)
+        let otherInformation = try await queryOtherInformation(from: connectionState, lastMessage: lastMessage)
 
         return .init(
             power: powerStatus,
@@ -325,7 +337,10 @@ extension PJLink.Client {
         )
     }
 
-    private static func fetchClass2State(from connectionState: PJLink.ConnectionState) async throws -> PJLink.Class2State {
+    private static func fetchClass2State(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.Class2State {
         // Fetch the power status
         let powerStatus = try await queryPowerStatus(from: connectionState)
         // Fetch the input switch
@@ -360,14 +375,14 @@ extension PJLink.Client {
         let lampReplacementModelNumber = try await queryLampReplacementModelNumber(from: connectionState)
         // Fetch the filter replacement model number
         let filterReplacementModelNumber = try await queryFilterReplacementModelNumber(from: connectionState)
-        // Fetch the freeze state
-        let freeze = try await queryFreeze(from: connectionState)
         // Get the input terminal name for each InputSwitch in the list
         var inputNames = [PJLink.InputSwitchClass2: PJLink.InputTerminalName]()
         for inputSwitch in inputList.switches {
             let inputTerminalName = try await queryInputTerminalName(for: inputSwitch, from: connectionState)
             inputNames[inputSwitch] = inputTerminalName
         }
+        // Fetch the freeze state
+        let freeze = try await queryFreeze(from: connectionState, lastMessage: lastMessage)
 
         return .init(
             power: powerStatus,
@@ -450,8 +465,11 @@ extension PJLink.Client {
         return response
     }
 
-    private static func queryPowerStatus(from connectionState: PJLink.ConnectionState) async throws -> PJLink.PowerStatus {
-        let response = try await queryThrowing(request: .power, from: connectionState)
+    private static func queryPowerStatus(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.PowerStatus {
+        let response = try await queryThrowing(request: .power, from: connectionState, lastMessage: lastMessage)
 
         guard let powerStatus = response.powerStatus else {
             throw PJLink.Error.unexpectedResponseCommand(request: .power, response: response.command)
@@ -460,8 +478,15 @@ extension PJLink.Client {
         return powerStatus
     }
 
-    private static func queryInputSwitchClass1(from connectionState: PJLink.ConnectionState) async throws -> PJLink.InputSwitchClass1 {
-        let response = try await queryThrowing(request: .inputSwitchClass1, from: connectionState)
+    private static func queryInputSwitchClass1(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.InputSwitchClass1 {
+        let response = try await queryThrowing(
+            request: .inputSwitchClass1,
+            from: connectionState,
+            lastMessage: lastMessage
+        )
 
         guard let inputSwitchClass1 = response.inputSwitchClass1 else {
             throw PJLink.Error.unexpectedResponseCommand(request: .inputSwitch, response: response.command)
@@ -470,8 +495,15 @@ extension PJLink.Client {
         return inputSwitchClass1
     }
 
-    private static func queryInputSwitchClass2(from connectionState: PJLink.ConnectionState) async throws -> PJLink.InputSwitchClass2 {
-        let response = try await queryThrowing(request: .inputSwitchClass2, from: connectionState)
+    private static func queryInputSwitchClass2(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.InputSwitchClass2 {
+        let response = try await queryThrowing(
+            request: .inputSwitchClass2,
+            from: connectionState,
+            lastMessage: lastMessage
+        )
 
         guard let inputSwitchClass2 = response.inputSwitchClass2 else {
             throw PJLink.Error.unexpectedResponseCommand(request: .inputSwitch, response: response.command)
@@ -480,8 +512,11 @@ extension PJLink.Client {
         return inputSwitchClass2
     }
 
-    private static func queryMuteState(from connectionState: PJLink.ConnectionState) async throws -> PJLink.MuteState {
-        let response = try await queryThrowing(request: .avMute, from: connectionState)
+    private static func queryMuteState(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.MuteState {
+        let response = try await queryThrowing(request: .avMute, from: connectionState, lastMessage: lastMessage)
 
         guard let muteState = response.muteState else {
             throw PJLink.Error.unexpectedResponseCommand(request: .avMute, response: response.command)
@@ -490,8 +525,11 @@ extension PJLink.Client {
         return muteState
     }
 
-    private static func queryErrorStatus(from connectionState: PJLink.ConnectionState) async throws -> PJLink.ErrorStatus {
-        let response = try await queryThrowing(request: .errorStatus, from: connectionState)
+    private static func queryErrorStatus(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.ErrorStatus {
+        let response = try await queryThrowing(request: .errorStatus, from: connectionState, lastMessage: lastMessage)
 
         guard let errorStatus = response.errorStatus else {
             throw PJLink.Error.unexpectedResponseCommand(request: .errorStatus, response: response.command)
@@ -500,8 +538,11 @@ extension PJLink.Client {
         return errorStatus
     }
 
-    private static func queryLampsStatus(from connectionState: PJLink.ConnectionState) async throws -> PJLink.LampsStatus {
-        let response = try await queryThrowing(request: .lamp, from: connectionState)
+    private static func queryLampsStatus(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.LampsStatus {
+        let response = try await queryThrowing(request: .lamp, from: connectionState, lastMessage: lastMessage)
 
         guard let lampsStatus = response.lampsStatus else {
             throw PJLink.Error.unexpectedResponseCommand(request: .lamp, response: response.command)
@@ -510,8 +551,15 @@ extension PJLink.Client {
         return lampsStatus
     }
 
-    private static func queryInputListClass1(from connectionState: PJLink.ConnectionState) async throws -> PJLink.InputSwitchesClass1 {
-        let response = try await queryThrowing(request: .inputListClass1, from: connectionState)
+    private static func queryInputListClass1(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.InputSwitchesClass1 {
+        let response = try await queryThrowing(
+            request: .inputListClass1,
+            from: connectionState,
+            lastMessage: lastMessage
+        )
 
         guard let inputList = response.inputListClass1 else {
             throw PJLink.Error.unexpectedResponseCommand(request: .inputList, response: response.command)
@@ -520,8 +568,15 @@ extension PJLink.Client {
         return inputList
     }
 
-    private static func queryInputListClass2(from connectionState: PJLink.ConnectionState) async throws -> PJLink.InputSwitchesClass2 {
-        let response = try await queryThrowing(request: .inputListClass2, from: connectionState)
+    private static func queryInputListClass2(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.InputSwitchesClass2 {
+        let response = try await queryThrowing(
+            request: .inputListClass2,
+            from: connectionState,
+            lastMessage: lastMessage
+        )
 
         guard let inputList = response.inputListClass2 else {
             throw PJLink.Error.unexpectedResponseCommand(request: .inputList, response: response.command)
@@ -530,8 +585,15 @@ extension PJLink.Client {
         return inputList
     }
 
-    private static func queryProjectorName(from connectionState: PJLink.ConnectionState) async throws -> PJLink.ProjectorName {
-        let response = try await queryThrowing(request: .projectorName, from: connectionState)
+    private static func queryProjectorName(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.ProjectorName {
+        let response = try await queryThrowing(
+            request: .projectorName,
+            from: connectionState,
+            lastMessage: lastMessage
+        )
 
         guard let projectorName = response.projectorName else {
             throw PJLink.Error.unexpectedResponseCommand(request: .projectorName, response: response.command)
@@ -540,8 +602,15 @@ extension PJLink.Client {
         return projectorName
     }
 
-    private static func queryManufacturerName(from connectionState: PJLink.ConnectionState) async throws -> PJLink.ManufacturerName {
-        let response = try await queryThrowing(request: .manufacturerName, from: connectionState)
+    private static func queryManufacturerName(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.ManufacturerName {
+        let response = try await queryThrowing(
+            request: .manufacturerName,
+            from: connectionState,
+            lastMessage: lastMessage
+        )
 
         guard let manufacturerName = response.manufacturerName else {
             throw PJLink.Error.unexpectedResponseCommand(request: .manufacturerName, response: response.command)
@@ -550,8 +619,15 @@ extension PJLink.Client {
         return manufacturerName
     }
 
-    private static func queryProductName(from connectionState: PJLink.ConnectionState) async throws -> PJLink.ProductName {
-        let response = try await queryThrowing(request: .productName, from: connectionState)
+    private static func queryProductName(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.ProductName {
+        let response = try await queryThrowing(
+            request: .productName,
+            from: connectionState,
+            lastMessage: lastMessage
+        )
 
         guard let productName = response.productName else {
             throw PJLink.Error.unexpectedResponseCommand(request: .productName, response: response.command)
@@ -560,8 +636,15 @@ extension PJLink.Client {
         return productName
     }
 
-    private static func queryOtherInformation(from connectionState: PJLink.ConnectionState) async throws -> PJLink.OtherInformation {
-        let response = try await queryThrowing(request: .otherInformation, from: connectionState)
+    private static func queryOtherInformation(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.OtherInformation {
+        let response = try await queryThrowing(
+            request: .otherInformation,
+            from: connectionState,
+            lastMessage: lastMessage
+        )
 
         guard let otherInformation = response.otherInformation else {
             throw PJLink.Error.unexpectedResponseCommand(request: .otherInformation, response: response.command)
@@ -570,8 +653,15 @@ extension PJLink.Client {
         return otherInformation
     }
 
-    private static func queryClass(from connectionState: PJLink.ConnectionState) async throws -> PJLink.Class {
-        let response = try await queryThrowing(request: .projectorClass, from: connectionState)
+    private static func queryClass(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.Class {
+        let response = try await queryThrowing(
+            request: .projectorClass,
+            from: connectionState,
+            lastMessage: lastMessage
+        )
 
         guard let projectorClass = response.projectorClass else {
             throw PJLink.Error.unexpectedResponseCommand(request: .projectorClass, response: response.command)
@@ -580,8 +670,15 @@ extension PJLink.Client {
         return projectorClass
     }
 
-    private static func querySerialNumber(from connectionState: PJLink.ConnectionState) async throws -> PJLink.SerialNumber {
-        let response = try await queryThrowing(request: .serialNumber, from: connectionState)
+    private static func querySerialNumber(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.SerialNumber {
+        let response = try await queryThrowing(
+            request: .serialNumber,
+            from: connectionState,
+            lastMessage: lastMessage
+        )
 
         guard let serialNumber = response.serialNumber else {
             throw PJLink.Error.unexpectedResponseCommand(request: .serialNumber, response: response.command)
@@ -590,8 +687,15 @@ extension PJLink.Client {
         return serialNumber
     }
 
-    private static func querySoftwareVersion(from connectionState: PJLink.ConnectionState) async throws -> PJLink.SoftwareVersion {
-        let response = try await queryThrowing(request: .softwareVersion, from: connectionState)
+    private static func querySoftwareVersion(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.SoftwareVersion {
+        let response = try await queryThrowing(
+            request: .softwareVersion,
+            from: connectionState,
+            lastMessage: lastMessage
+        )
 
         guard let softwareVersion = response.softwareVersion else {
             throw PJLink.Error.unexpectedResponseCommand(request: .softwareVersion, response: response.command)
@@ -602,10 +706,15 @@ extension PJLink.Client {
 
     private static func queryInputTerminalName(
         for inputSwitch: PJLink.InputSwitchClass2,
-        from connectionState: PJLink.ConnectionState
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
     ) async throws -> PJLink.InputTerminalName {
         let request: PJLink.GetRequest = .inputTerminalName(inputSwitch)
-        let response = try await queryThrowing(request: request, from: connectionState)
+        let response = try await queryThrowing(
+            request: request,
+            from: connectionState,
+            lastMessage: lastMessage
+        )
 
         guard let inputTerminalName = response.inputTerminalName else {
             throw PJLink.Error.unexpectedResponseCommand(request: .inputTerminalName, response: response.command)
@@ -614,8 +723,15 @@ extension PJLink.Client {
         return inputTerminalName
     }
 
-    private static func queryInputResolution(from connectionState: PJLink.ConnectionState) async throws -> PJLink.InputResolution {
-        let response = try await queryThrowing(request: .inputResolution, from: connectionState)
+    private static func queryInputResolution(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.InputResolution {
+        let response = try await queryThrowing(
+            request: .inputResolution,
+            from: connectionState,
+            lastMessage: lastMessage
+        )
 
         guard let inputResolution = response.inputResolution else {
             throw PJLink.Error.unexpectedResponseCommand(request: .inputResolution, response: response.command)
@@ -624,8 +740,15 @@ extension PJLink.Client {
         return inputResolution
     }
 
-    private static func queryRecommendedResolution(from connectionState: PJLink.ConnectionState) async throws -> PJLink.Resolution {
-        let response = try await queryThrowing(request: .recommendedResolution, from: connectionState)
+    private static func queryRecommendedResolution(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.Resolution {
+        let response = try await queryThrowing(
+            request: .recommendedResolution,
+            from: connectionState,
+            lastMessage: lastMessage
+        )
 
         guard let recommendedResolution = response.recommendedResolution else {
             throw PJLink.Error.unexpectedResponseCommand(request: .recommendedResolution, response: response.command)
@@ -634,8 +757,15 @@ extension PJLink.Client {
         return recommendedResolution
     }
 
-    private static func queryFilterUsageTime(from connectionState: PJLink.ConnectionState) async throws -> PJLink.FilterUsageTime {
-        let response = try await queryThrowing(request: .filterUsageTime, from: connectionState)
+    private static func queryFilterUsageTime(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.FilterUsageTime {
+        let response = try await queryThrowing(
+            request: .filterUsageTime,
+            from: connectionState,
+            lastMessage: lastMessage
+        )
 
         guard let filterUsageTime = response.filterUsageTime else {
             throw PJLink.Error.unexpectedResponseCommand(request: .filterUsageTime, response: response.command)
@@ -644,8 +774,15 @@ extension PJLink.Client {
         return filterUsageTime
     }
 
-    private static func queryLampReplacementModelNumber(from connectionState: PJLink.ConnectionState) async throws -> PJLink.ModelNumber {
-        let response = try await queryThrowing(request: .lampReplacementModelNumber, from: connectionState)
+    private static func queryLampReplacementModelNumber(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.ModelNumber {
+        let response = try await queryThrowing(
+            request: .lampReplacementModelNumber,
+            from: connectionState,
+            lastMessage: lastMessage
+        )
 
         guard let modelNumber = response.lampReplacementModelNumber else {
             throw PJLink.Error.unexpectedResponseCommand(request: .lampReplacementModelNumber, response: response.command)
@@ -654,8 +791,15 @@ extension PJLink.Client {
         return modelNumber
     }
 
-    private static func queryFilterReplacementModelNumber(from connectionState: PJLink.ConnectionState) async throws -> PJLink.ModelNumber {
-        let response = try await queryThrowing(request: .filterReplacementModelNumber, from: connectionState)
+    private static func queryFilterReplacementModelNumber(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.ModelNumber {
+        let response = try await queryThrowing(
+            request: .filterReplacementModelNumber,
+            from: connectionState,
+            lastMessage: lastMessage
+        )
 
         guard let modelNumber = response.filterReplacementModelNumber else {
             throw PJLink.Error.unexpectedResponseCommand(request: .filterReplacementModelNumber, response: response.command)
@@ -664,8 +808,15 @@ extension PJLink.Client {
         return modelNumber
     }
 
-    private static func queryFreeze(from connectionState: PJLink.ConnectionState) async throws -> PJLink.Freeze {
-        let response = try await queryThrowing(request: .freeze, from: connectionState)
+    private static func queryFreeze(
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
+    ) async throws -> PJLink.Freeze {
+        let response = try await queryThrowing(
+            request: .freeze,
+            from: connectionState,
+            lastMessage: lastMessage
+        )
 
         guard let freeze = response.freeze else {
             throw PJLink.Error.unexpectedResponseCommand(request: .freeze, response: response.command)
@@ -679,9 +830,10 @@ extension PJLink.Client {
     /// the `PJLink.Error.queryFailed` error.
     private static func queryThrowing(
         request: PJLink.GetRequest,
-        from connectionState: PJLink.ConnectionState
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
     ) async throws -> PJLink.GetResponse {
-        let response = try await query(request: request, from: connectionState)
+        let response = try await query(request: request, from: connectionState, lastMessage: lastMessage)
 
         switch response {
         case .auth:
@@ -698,7 +850,8 @@ extension PJLink.Client {
     /// throw an error.
     private static func query(
         request: PJLink.GetRequest,
-        from connectionState: PJLink.ConnectionState
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
     ) async throws -> PJLink.Response {
         let logger = Logger(sub: .client, cat: .connection)
 
@@ -707,7 +860,7 @@ extension PJLink.Client {
                 .init(request, authPrefix: try connectionState.auth.authPrefix)
             )
         )
-        try await connectionState.connection.sendPJLinkMessage(requestMessage)
+        try await connectionState.connection.sendPJLinkMessage(requestMessage, lastMessage: lastMessage)
         logger.debug("SEND \(requestMessage)")
 
         let responseMessage = try await connectionState.connection.receivePJLinkMessage()
@@ -731,85 +884,99 @@ extension PJLink.Client {
 
     private static func setPower(
         to onOff: PJLink.OnOff,
-        from connectionState: PJLink.ConnectionState
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
     ) async throws -> PJLink.PowerStatus {
         // Set the power on or off
         try await setThrowing(request: .power(onOff), from: connectionState)
         // Fetch the power status
-        return try await queryPowerStatus(from: connectionState)
+        return try await queryPowerStatus(from: connectionState, lastMessage: lastMessage)
     }
 
     private static func setInput(
         to input: PJLink.Input,
-        from connectionState: PJLink.ConnectionState
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
     ) async throws -> PJLink.Input {
         switch input {
         case .class1(let inputSwitchClass1):
-            return .class1(try await setInputClass1(to: inputSwitchClass1, from: connectionState))
+            return .class1(
+                try await setInputClass1(to: inputSwitchClass1, from: connectionState, lastMessage: lastMessage)
+            )
         case let .class2(inputSwitchClass2, inputTerminalName):
-            return .class2(try await setInputClass2(to: inputSwitchClass2, from: connectionState), inputTerminalName)
+            return .class2(
+                try await setInputClass2(to: inputSwitchClass2, from: connectionState, lastMessage: lastMessage),
+                inputTerminalName
+            )
         }
     }
 
     private static func setInputClass1(
         to inputSwitch: PJLink.InputSwitchClass1,
-        from connectionState: PJLink.ConnectionState
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
     ) async throws -> PJLink.InputSwitchClass1 {
         // Set the input
         try await setThrowing(request: .inputSwitchClass1(inputSwitch), from: connectionState)
         // Fetch the current input
-        return try await queryInputSwitchClass1(from: connectionState)
+        return try await queryInputSwitchClass1(from: connectionState, lastMessage: lastMessage)
     }
 
     private static func setInputClass2(
         to inputSwitch: PJLink.InputSwitchClass2,
-        from connectionState: PJLink.ConnectionState
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
     ) async throws -> PJLink.InputSwitchClass2 {
         // Set the input
         try await setThrowing(request: .inputSwitchClass2(inputSwitch), from: connectionState)
         // Fetch the current input
-        return try await queryInputSwitchClass2(from: connectionState)
+        return try await queryInputSwitchClass2(from: connectionState, lastMessage: lastMessage)
     }
 
     private static func setMuteState(
         to muteState: PJLink.MuteState,
-        from connectionState: PJLink.ConnectionState
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
     ) async throws -> PJLink.MuteState {
         // Set the mute state
         try await setThrowing(request: .avMute(muteState), from: connectionState)
         // Fetch the current mute state
-        return try await queryMuteState(from: connectionState)
+        return try await queryMuteState(from: connectionState, lastMessage: lastMessage)
     }
 
     private static func setSpeakerVolume(
         to volume: PJLink.VolumeAdjustment,
-        from connectionState: PJLink.ConnectionState
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
     ) async throws {
-        try await setThrowing(request: .speakerVolume(volume), from: connectionState)
+        try await setThrowing(request: .speakerVolume(volume), from: connectionState, lastMessage: lastMessage)
     }
 
     private static func setMicrophoneVolume(
         to volume: PJLink.VolumeAdjustment,
-        from connectionState: PJLink.ConnectionState
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
     ) async throws {
-        try await setThrowing(request: .microphoneVolume(volume), from: connectionState)
+        try await setThrowing(request: .microphoneVolume(volume), from: connectionState, lastMessage: lastMessage)
     }
 
     private static func setFreeze(
         to freeze: PJLink.Freeze,
-        from connectionState: PJLink.ConnectionState
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
     ) async throws -> PJLink.Freeze {
         // Set the freeze state
         try await setThrowing(request: .freeze(freeze), from: connectionState)
         // Fetch the current freeze state
-        return try await queryFreeze(from: connectionState)
+        return try await queryFreeze(from: connectionState, lastMessage: lastMessage)
     }
 
     private static func setThrowing(
         request: PJLink.SetRequest,
-        from connectionState: PJLink.ConnectionState
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
     ) async throws {
-        let response = try await set(request: request, from: connectionState)
+        let response = try await set(request: request, from: connectionState, lastMessage: lastMessage)
         switch response.code {
         case .ok:
             break
@@ -820,12 +987,13 @@ extension PJLink.Client {
 
     private static func set(
         request: PJLink.SetRequest,
-        from connectionState: PJLink.ConnectionState
+        from connectionState: PJLink.ConnectionState,
+        lastMessage: Bool = false
     ) async throws -> PJLink.StatusResponse {
         let logger = Logger(sub: .client, cat: .connection)
         let requestMessage: PJLink.Message = .request(.set(.init(request, authPrefix: try connectionState.auth.authPrefix)))
 
-        try await connectionState.connection.sendPJLinkMessage(requestMessage)
+        try await connectionState.connection.sendPJLinkMessage(requestMessage, lastMessage: lastMessage)
         logger.debug("SEND \(requestMessage)")
 
         let responseMessage = try await connectionState.connection.receivePJLinkMessage()

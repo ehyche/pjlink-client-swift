@@ -63,6 +63,19 @@ extension NWEndpoint.Port {
     public static let pjlink: Self = 4352
 }
 
+extension NetworkConnection where ApplicationProtocol == TCP {
+
+    public func receivePJLinkMessage() async throws -> PJLink.Message {
+        let messageData = try await receive(atMost: PJLink.maxResponseSize).content
+        let messageString = try messageData.toUTF8String()
+        return try PJLink.Message(messageString)
+    }
+
+    public func sendPJLinkMessage(_ message: PJLink.Message, lastMessage: Bool = false) async throws {
+        try await send(message.description.crTerminatedData, endOfStream: lastMessage)
+    }
+}
+
 extension NetworkConnection where ApplicationProtocol == Framer<PJLinkFramer> {
 
     public func receivePJLinkMessage() async throws -> PJLink.Message {
