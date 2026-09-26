@@ -53,5 +53,79 @@ extension PJLink.MuteState {
         mute.displayName + " " + state.displayName
     }
 
+    public var isAudioMuted: Bool {
+        get {
+            switch (mute, state) {
+            case (_, .off): false
+            case (.audio, .on): true
+            case (.audioVideo, .on): true
+            case (.video, .on): false
+            }
+        }
+        set {
+            switch (mute, state, newValue) {
+            case (_, .off, false):
+                break
+            case (.audio, .on, true):
+                break
+            case (.audio, .on, false):
+                state = .off
+            case (.audio, .off, true):
+                state = .on
+            case (.video, .on, true):
+                mute = .audioVideo
+            case (.video, .on, false):
+                break
+            case (.video, .off, true):
+                mute = .audio
+                state = .on
+            case (.audioVideo, .on, true):
+                break
+            case (.audioVideo, .on, false):
+                mute = .video
+            case (.audioVideo, .off, true):
+                mute = .audio
+                state = .on
+            }
+        }
+    }
+
+    public var isVideoMuted: Bool {
+        get {
+            switch (mute, state) {
+            case (_, .off): false
+            case (.audio, .on): false
+            case (.audioVideo, .on): true
+            case (.video, .on): true
+            }
+        }
+        set {
+            switch (mute, state, newValue) {
+            case (_, .off, false):
+                break
+            case (.audio, .on, true):
+                mute = .audioVideo
+            case (.audio, .on, false):
+                break
+            case (.audio, .off, true):
+                mute = .video
+                state = .on
+            case (.video, .on, true):
+                break
+            case (.video, .on, false):
+                state = .off
+            case (.video, .off, true):
+                state = .on
+            case (.audioVideo, .on, true):
+                break
+            case (.audioVideo, .on, false):
+                mute = .audio
+            case (.audioVideo, .off, true):
+                mute = .video
+                state = .on
+            }
+        }
+    }
+
     public static let mock: Self = .init(mute: .audioVideo, state: .off)
 }
